@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Jayvik - The Complete Health Store</title>
+  <meta name="description" content="Jayvik - Organic, natural & healthy food products. From khandsari, jaggery, millets to cold-pressed oils. Shop direct from the farm.">
+  <style>
+    :root{--accent:#2b8a3e;--muted:#666}
+    *{box-sizing:border-box}
+    body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;margin:0;color:#222;line-height:1.45}
+    header{background:linear-gradient(90deg,#f7fff7,#ffffff);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:56px;height:56px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+    nav a{margin-left:14px;text-decoration:none;color:var(--muted)}
+    .hero{padding:34px 20px;display:flex;flex-wrap:wrap;gap:20px;align-items:center}
+    .hero .copy{flex:1;min-width:260px}
+    .hero h1{margin:0 0 10px;font-size:28px}
+    .cta{display:inline-block;padding:10px 16px;background:var(--accent);color:white;border-radius:8px;text-decoration:none}
+    .products{padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
+    .card{border:1px solid #eee;padding:12px;border-radius:10px;background:white}
+    .card img{width:100%;height:130px;object-fit:cover;border-radius:6px}
+    .price{font-weight:700;color:var(--accent)}
+    footer{padding:18px 20px;border-top:1px solid #eee;background:#fafafa}
+    .contact{display:flex;flex-direction:column;gap:6px}
+    .small{font-size:13px;color:var(--muted)}
+    @media(min-width:900px){.hero h1{font-size:38px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">J</div>
+      <div>
+        <div style="font-weight:700">Jayvik</div>
+        <div class="small">The Complete Health Store</div>
+      </div>
+    </div>
+    <nav>
+      <a href="#products">Products</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="copy">
+      <h1>Pure • Natural • From the farm</h1>
+      <p class="small">Organic khandsari, jaggery, millets, dals, cold-pressed oils and more — sourced directly with no middlemen.</p>
+      <p style="margin-top:12px"><a class="cta" href="#products">Shop Products</a></p>
+    </div>
+
+    <div style="min-width:240px">
+      <div style="border-radius:10px;border:1px solid #eee;padding:12px;background:#fff">
+        <strong>Store Info</strong>
+        <p class="small" style="margin:6px 0 0">Jayvik - The Complete Health Store</p>
+        <p class="small" style="margin:4px 0">Plot no 34, 35, Kohale layout, Godhani road, Zingabai takali, Nagpur 440030</p>
+        <p style="margin:4px 0"><a href="tel:+919356959561">+91 9356959561</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="products">
+    <div style="padding:16px 20px"><h2 style="margin:0 0 10px">Featured Products</h2></div>
+    <div class="products">
+      <!-- Replace images with your product photos. Use Unsplash or local images. -->
+      <div class="card">
+        <img src="https://source.unsplash.com/featured/?jaggery" alt="Organic Jaggery">
+        <h3 style="margin:8px 0 4px">Organic Jaggery Powder</h3>
+        <div class="price">₹140 / kg</div>
+        <div class="small">100% natural, unrefined.</div>
+      </div>
+
+      <div class="card">
+        <img src="https://source.unsplash.com/featured/?sugar" alt="Khandsari">
+        <h3 style="margin:8px 0 4px">Khandsari Sugar (Organic)</h3>
+        <div class="price">₹120 / kg</div>
+        <div class="small">Traditional khandsari sugar, minimal processing.</div>
+      </div>
+
+      <div class="card">
+        <img src="https://source.unsplash.com/featured/?lentils" alt="Dal">
+        <h3 style="margin:8px 0 4px">Organic Toor Dal</h3>
+        <div class="price">₹200 / kg</div>
+        <div class="small">FPO-sourced, certified organic (where available).</div>
+      </div>
+
+      <div class="card">
+        <img src="https://source.unsplash.com/featured/?oil" alt="Cold Pressed Oil">
+        <h3 style="margin:8px 0 4px">Wood Pressed Groundnut Oil</h3>
+        <div class="price">₹350 / 1L</div>
+        <div class="small">Traditional extraction; retains nutrients.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="about" style="padding:20px">
+    <h2>About Jayvik</h2>
+    <p class="small">Jayvik connects customers directly with small farmers and FPOs. We prioritise natural farming practices, minimal processing, and fair pricing. Buy directly from the source — fresher, cheaper, honest.</p>
+  </section>
+
+  <section id="contact" style="padding:20px">
+    <h2>Contact</h2>
+    <div class="contact">
+      <div class="small">Call/WhatsApp: <a href="tel:+919356959561">+91 9356959561</a></div>
+      <div class="small">Address: Plot no 34, 35, Kohale layout, Godhani road, Zingabai takali, Nagpur 440030</div>
+      <div style="margin-top:8px">
+        <!-- Simple zero-fee contact: mailto link. For better contact use Google Forms (free) and embed. -->
+        <form onsubmit="window.location='mailto:jayvik.store@example.com?subject=Order%20/Query%20from%20Website&body='+encodeURIComponent(document.getElementById('msg').value);return false;">
+          <label class="small">Message:</label><br>
+          <textarea id="msg" rows="4" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd"></textarea><br>
+          <button type="submit" style="margin-top:8px;padding:8px 12px;border-radius:8px;border:none;background:var(--accent);color:white">Send Email</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div class="small">© Jayvik - The Complete Health Store</div>
+      <div class="small">Built for zero cost • Host on GitHub Pages or Netlify</div>
+    </div>
+  </footer>
+
+  <!-- Minimal JS to make product placeholders easy to replace -->
+  <script>
+    // Quick helper: replace placeholder images with your filenames placed next to index.html
+    // Example: put 'khandsari.jpg' into same folder and call setImage('khandsari.jpg', 0)
+    function setImage(filename, cardIndex){
+      const imgs = document.querySelectorAll('.card img');
+      if(imgs[cardIndex]) imgs[cardIndex].src = filename;
+    }
+  </script>
+</body>
+</html>
+
+
+<!--
+  DEPLOYMENT + ZERO-FEE STEPS (copy these into README.md in the repo):
+
+  1) Create a free GitHub account (if you don't have one).
+  2) Create a new public repository named 'jayvik-website' (or any name).
+  3) Upload this file as index.html to the repository root.
+  4) In the repo -> Settings -> Pages -> Source: select branch 'main' and folder '/ (root)'. Save.
+     GitHub will publish at: https://<your-username>.github.io/<repo-name>/  (usually within a minute).
+
+  ALTERNATIVE: Netlify (drag-and-drop)
+  - Go to netlify.com (free tier). Drag & drop the folder containing index.html into Sites panel. It publishes a free URL.
+
+  FREE IMAGE SOURCES: Unsplash, Pexels (use their photos and download & rename to replace unsplash placeholders).
+
+  CUSTOM DOMAIN (optional, free-ish): Buy a domain or use free subdomain from providers; GitHub/Netlify let you add a custom domain.
+
+  MAKING CHANGES:
+  - Edit index.html locally, commit/push to GitHub to update the site.
+  - Replace product images in the repo and update names used in setImage() or src attributes.
+
+  HELP: If you want, I can:
+  - Customize the content (product names, prices, photos).
+  - Convert this into a multi-page or React-based site (still can be hosted free).
+  - Generate a ready-to-upload ZIP file.
+-->
