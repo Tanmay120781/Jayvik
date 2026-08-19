@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     const token = req.query["hub.verify_token"];
     const challenge = req.query["hub.challenge"];
 
-    const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
+    const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 
     if (mode === "subscribe" && token === VERIFY_TOKEN) {
       return res.status(200).send(challenge);
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
       console.log("Message from:", from);
       console.log("Message:", incomingText);
 
-      const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
+      const ACCESS_TOKEN = process.env.META_ACCESS_TOKEN;
       const PHONE_NUMBER_ID = "1304949046025194";
 
       const response = await fetch(
