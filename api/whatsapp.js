@@ -1,4 +1,4 @@
-eexport default async function handler(req, res) {
+export default async function handler(req, res) {
   // Meta webhook verification
   if (req.method === "GET") {
     const mode = req.query["hub.mode"];
