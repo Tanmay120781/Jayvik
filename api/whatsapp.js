@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       console.log("Message:", incomingText);
 
       const ACCESS_TOKEN = process.env.META_ACCESS_TOKEN;
-      const PHONE_NUMBER_ID = "1304949046025194";
+      const PHONE_NUMBER_ID = "110461721819240";
 
       const response = await fetch(
         `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages`,
