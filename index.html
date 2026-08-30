@@ -1,106 +1,105 @@
-```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Jayvik - The Complete Health Store</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jayvik – The Complete Health Store</title>
 
 <style>
 :root{
-  --green:#2b8a3e;
-  --green-dark:#176b2b;
+  --green:#267a35;
+  --green2:#3fa64d;
   --light:#f4faf4;
-  --border:#e2e8e2;
-  --text:#222;
-  --muted:#666;
+  --dark:#17351d;
+  --gold:#d99b18;
+  --muted:#6b7280;
   --danger:#c62828;
   --white:#fff;
+  --shadow:0 8px 25px rgba(0,0,0,.08);
 }
 
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
   margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  color:var(--text);
-  background:#fafdf9;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  background:#f7faf7;
+  color:#202820;
 }
 
-button,
-input,
-textarea,
-select{
-  font-family:inherit;
+button,input,textarea,select{
+  font:inherit;
 }
 
 button{
   cursor:pointer;
 }
 
+.topbar{
+  background:#17351d;
+  color:white;
+  padding:8px 20px;
+  text-align:center;
+  font-size:13px;
+}
+
 header{
+  background:white;
+  border-bottom:1px solid #e7eee7;
   position:sticky;
   top:0;
-  z-index:100;
-  background:white;
-  border-bottom:1px solid var(--border);
+  z-index:50;
+  box-shadow:0 2px 12px rgba(0,0,0,.05);
+}
+
+.header-inner{
+  max-width:1250px;
+  margin:auto;
+  padding:12px 20px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:12px 20px;
+  gap:20px;
 }
 
 .brand{
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:15px;
 }
 
-.logo-img{
-  width:58px;
-  height:58px;
+.logo{
+  width:78px;
+  height:78px;
+  border-radius:18px;
   object-fit:contain;
-  border-radius:10px;
-  border:1px solid #eee;
-  background:white;
+  background:#edf7ed;
+  border:2px solid #d8ead8;
+  padding:5px;
 }
 
-.logo-placeholder{
-  width:58px;
-  height:58px;
-  border-radius:10px;
-  background:var(--green);
-  color:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:bold;
+.brand-title{
   font-size:25px;
+  font-weight:800;
+  color:var(--green);
 }
 
-.brand-name{
-  font-size:20px;
-  font-weight:bold;
-}
-
-.brand-tagline{
+.brand-sub{
   font-size:13px;
   color:var(--muted);
 }
 
-.header-buttons{
+.header-actions{
   display:flex;
-  gap:8px;
+  gap:10px;
+  align-items:center;
 }
 
 .btn{
   border:0;
-  border-radius:8px;
-  padding:10px 14px;
-  font-weight:bold;
+  border-radius:10px;
+  padding:11px 16px;
+  font-weight:700;
 }
 
 .btn-green{
@@ -108,164 +107,212 @@ header{
   color:white;
 }
 
+.btn-dark{
+  background:#17351d;
+  color:white;
+}
+
 .btn-light{
-  background:#edf6ee;
-  color:var(--green-dark);
+  background:#edf6ed;
+  color:var(--green);
 }
 
 .btn-danger{
-  background:#ffebeb;
+  background:#fdecec;
   color:var(--danger);
 }
 
-.btn:hover{
-  opacity:.9;
-}
-
 .hero{
-  padding:45px 20px;
-  background:linear-gradient(120deg,#eef9ee,#fff);
+  background:
+    radial-gradient(circle at 80% 30%,#dff2df,transparent 35%),
+    linear-gradient(135deg,#f4fbf4,#fff);
+  padding:55px 20px;
 }
 
 .hero-inner{
-  max-width:1200px;
+  max-width:1250px;
   margin:auto;
   display:grid;
   grid-template-columns:1.5fr 1fr;
-  gap:30px;
+  gap:35px;
   align-items:center;
 }
 
 .hero h1{
-  font-size:42px;
-  margin:0 0 12px;
-  color:var(--green-dark);
+  font-size:48px;
+  line-height:1.08;
+  margin:0 0 18px;
+  color:var(--dark);
+}
+
+.hero h1 span{
+  color:var(--green);
 }
 
 .hero p{
-  color:var(--muted);
   font-size:17px;
+  color:#59635a;
+  max-width:650px;
 }
 
-.store-card{
+.hero-card{
   background:white;
-  border:1px solid var(--border);
-  border-radius:15px;
-  padding:20px;
-  box-shadow:0 5px 20px rgba(0,0,0,.05);
+  border-radius:22px;
+  padding:25px;
+  box-shadow:var(--shadow);
+  border:1px solid #e4eee4;
+}
+
+.hero-logo{
+  width:190px;
+  height:190px;
+  object-fit:contain;
+  display:block;
+  margin:auto;
+}
+
+.store-address{
+  margin-top:15px;
+  text-align:center;
+  color:#606a61;
+  line-height:1.6;
 }
 
 .container{
-  max-width:1200px;
+  max-width:1250px;
   margin:auto;
-  padding:25px 20px;
+  padding:30px 20px;
 }
 
 .section-title{
-  margin:0 0 18px;
-  font-size:27px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-bottom:20px;
+}
+
+.section-title h2{
+  margin:0;
+  color:var(--dark);
 }
 
 .categories{
   display:flex;
   flex-wrap:wrap;
-  gap:8px;
-  margin-bottom:25px;
+  gap:10px;
+  margin-bottom:28px;
 }
 
 .category-btn{
-  border:1px solid var(--green);
+  border:1px solid #d9e7d9;
   background:white;
-  color:var(--green-dark);
-  padding:9px 14px;
-  border-radius:30px;
-  cursor:pointer;
+  color:#34513a;
+  border-radius:25px;
+  padding:10px 17px;
+  font-weight:600;
 }
 
 .category-btn.active{
   background:var(--green);
   color:white;
+  border-color:var(--green);
 }
 
 .products{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(235px,1fr));
-  gap:18px;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:20px;
 }
 
 .product-card{
   background:white;
-  border:1px solid var(--border);
-  border-radius:14px;
+  border:1px solid #e4ebe4;
+  border-radius:17px;
   overflow:hidden;
-  box-shadow:0 3px 12px rgba(0,0,0,.04);
-  display:flex;
-  flex-direction:column;
+  box-shadow:0 4px 16px rgba(0,0,0,.05);
+  transition:.2s;
+}
+
+.product-card:hover{
+  transform:translateY(-3px);
+  box-shadow:var(--shadow);
 }
 
 .product-image{
   width:100%;
-  height:200px;
+  height:205px;
   object-fit:cover;
-  background:#f0f7f0;
+  background:#edf5ed;
 }
 
 .product-body{
-  padding:15px;
-  display:flex;
-  flex-direction:column;
-  flex:1;
+  padding:16px;
 }
 
 .product-category{
   font-size:12px;
   color:var(--green);
-  font-weight:bold;
-  margin-bottom:5px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.5px;
 }
 
 .product-name{
+  margin:7px 0 10px;
   font-size:19px;
-  margin:0 0 12px;
 }
 
-.pack-select{
-  width:100%;
-  padding:9px;
-  border:1px solid #ddd;
-  border-radius:7px;
-  margin-bottom:10px;
-  background:white;
-}
-
-.product-price{
-  color:var(--green);
-  font-weight:bold;
-  font-size:20px;
+.pack-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
   margin-bottom:12px;
 }
 
-.add-cart{
-  margin-top:auto;
-  width:100%;
+.pack-btn{
+  border:1px solid #d8e5d8;
+  background:white;
+  border-radius:8px;
+  padding:7px 10px;
+  font-size:13px;
 }
 
-.cart-section{
-  background:white;
-  border-top:1px solid var(--border);
-  margin-top:30px;
+.pack-btn.active{
+  background:#e8f5e8;
+  color:var(--green);
+  border-color:var(--green);
+  font-weight:800;
+}
+
+.product-price{
+  font-size:21px;
+  font-weight:800;
+  color:var(--green);
+  margin-bottom:12px;
+}
+
+.add-btn{
+  width:100%;
+  border:0;
+  background:var(--green);
+  color:white;
+  padding:11px;
+  border-radius:9px;
+  font-weight:800;
 }
 
 .cart-box{
   background:white;
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:20px;
+  border-radius:18px;
+  padding:22px;
+  box-shadow:var(--shadow);
+  border:1px solid #e5ece5;
 }
 
 .cart-item{
   display:grid;
-  grid-template-columns:1fr auto auto auto;
+  grid-template-columns:1fr auto auto;
   gap:12px;
   align-items:center;
   border-bottom:1px solid #eee;
@@ -275,7 +322,7 @@ header{
 .qty{
   display:flex;
   align-items:center;
-  gap:7px;
+  gap:8px;
 }
 
 .qty button{
@@ -283,76 +330,99 @@ header{
   height:30px;
   border:1px solid #ddd;
   background:white;
-  border-radius:5px;
+  border-radius:7px;
 }
 
-.cart-total{
-  text-align:right;
+.total{
+  display:flex;
+  justify-content:space-between;
   font-size:22px;
-  font-weight:bold;
-  color:var(--green-dark);
-  padding:15px 0;
+  font-weight:800;
+  margin-top:18px;
 }
 
 .customer-form{
   display:grid;
-  gap:10px;
-  margin-top:15px;
+  gap:12px;
+  margin-top:20px;
 }
 
-.form-input{
+.customer-form input,
+.customer-form textarea,
+.admin-form input,
+.admin-form textarea,
+.admin-form select{
   width:100%;
+  border:1px solid #d7dfd7;
+  border-radius:9px;
   padding:11px;
-  border:1px solid #ddd;
-  border-radius:7px;
+  background:white;
 }
 
-textarea.form-input{
+.customer-form textarea{
   min-height:90px;
-  resize:vertical;
 }
 
-.whatsapp-btn{
+.whatsapp{
   width:100%;
-  background:#25D366;
+  background:#25d366;
   color:white;
   border:0;
   padding:14px;
-  border-radius:9px;
+  border-radius:10px;
   font-size:16px;
-  font-weight:bold;
+  font-weight:800;
   margin-top:10px;
 }
 
 footer{
-  background:#f4f7f4;
-  border-top:1px solid var(--border);
-  padding:25px 20px;
-  text-align:center;
-  color:var(--muted);
+  background:#17351d;
+  color:white;
+  margin-top:50px;
+  padding:30px 20px;
+}
+
+.footer-inner{
+  max-width:1250px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  flex-wrap:wrap;
 }
 
 /* ADMIN */
 
-#adminPanel{
+.admin-overlay{
   display:none;
   position:fixed;
   inset:0;
-  z-index:1000;
-  background:#f5f7f5;
+  background:rgba(0,0,0,.55);
+  z-index:100;
   overflow:auto;
 }
 
+.admin-panel{
+  background:#f5f8f5;
+  min-height:100vh;
+}
+
 .admin-header{
+  background:#17351d;
+  color:white;
+  padding:15px 20px;
   position:sticky;
   top:0;
-  z-index:10;
-  background:white;
-  border-bottom:1px solid #ddd;
-  padding:15px 20px;
+  z-index:5;
+}
+
+.admin-header-inner{
+  max-width:1400px;
+  margin:auto;
   display:flex;
   justify-content:space-between;
   align-items:center;
+  gap:15px;
 }
 
 .admin-brand{
@@ -361,44 +431,92 @@ footer{
   gap:12px;
 }
 
-.admin-brand img{
-  width:58px;
-  height:58px;
+.admin-logo{
+  width:65px;
+  height:65px;
+  background:white;
+  border-radius:13px;
   object-fit:contain;
-  border-radius:10px;
-  border:1px solid #ddd;
+  padding:4px;
 }
 
-.admin-title{
-  margin:0;
-  color:var(--green-dark);
-}
-
-.admin-layout{
-  max-width:1250px;
+.admin-container{
+  max-width:1400px;
   margin:auto;
+  padding:25px 20px;
+}
+
+.admin-grid{
+  display:grid;
+  grid-template-columns:330px 1fr;
+  gap:22px;
+}
+
+.admin-card{
+  background:white;
+  border-radius:16px;
   padding:20px;
+  box-shadow:0 5px 18px rgba(0,0,0,.06);
+  margin-bottom:20px;
+}
+
+.admin-card h3{
+  margin-top:0;
+  color:var(--dark);
+}
+
+.logo-preview{
+  width:180px;
+  height:180px;
+  object-fit:contain;
+  display:block;
+  margin:15px auto;
+  background:#edf5ed;
+  border-radius:18px;
+  padding:8px;
+}
+
+.admin-product{
+  display:grid;
+  grid-template-columns:100px 1fr auto;
+  gap:15px;
+  align-items:center;
+  border-bottom:1px solid #eee;
+  padding:15px 0;
+}
+
+.admin-product img{
+  width:100px;
+  height:80px;
+  object-fit:cover;
+  border-radius:10px;
+  background:#edf5ed;
+}
+
+.admin-actions{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
 }
 
 .admin-tabs{
   display:flex;
-  flex-wrap:wrap;
   gap:8px;
+  flex-wrap:wrap;
   margin-bottom:20px;
 }
 
 .admin-tab{
-  border:1px solid #ddd;
-  background:white;
+  border:0;
+  background:#e7eee7;
   padding:10px 15px;
   border-radius:8px;
-  cursor:pointer;
+  font-weight:700;
 }
 
 .admin-tab.active{
   background:var(--green);
   color:white;
-  border-color:var(--green);
 }
 
 .admin-section{
@@ -409,132 +527,118 @@ footer{
   display:block;
 }
 
-.admin-card{
-  background:white;
-  border:1px solid #ddd;
-  border-radius:14px;
-  padding:20px;
-  margin-bottom:20px;
-}
-
-.admin-card h3{
-  margin-top:0;
-}
-
-.admin-logo-preview{
-  width:130px;
-  height:130px;
-  object-fit:contain;
-  border:1px solid #ddd;
-  border-radius:12px;
-  background:#fafafa;
-  display:block;
-  margin-bottom:15px;
-}
-
-.admin-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-  gap:15px;
-}
-
-.admin-product{
-  border:1px solid #ddd;
-  border-radius:12px;
-  padding:15px;
-  margin-bottom:15px;
-  background:#fff;
-}
-
-.admin-product-top{
-  display:flex;
-  gap:15px;
-  align-items:center;
-}
-
-.admin-product-img{
-  width:90px;
-  height:90px;
-  object-fit:cover;
-  border-radius:9px;
-  border:1px solid #ddd;
-}
-
-.pack-row{
+.pack-edit{
   display:grid;
   grid-template-columns:1fr 130px auto;
   gap:8px;
-  margin:8px 0;
-}
-
-.category-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  border:1px solid #eee;
-  padding:10px;
-  margin-bottom:7px;
-  border-radius:7px;
-}
-
-.order-box{
-  border:1px solid #ddd;
-  border-radius:10px;
-  padding:15px;
-  margin-bottom:12px;
-  background:white;
-}
-
-.order-status{
-  padding:6px 10px;
-  border-radius:20px;
-  background:#edf6ee;
-  color:var(--green-dark);
-  display:inline-block;
-  font-size:12px;
-  font-weight:bold;
+  margin-bottom:8px;
 }
 
 .empty{
   text-align:center;
-  color:#777;
-  padding:30px;
+  padding:35px;
+  color:#7b857d;
+  background:white;
+  border-radius:15px;
 }
 
-.small{
+.search{
+  width:100%;
+  padding:12px 15px;
+  border:1px solid #d9e4d9;
+  border-radius:10px;
+  margin-bottom:20px;
+}
+
+.notice{
+  background:#fff8df;
+  border:1px solid #f1dfa1;
+  padding:12px;
+  border-radius:10px;
   font-size:13px;
-  color:var(--muted);
+  color:#715b14;
 }
 
-@media(max-width:800px){
-
+@media(max-width:850px){
   .hero-inner{
     grid-template-columns:1fr;
   }
 
   .hero h1{
-    font-size:32px;
+    font-size:36px;
   }
 
-  header{
-    padding:10px;
+  .admin-grid{
+    grid-template-columns:1fr;
   }
 
-  .brand-name{
-    font-size:17px;
+  .admin-product{
+    grid-template-columns:75px 1fr;
   }
 
-  .header-buttons .btn{
-    padding:8px 9px;
-    font-size:12px;
+  .admin-product .admin-actions{
+    grid-column:1/-1;
+  }
+
+  .header-inner{
+    flex-wrap:wrap;
+  }
+
+  .hero-logo{
+    width:150px;
+    height:150px;
+  }
+}
+
+@media(max-width:600px){
+  .logo{
+    width:60px;
+    height:60px;
+  }
+
+  .brand-title{
+    font-size:20px;
+  }
+
+  .header-actions{
+    width:100%;
+  }
+
+  .header-actions button{
+    flex:1;
+  }
+
+  .products{
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+  }
+
+  .product-image{
+    height:145px;
+  }
+
+  .product-body{
+    padding:11px;
+  }
+
+  .product-name{
+    font-size:16px;
+  }
+
+  .product-price{
+    font-size:18px;
   }
 
   .cart-item{
     grid-template-columns:1fr;
   }
 
-  .pack-row{
-    grid-template-columns:1fr;
+  .pack-edit{
+    grid-template-columns:1fr 100px;
+  }
+
+  .pack-edit button{
+    grid-column:1/-1;
   }
 }
 </style>
@@ -542,79 +646,70 @@ footer{
 
 <body>
 
-<!-- ================= CUSTOMER WEBSITE ================= -->
+<div class="topbar">
+  🌱 Farm Fresh • Natural • Healthy • Honest
+</div>
 
 <header>
+  <div class="header-inner">
 
-  <div class="brand">
+    <div class="brand">
+      <img id="mainLogo" class="logo" alt="Jayvik Logo">
 
-    <div id="headerLogoContainer"></div>
-
-    <div>
-      <div class="brand-name" id="headerStoreName">
-        Jayvik
-      </div>
-
-      <div class="brand-tagline" id="headerTagline">
-        The Complete Health Store
+      <div>
+        <div class="brand-title" id="brandName">Jayvik</div>
+        <div class="brand-sub" id="brandTagline">
+          The Complete Health Store
+        </div>
       </div>
     </div>
 
-  </div>
+    <div class="header-actions">
+      <button class="btn btn-light" onclick="scrollToCart()">
+        🛒 Cart <span id="cartCount">0</span>
+      </button>
 
-  <div class="header-buttons">
-
-    <button class="btn btn-light" onclick="scrollToCart()">
-      🛒 Cart (<span id="cartCount">0</span>)
-    </button>
-
-    <button class="btn btn-green" onclick="openAdmin()">
-      Admin
-    </button>
+      <button class="btn btn-dark" onclick="openAdmin()">
+        ⚙️ Admin
+      </button>
+    </div>
 
   </div>
-
 </header>
-
 
 <section class="hero">
 
   <div class="hero-inner">
 
     <div>
-
-      <h1 id="heroTitle">
-        Pure • Natural • From the Farm
+      <h1>
+        Pure • Natural •
+        <span>From the Farm</span>
       </h1>
 
-      <p id="heroDescription">
+      <p id="heroText">
         Healthy, natural and carefully selected products from Jayvik –
         The Complete Health Store.
       </p>
 
-      <button class="btn btn-green" onclick="document.getElementById('products').scrollIntoView()">
-        Shop Products
+      <button class="btn btn-green" onclick="scrollToProducts()">
+        🛍️ Shop Products
       </button>
-
     </div>
 
-    <div class="store-card">
+    <div class="hero-card">
 
-      <h3 id="storeCardTitle">
-        Jayvik – The Complete Health Store
-      </h3>
+      <img id="heroLogo" class="hero-logo" alt="Jayvik Logo">
 
-      <p id="storeAddress" class="small">
-        Plot no 34, 35, Kohale layout,<br>
+      <div class="store-address">
+        <strong>Jayvik – The Complete Health Store</strong><br>
+        Plot no 34, 35, Kohale Layout,<br>
         Godhani Road, Zingabai Takali,<br>
-        Nagpur 440030
-      </p>
-
-      <p>
+        Nagpur 440030<br><br>
         📞 <a href="tel:+919356959561">
         +91 9356959561
         </a>
-      </p>
+      </div>
 
     </div>
 
@@ -622,73 +717,68 @@ footer{
 
 </section>
 
+<main>
 
-<main class="container" id="products">
+<section class="container" id="productsSection">
 
-  <h2 class="section-title">
-    Shop by Category
-  </h2>
+  <div class="section-title">
+    <h2>🛍️ Shop by Category</h2>
+  </div>
 
-  <div class="categories" id="categoryButtons"></div>
+  <div id="categories" class="categories"></div>
 
-  <h2 class="section-title">
-    Products
-  </h2>
+  <input
+    id="searchBox"
+    class="search"
+    placeholder="🔎 Search products..."
+    oninput="renderProducts()"
+  >
 
-  <div class="products" id="productGrid"></div>
+  <div class="section-title">
+    <h2>Our Products</h2>
+    <span id="productCount" class="brand-sub"></span>
+  </div>
 
-</main>
+  <div id="products" class="products"></div>
 
+</section>
 
-<!-- ================= CART ================= -->
+<section class="container" id="cartSection">
 
-<section class="cart-section" id="cartSection">
+  <div class="section-title">
+    <h2>🛒 Your Order</h2>
+  </div>
 
-  <div class="container">
+  <div class="cart-box">
 
-    <h2 class="section-title">
-      Your Order
-    </h2>
+    <div id="cartItems"></div>
 
-    <div class="cart-box">
+    <div class="total">
+      <span>Total</span>
+      <span>₹<span id="cartTotal">0</span></span>
+    </div>
 
-      <div id="cartItems"></div>
+    <div class="customer-form">
 
-      <div class="cart-total">
-        Total: ₹<span id="cartTotal">0</span>
-      </div>
+      <h3>Customer Details</h3>
 
-      <h3>
-        Customer Details
-      </h3>
-
-      <div class="customer-form">
-
-        <input
-          class="form-input"
-          id="customerName"
-          placeholder="Name"
-        >
-
-        <input
-          class="form-input"
-          id="customerPhone"
-          placeholder="Contact Number"
-          type="tel"
-        >
-
-        <textarea
-          class="form-input"
-          id="customerAddress"
-          placeholder="Address"
-        ></textarea>
-
-      </div>
-
-      <button
-        class="whatsapp-btn"
-        onclick="sendWhatsAppOrder()"
+      <input
+        id="customerName"
+        placeholder="Full Name"
       >
+
+      <input
+        id="customerPhone"
+        type="tel"
+        placeholder="Contact Number"
+      >
+
+      <textarea
+        id="customerAddress"
+        placeholder="Complete Delivery Address"
+      ></textarea>
+
+      <button class="whatsapp" onclick="sendWhatsAppOrder()">
         💬 Send Order on WhatsApp
       </button>
 
@@ -698,324 +788,414 @@ footer{
 
 </section>
 
+</main>
 
 <footer>
 
-  © 2026 <span id="footerName">Jayvik</span> –
-  The Complete Health Store
+  <div class="footer-inner">
 
-  <br>
+    <div>
+      <strong>Jayvik – The Complete Health Store</strong><br>
+      Natural • Healthy • Honest
+    </div>
 
-  Natural • Healthy • Honest
+    <div>
+      📞 +91 9356959561<br>
+      Nagpur, Maharashtra
+    </div>
+
+  </div>
 
 </footer>
 
 
 <!-- ================= ADMIN DASHBOARD ================= -->
 
-<div id="adminPanel">
+<div id="adminOverlay" class="admin-overlay">
+
+<div class="admin-panel">
 
   <div class="admin-header">
 
-    <div class="admin-brand">
+    <div class="admin-header-inner">
 
-      <div id="adminLogoContainer"></div>
+      <div class="admin-brand">
 
-      <div>
+        <img id="adminLogo" class="admin-logo">
 
-        <h2 class="admin-title">
-          Jayvik Admin Dashboard
-        </h2>
-
-        <div class="small">
-          Manage your store
+        <div>
+          <strong style="font-size:20px">
+            Jayvik Admin Dashboard
+          </strong><br>
+          <small>Store Management System</small>
         </div>
 
       </div>
 
-    </div>
+      <button
+        class="btn"
+        style="background:white;color:#17351d"
+        onclick="closeAdmin()"
+      >
+        ✕ Close
+      </button>
 
-    <button class="btn btn-danger" onclick="closeAdmin()">
-      ✕ Close
-    </button>
+    </div>
 
   </div>
 
-
-  <div class="admin-layout">
+  <div class="admin-container">
 
     <div class="admin-tabs">
 
       <button
         class="admin-tab active"
-        onclick="showAdminTab('storeSettings',this)"
+        onclick="showAdminTab('dashboard',this)"
       >
-        🏪 Store
+        📊 Dashboard
       </button>
 
       <button
         class="admin-tab"
-        onclick="showAdminTab('logoSettings',this)"
-      >
-        🖼️ Logo
-      </button>
-
-      <button
-        class="admin-tab"
-        onclick="showAdminTab('productSettings',this)"
+        onclick="showAdminTab('productsAdmin',this)"
       >
         📦 Products
       </button>
 
       <button
         class="admin-tab"
-        onclick="showAdminTab('categorySettings',this)"
+        onclick="showAdminTab('categoriesAdmin',this)"
       >
         🗂️ Categories
       </button>
 
       <button
         class="admin-tab"
-        onclick="showAdminTab('orderSettings',this)"
+        onclick="showAdminTab('websiteAdmin',this)"
       >
-        📋 Orders
+        ✏️ Website
+      </button>
+
+      <button
+        class="admin-tab"
+        onclick="showAdminTab('logoAdmin',this)"
+      >
+        🖼️ Logo
       </button>
 
     </div>
 
 
-    <!-- STORE SETTINGS -->
+    <!-- DASHBOARD -->
 
-    <section
-      class="admin-section active"
-      id="storeSettings"
-    >
+    <div id="dashboard" class="admin-section active">
 
-      <div class="admin-card">
+      <div class="admin-grid">
 
-        <h3>
-          Edit Store Information
-        </h3>
+        <div>
 
-        <div class="admin-grid">
+          <div class="admin-card">
 
-          <div>
-            <label>Store Name</label>
+            <img id="dashboardLogo"
+                 class="logo-preview">
 
-            <input
-              class="form-input"
-              id="editStoreName"
-            >
-          </div>
+            <h3 style="text-align:center">
+              Jayvik
+            </h3>
 
-          <div>
-            <label>Tagline</label>
+            <p class="notice">
+              Your store dashboard is ready.
+              Use the tabs above to manage products,
+              categories, logo and website content.
+            </p>
 
-            <input
-              class="form-input"
-              id="editTagline"
-            >
-          </div>
-
-          <div>
-            <label>Hero Heading</label>
-
-            <input
-              class="form-input"
-              id="editHeroTitle"
-            >
           </div>
 
         </div>
 
-        <br>
+        <div>
 
-        <label>Hero Description</label>
+          <div class="admin-card">
 
-        <textarea
-          class="form-input"
-          id="editHeroDescription"
-        ></textarea>
+            <h3>Store Overview</h3>
 
-        <br>
+            <div class="products">
 
-        <label>Store Address</label>
+              <div class="hero-card">
+                <strong>Products</strong>
+                <div id="statProducts"
+                     style="font-size:32px;color:var(--green);font-weight:800">
+                  0
+                </div>
+              </div>
 
-        <textarea
-          class="form-input"
-          id="editAddress"
-        ></textarea>
+              <div class="hero-card">
+                <strong>Categories</strong>
+                <div id="statCategories"
+                     style="font-size:32px;color:var(--green);font-weight:800">
+                  0
+                </div>
+              </div>
 
-        <br>
+              <div class="hero-card">
+                <strong>Cart Items</strong>
+                <div id="statCart"
+                     style="font-size:32px;color:var(--green);font-weight:800">
+                  0
+                </div>
+              </div>
 
-        <button
-          class="btn btn-green"
-          onclick="saveStoreSettings()"
-        >
-          💾 Save Store Information
-        </button>
+            </div>
 
-      </div>
+          </div>
 
-    </section>
-
-
-    <!-- LOGO SETTINGS -->
-
-    <section
-      class="admin-section"
-      id="logoSettings"
-    >
-
-      <div class="admin-card">
-
-        <h3>
-          🖼️ Jayvik Store Logo
-        </h3>
-
-        <p class="small">
-          Upload a new logo. It will replace the logo shown
-          on the customer website and Admin Dashboard.
-        </p>
-
-        <img
-          id="adminLogoPreview"
-          class="admin-logo-preview"
-          alt="Jayvik Logo"
-        >
-
-        <input
-          type="file"
-          id="logoFile"
-          accept="image/*"
-          onchange="previewLogo(event)"
-        >
-
-        <br><br>
-
-        <button
-          class="btn btn-green"
-          onclick="saveLogo()"
-        >
-          💾 Save / Replace Logo
-        </button>
-
-        <button
-          class="btn btn-danger"
-          onclick="removeLogo()"
-        >
-          🗑 Remove Logo
-        </button>
-
-        <p class="small">
-          Recommended: PNG or JPG, square logo.
-        </p>
+        </div>
 
       </div>
 
-    </section>
+    </div>
 
 
-    <!-- PRODUCT SETTINGS -->
+    <!-- PRODUCTS ADMIN -->
 
-    <section
-      class="admin-section"
-      id="productSettings"
-    >
+    <div id="productsAdmin" class="admin-section">
 
       <div class="admin-card">
 
-        <h3>
-          📦 Product Management
-        </h3>
+        <div class="section-title">
 
-        <button
-          class="btn btn-green"
-          onclick="addNewProduct()"
-        >
-          ➕ Add Product
-        </button>
+          <h3>📦 Product Management</h3>
+
+          <button class="btn btn-green"
+                  onclick="openAddProduct()">
+            + Add Product
+          </button>
+
+        </div>
+
+        <div id="adminProductsList"></div>
 
       </div>
 
-      <div id="adminProducts"></div>
-
-    </section>
+    </div>
 
 
-    <!-- CATEGORY SETTINGS -->
+    <!-- CATEGORIES -->
 
-    <section
-      class="admin-section"
-      id="categorySettings"
-    >
+    <div id="categoriesAdmin" class="admin-section">
 
       <div class="admin-card">
 
-        <h3>
-          🗂️ Category Management
-        </h3>
+        <h3>🗂️ Category Management</h3>
 
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;margin-bottom:20px">
 
           <input
-            class="form-input"
-            style="max-width:350px"
             id="newCategory"
-            placeholder="New category"
+            placeholder="New category name"
+            class="search"
+            style="margin:0"
           >
 
           <button
             class="btn btn-green"
             onclick="addCategory()"
           >
-            ➕ Add Category
+            Add
+          </button>
+
+        </div>
+
+        <div id="adminCategoriesList"></div>
+
+      </div>
+
+    </div>
+
+
+    <!-- WEBSITE -->
+
+    <div id="websiteAdmin" class="admin-section">
+
+      <div class="admin-card">
+
+        <h3>✏️ Edit Website Words</h3>
+
+        <div class="admin-form">
+
+          <label>Store Name</label>
+          <input id="editBrandName">
+
+          <label>Tagline</label>
+          <input id="editTagline">
+
+          <label>Hero Heading</label>
+          <input id="editHeroHeading">
+
+          <label>Hero Description</label>
+          <textarea id="editHeroText"></textarea>
+
+          <button
+            class="btn btn-green"
+            onclick="saveWebsite()"
+          >
+            💾 Save Website Changes
           </button>
 
         </div>
 
       </div>
 
+    </div>
+
+
+    <!-- LOGO -->
+
+    <div id="logoAdmin" class="admin-section">
+
       <div class="admin-card">
 
-        <div id="adminCategories"></div>
+        <h3>🖼️ Replace Jayvik Logo</h3>
+
+        <p class="notice">
+          Upload your actual Jayvik logo here.
+          The logo will appear on the customer website
+          and Admin Dashboard.
+        </p>
+
+        <img
+          id="logoPreviewAdmin"
+          class="logo-preview"
+        >
+
+        <input
+          id="logoFile"
+          type="file"
+          accept="image/*"
+          onchange="previewLogo(event)"
+        >
+
+        <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap">
+
+          <button
+            class="btn btn-green"
+            onclick="saveLogo()"
+          >
+            💾 Save Logo
+          </button>
+
+          <button
+            class="btn btn-danger"
+            onclick="removeLogo()"
+          >
+            🗑️ Remove Logo
+          </button>
+
+        </div>
 
       </div>
 
-    </section>
+    </div>
+
+  </div>
+
+</div>
+
+</div>
 
 
-    <!-- ORDER MANAGEMENT -->
+<!-- PRODUCT EDITOR -->
 
-    <section
-      class="admin-section"
-      id="orderSettings"
-    >
+<div id="productEditor" class="admin-overlay">
 
-      <div class="admin-card">
+<div class="admin-panel">
 
-        <h3>
-          📋 Order Management
-        </h3>
+  <div class="admin-header">
 
-        <p class="small">
-          Orders created from this browser will appear here.
-        </p>
+    <div class="admin-header-inner">
+
+      <strong id="editorTitle">
+        Add Product
+      </strong>
+
+      <button
+        class="btn"
+        style="background:white;color:#17351d"
+        onclick="closeProductEditor()"
+      >
+        ✕ Close
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="admin-container">
+
+    <div class="admin-card">
+
+      <div class="admin-form">
+
+        <input type="hidden" id="editProductId">
+
+        <label>Product Name</label>
+        <input id="editProductName">
+
+        <label>Category</label>
+        <select id="editProductCategory"></select>
+
+        <label>Product Photo</label>
+
+        <img
+          id="productPhotoPreview"
+          class="logo-preview"
+          style="width:240px;height:170px"
+        >
+
+        <input
+          type="file"
+          id="productPhotoFile"
+          accept="image/*"
+          onchange="previewProductPhoto(event)"
+        >
 
         <button
           class="btn btn-danger"
-          onclick="clearOrders()"
+          onclick="removeProductPhoto()"
         >
-          🗑 Clear All Orders
+          🗑️ Remove Product Photo
+        </button>
+
+        <h3>Pack Sizes & Prices</h3>
+
+        <div id="packEditor"></div>
+
+        <button
+          class="btn btn-light"
+          onclick="addPackField()"
+        >
+          + Add Pack Size
+        </button>
+
+        <br><br>
+
+        <label>Description</label>
+        <textarea id="editProductDescription"></textarea>
+
+        <button
+          class="btn btn-green"
+          onclick="saveProduct()"
+        >
+          💾 Save Product
         </button>
 
       </div>
 
-      <div id="adminOrders"></div>
-
-    </section>
+    </div>
 
   </div>
+
+</div>
 
 </div>
 
@@ -1023,34 +1203,61 @@ footer{
 <script>
 
 /* =====================================================
-   DEFAULT STORE DATA
+   DEFAULT DATA
 ===================================================== */
 
-const DEFAULT_STORE = {
+const defaultLogo =
+"data:image/svg+xml;charset=UTF-8,"+
+encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg"
+width="600" height="600">
+<rect width="100%" height="100%" rx="80"
+fill="#edf7ed"/>
+<circle cx="300" cy="260" r="130"
+fill="#267a35"/>
+<text x="300" y="310"
+text-anchor="middle"
+font-family="Arial"
+font-size="150"
+font-weight="bold"
+fill="white">J</text>
+<text x="300" y="465"
+text-anchor="middle"
+font-family="Arial"
+font-size="52"
+font-weight="bold"
+fill="#267a35">JAYVIK</text>
+</svg>
+`);
 
-  name:"Jayvik",
-
-  tagline:"The Complete Health Store",
-
-  heroTitle:"Pure • Natural • From the Farm",
-
-  heroDescription:
-  "Healthy, natural and carefully selected products from Jayvik – The Complete Health Store.",
-
-  address:
-  "Plot no 34, 35, Kohale layout,\nGodhani Road, Zingabai Takali,\nNagpur 440030",
-
-  logo:""
-
-};
+const placeholder = name =>
+"data:image/svg+xml;charset=UTF-8,"+
+encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg"
+width="700" height="500">
+<rect width="100%" height="100%" fill="#edf5ed"/>
+<text x="50%" y="46%"
+text-anchor="middle"
+font-family="Arial"
+font-size="38"
+font-weight="bold"
+fill="#267a35">Jayvik</text>
+<text x="50%" y="58%"
+text-anchor="middle"
+font-family="Arial"
+font-size="24"
+fill="#666">${name}</text>
+</svg>
+`);
 
 
 /* =====================================================
-   DEFAULT CATEGORIES
+   CATEGORIES
 ===================================================== */
 
-const DEFAULT_CATEGORIES = [
-
+let categories =
+JSON.parse(localStorage.getItem("jayvik_categories")) ||
+[
   "Cold Pressed Oils",
   "Ghee",
   "Millet Corner",
@@ -1062,297 +1269,280 @@ const DEFAULT_CATEGORIES = [
   "Vegetables",
   "Fruits",
   "Others"
-
 ];
 
 
 /* =====================================================
-   DEFAULT PRODUCTS
+   PRODUCTS
 ===================================================== */
 
-const DEFAULT_PRODUCTS = [
-
+let products =
+JSON.parse(localStorage.getItem("jayvik_products")) ||
+[
   {
     id:1,
     name:"Groundnut Oil",
     category:"Cold Pressed Oils",
-    description:"Traditional cold pressed groundnut oil.",
-    image:"",
+    image:placeholder("Groundnut Oil"),
     packs:[
       {size:"5 L",price:1500},
       {size:"1 L",price:310},
-      {size:"500 ml",price:190}
-    ]
+      {size:"500 ml",price:155}
+    ],
+    description:"Traditional cold pressed groundnut oil."
   },
 
   {
     id:2,
     name:"Mustard Oil",
     category:"Cold Pressed Oils",
-    description:"Natural mustard oil.",
-    image:"",
+    image:placeholder("Mustard Oil"),
     packs:[
       {size:"1 L",price:360},
       {size:"500 ml",price:190}
-    ]
+    ],
+    description:"Natural mustard oil."
   },
 
   {
     id:3,
     name:"Flaxseed Oil",
     category:"Cold Pressed Oils",
-    description:"Cold pressed flaxseed oil.",
-    image:"",
+    image:placeholder("Flaxseed Oil"),
     packs:[
       {size:"1 L",price:420},
       {size:"500 ml",price:220}
-    ]
+    ],
+    description:"Cold pressed flaxseed oil."
   },
 
   {
     id:4,
     name:"Sesame Oil (Til Tel)",
     category:"Cold Pressed Oils",
-    description:"Traditional sesame oil.",
-    image:"",
+    image:placeholder("Sesame Oil"),
     packs:[
       {size:"1 L",price:540},
       {size:"500 ml",price:280}
-    ]
+    ],
+    description:"Traditional sesame oil."
   },
 
   {
     id:5,
     name:"Coconut Oil",
     category:"Cold Pressed Oils",
-    description:"Natural coconut oil.",
-    image:"",
+    image:placeholder("Coconut Oil"),
     packs:[
       {size:"1 L",price:600},
       {size:"500 ml",price:310}
-    ]
+    ],
+    description:"Natural coconut oil."
   },
 
   {
     id:6,
     name:"Sunflower Oil",
     category:"Cold Pressed Oils",
-    description:"Natural sunflower oil.",
-    image:"",
+    image:placeholder("Sunflower Oil"),
     packs:[
       {size:"1 L",price:370}
-    ]
+    ],
+    description:"Natural sunflower oil."
   },
 
   {
     id:7,
     name:"Kardai Oil",
     category:"Cold Pressed Oils",
-    description:"Traditional safflower oil.",
-    image:"",
+    image:placeholder("Kardai Oil"),
     packs:[
       {size:"1 L",price:370}
-    ]
+    ],
+    description:"Traditional safflower oil."
   },
 
   {
     id:8,
     name:"Gir Cow Ghee",
     category:"Ghee",
-    description:"A2 Gir cow ghee made with traditional bilona method.",
-    image:"",
+    image:placeholder("Gir Cow Ghee"),
     packs:[
       {size:"1 L",price:1600},
       {size:"500 ml",price:850}
-    ]
+    ],
+    description:"Gir cow ghee made using traditional bilona method."
   },
 
   {
     id:9,
     name:"Rajgira",
     category:"Millet Corner",
-    description:"Naturally grown unpolished rajgira.",
-    image:"",
+    image:placeholder("Rajgira"),
     packs:[
       {size:"1 kg",price:240},
       {size:"500 g",price:130}
-    ]
+    ],
+    description:"Naturally grown unpolished rajgira."
   },
 
   {
     id:10,
     name:"Rajgira Flour",
     category:"Millet Corner",
-    description:"Naturally grown rajgira flour.",
-    image:"",
+    image:placeholder("Rajgira Flour"),
     packs:[
       {size:"1 kg",price:300},
       {size:"500 g",price:160}
-    ]
+    ],
+    description:"Fresh rajgira flour."
   },
 
   {
     id:11,
     name:"Bhagar",
     category:"Millet Corner",
-    description:"Unpolished barnyard millet.",
-    image:"",
+    image:placeholder("Bhagar"),
     packs:[
       {size:"1 kg",price:200},
       {size:"500 g",price:110}
-    ]
+    ],
+    description:"Naturally grown bhagar."
   },
 
   {
     id:12,
     name:"Varai / Little Millet",
     category:"Millet Corner",
-    description:"Naturally grown little millet.",
-    image:"",
+    image:placeholder("Varai"),
     packs:[
       {size:"1 kg",price:220},
       {size:"500 g",price:120}
-    ]
+    ],
+    description:"Naturally grown little millet."
   },
 
   {
     id:13,
     name:"Jowar Flakes",
     category:"Millet Corner",
-    description:"Healthy jowar flakes.",
-    image:"",
+    image:placeholder("Jowar Flakes"),
     packs:[
       {size:"1 kg",price:160},
       {size:"500 g",price:90}
-    ]
+    ],
+    description:"Healthy jowar flakes."
   },
 
   {
     id:14,
     name:"Ragi Flakes",
     category:"Millet Corner",
-    description:"Healthy ragi flakes.",
-    image:"",
+    image:placeholder("Ragi Flakes"),
     packs:[
       {size:"1 kg",price:200},
       {size:"500 g",price:110}
-    ]
+    ],
+    description:"Healthy ragi flakes."
   },
 
   {
     id:15,
     name:"Jeera",
     category:"Spices",
-    description:"Natural cumin seeds.",
-    image:"",
+    image:placeholder("Jeera"),
     packs:[
       {size:"100 g",price:60}
-    ]
+    ],
+    description:"Natural cumin seeds."
   },
 
   {
     id:16,
     name:"Mishri",
     category:"Jaggery",
-    description:"Traditional rock sugar.",
-    image:"",
+    image:placeholder("Mishri"),
     packs:[
       {size:"100 g",price:40}
-    ]
+    ],
+    description:"Traditional rock sugar."
   },
 
   {
     id:17,
     name:"Himalayan Multiflora Forest Honey",
     category:"Honey",
-    description:"Natural Himalayan multiflora forest honey.",
-    image:"",
+    image:placeholder("Himalayan Honey"),
     packs:[
       {size:"500 g",price:1050}
-    ]
+    ],
+    description:"Himalayan multiflora forest honey."
   },
 
   {
     id:18,
     name:"Badam Oil",
     category:"Others",
-    description:"Almond oil.",
-    image:"",
+    image:placeholder("Badam Oil"),
     packs:[
       {size:"100 ml",price:270}
-    ]
+    ],
+    description:"Natural almond oil."
   },
 
   {
     id:19,
     name:"Castor Oil",
     category:"Others",
-    description:"Natural castor oil.",
-    image:"",
+    image:placeholder("Castor Oil"),
     packs:[
       {size:"100 ml",price:60}
-    ]
+    ],
+    description:"Natural castor oil."
   }
-
 ];
 
 
 /* =====================================================
-   LOAD DATA
+   STATE
 ===================================================== */
 
-let store =
-JSON.parse(localStorage.getItem("jayvikStore"))
-|| DEFAULT_STORE;
-
-let categories =
-JSON.parse(localStorage.getItem("jayvikCategories"))
-|| DEFAULT_CATEGORIES;
-
-let products =
-JSON.parse(localStorage.getItem("jayvikProducts"))
-|| DEFAULT_PRODUCTS;
-
 let cart =
-JSON.parse(localStorage.getItem("jayvikCart"))
-|| [];
+JSON.parse(localStorage.getItem("jayvik_cart")) || [];
 
-let orders =
-JSON.parse(localStorage.getItem("jayvikOrders"))
-|| [];
+let selectedCategory = "All";
 
-let selectedCategory="All";
+let logo =
+localStorage.getItem("jayvik_logo") || defaultLogo;
+
+let website =
+JSON.parse(localStorage.getItem("jayvik_website")) || {
+  brandName:"Jayvik",
+  tagline:"The Complete Health Store",
+  heroHeading:"Pure • Natural • From the Farm",
+  heroText:"Healthy, natural and carefully selected products from Jayvik – The Complete Health Store."
+};
 
 
 /* =====================================================
-   SAVE HELPERS
+   SAVE
 ===================================================== */
 
 function saveAll(){
 
   localStorage.setItem(
-    "jayvikStore",
-    JSON.stringify(store)
-  );
-
-  localStorage.setItem(
-    "jayvikCategories",
-    JSON.stringify(categories)
-  );
-
-  localStorage.setItem(
-    "jayvikProducts",
+    "jayvik_products",
     JSON.stringify(products)
   );
 
   localStorage.setItem(
-    "jayvikCart",
-    JSON.stringify(cart)
+    "jayvik_categories",
+    JSON.stringify(categories)
   );
 
   localStorage.setItem(
-    "jayvikOrders",
-    JSON.stringify(orders)
+    "jayvik_cart",
+    JSON.stringify(cart)
   );
 
 }
@@ -1362,314 +1552,296 @@ function saveAll(){
    LOGO
 ===================================================== */
 
-function renderLogo(){
+function applyLogo(){
 
-  const header =
-  document.getElementById("headerLogoContainer");
-
-  const admin =
-  document.getElementById("adminLogoContainer");
-
-  if(store.logo){
-
-    header.innerHTML =
-    `<img class="logo-img"
-    src="${store.logo}"
-    alt="Jayvik Logo">`;
-
-    admin.innerHTML =
-    `<img
-    src="${store.logo}"
-    alt="Jayvik Logo">`;
-
-    document.getElementById(
-      "adminLogoPreview"
-    ).src=store.logo;
-
-  }else{
-
-    header.innerHTML =
-    `<div class="logo-placeholder">J</div>`;
-
-    admin.innerHTML =
-    `<div class="logo-placeholder">J</div>`;
-
-    document.getElementById(
-      "adminLogoPreview"
-    ).src=
-    createPlaceholderLogo();
-
-  }
+  document.getElementById("mainLogo").src=logo;
+  document.getElementById("heroLogo").src=logo;
+  document.getElementById("adminLogo").src=logo;
+  document.getElementById("dashboardLogo").src=logo;
+  document.getElementById("logoPreviewAdmin").src=logo;
 
 }
-
-
-function createPlaceholderLogo(){
-
-  return "data:image/svg+xml;charset=UTF-8,"+
-  encodeURIComponent(`
-  <svg xmlns="http://www.w3.org/2000/svg"
-  width="300" height="300">
-  <rect width="100%" height="100%"
-  fill="#2b8a3e"/>
-  <text x="50%" y="48%"
-  text-anchor="middle"
-  dominant-baseline="middle"
-  font-size="90"
-  font-family="Arial"
-  font-weight="bold"
-  fill="white">J</text>
-  <text x="50%" y="70%"
-  text-anchor="middle"
-  font-size="28"
-  font-family="Arial"
-  fill="white">JAYVIK</text>
-  </svg>
-  `);
-
-}
-
-
-let pendingLogo="";
-
 
 function previewLogo(event){
 
-  const file =
-  event.target.files[0];
+  const file=event.target.files[0];
 
   if(!file)return;
 
-  const reader =
-  new FileReader();
+  const reader=new FileReader();
 
   reader.onload=function(e){
-
-    pendingLogo=e.target.result;
-
-    document.getElementById(
-      "adminLogoPreview"
-    ).src=pendingLogo;
-
+    document.getElementById("logoPreviewAdmin").src=e.target.result;
   };
 
   reader.readAsDataURL(file);
 
 }
 
-
 function saveLogo(){
 
-  if(!pendingLogo){
+  const src=
+    document.getElementById("logoPreviewAdmin").src;
 
-    alert("Please select a logo first.");
+  if(!src)return;
 
-    return;
+  logo=src;
 
-  }
+  localStorage.setItem(
+    "jayvik_logo",
+    logo
+  );
 
-  store.logo=pendingLogo;
+  applyLogo();
 
-  saveAll();
-
-  renderLogo();
-
-  alert("Jayvik logo replaced successfully.");
+  alert("Jayvik logo updated successfully.");
 
 }
-
 
 function removeLogo(){
 
-  if(!confirm(
-    "Remove the current logo?"
-  ))return;
+  if(!confirm("Remove current logo?"))return;
 
-  store.logo="";
+  logo=defaultLogo;
 
-  pendingLogo="";
+  localStorage.setItem(
+    "jayvik_logo",
+    logo
+  );
 
-  saveAll();
-
-  renderLogo();
-
-  document.getElementById(
-    "logoFile"
-  ).value="";
+  applyLogo();
 
 }
 
 
 /* =====================================================
-   STORE RENDER
+   WEBSITE
 ===================================================== */
 
-function renderStore(){
+function applyWebsite(){
 
-  document.getElementById(
-    "headerStoreName"
-  ).textContent=store.name;
+  document.getElementById("brandName").textContent=
+    website.brandName;
 
-  document.getElementById(
-    "headerTagline"
-  ).textContent=store.tagline;
+  document.getElementById("brandTagline").textContent=
+    website.tagline;
 
-  document.getElementById(
-    "heroTitle"
-  ).textContent=store.heroTitle;
+  document.getElementById("heroText").textContent=
+    website.heroText;
 
-  document.getElementById(
-    "heroDescription"
-  ).textContent=store.heroDescription;
+  document.querySelector(".hero h1").innerHTML=
+    website.heroHeading;
 
-  document.getElementById(
-    "storeCardTitle"
-  ).textContent=
-  store.name+" – "+store.tagline;
+}
 
-  document.getElementById(
-    "storeAddress"
-  ).innerHTML=
-  escapeHtml(store.address)
-  .replace(/\n/g,"<br>");
+function loadWebsiteEditor(){
 
-  document.getElementById(
-    "footerName"
-  ).textContent=store.name;
+  document.getElementById("editBrandName").value=
+    website.brandName;
 
-  renderLogo();
+  document.getElementById("editTagline").value=
+    website.tagline;
+
+  document.getElementById("editHeroHeading").value=
+    website.heroHeading;
+
+  document.getElementById("editHeroText").value=
+    website.heroText;
+
+}
+
+function saveWebsite(){
+
+  website.brandName=
+    document.getElementById("editBrandName").value.trim() ||
+    "Jayvik";
+
+  website.tagline=
+    document.getElementById("editTagline").value.trim() ||
+    "The Complete Health Store";
+
+  website.heroHeading=
+    document.getElementById("editHeroHeading").value.trim() ||
+    "Pure • Natural • From the Farm";
+
+  website.heroText=
+    document.getElementById("editHeroText").value.trim();
+
+  localStorage.setItem(
+    "jayvik_website",
+    JSON.stringify(website)
+  );
+
+  applyWebsite();
+
+  alert("Website content updated.");
 
 }
 
 
 /* =====================================================
-   CATEGORY RENDER
+   CATEGORIES
 ===================================================== */
 
 function renderCategories(){
 
-  const box =
-  document.getElementById(
-    "categoryButtons"
-  );
+  const box=
+    document.getElementById("categories");
 
   box.innerHTML="";
 
-  const all =
-  ["All",...categories];
+  const all=document.createElement("button");
 
-  all.forEach(category=>{
-
-    const btn =
-    document.createElement("button");
-
-    btn.className=
+  all.className=
     "category-btn "+
-    (selectedCategory===category
-      ?"active":"");
+    (selectedCategory==="All"?"active":"");
 
-    btn.textContent=category;
+  all.textContent="All";
 
-    btn.onclick=function(){
+  all.onclick=()=>{
+    selectedCategory="All";
+    renderCategories();
+    renderProducts();
+  };
 
-      selectedCategory=category;
+  box.appendChild(all);
 
+  categories.forEach(cat=>{
+
+    const button=
+      document.createElement("button");
+
+    button.className=
+      "category-btn "+
+      (selectedCategory===cat?"active":"");
+
+    button.textContent=cat;
+
+    button.onclick=()=>{
+      selectedCategory=cat;
       renderCategories();
       renderProducts();
-
     };
 
-    box.appendChild(btn);
+    box.appendChild(button);
 
   });
 
 }
 
+function addCategory(){
 
-/* =====================================================
-   PRODUCT PLACEHOLDER
-===================================================== */
+  const input=
+    document.getElementById("newCategory");
 
-function productPlaceholder(name){
+  const name=input.value.trim();
 
-  return "data:image/svg+xml;charset=UTF-8,"+
-  encodeURIComponent(`
-  <svg xmlns="http://www.w3.org/2000/svg"
-  width="600" height="450">
-  <rect width="100%" height="100%"
-  fill="#edf5ed"/>
-  <text x="50%" y="45%"
-  text-anchor="middle"
-  dominant-baseline="middle"
-  font-size="35"
-  font-family="Arial"
-  font-weight="bold"
-  fill="#2b8a3e">
-  Jayvik
-  </text>
-  <text x="50%" y="58%"
-  text-anchor="middle"
-  font-size="22"
-  font-family="Arial"
-  fill="#666">
-  ${escapeHtml(name)}
-  </text>
-  </svg>
-  `);
+  if(!name)return;
+
+  if(categories.includes(name)){
+    alert("Category already exists.");
+    return;
+  }
+
+  categories.push(name);
+
+  saveAll();
+
+  input.value="";
+
+  renderCategories();
+  renderAdminCategories();
+  updateStats();
+
+}
+
+function removeCategory(category){
+
+  const used=
+    products.some(p=>p.category===category);
+
+  if(used){
+    alert(
+      "This category is being used by a product. "+
+      "Change the product category first."
+    );
+    return;
+  }
+
+  if(!confirm("Remove category "+category+"?"))return;
+
+  categories=
+    categories.filter(c=>c!==category);
+
+  if(selectedCategory===category)
+    selectedCategory="All";
+
+  saveAll();
+
+  renderCategories();
+  renderAdminCategories();
+  updateStats();
 
 }
 
 
 /* =====================================================
-   PRODUCT RENDER
+   PRODUCTS CUSTOMER
 ===================================================== */
 
 function renderProducts(){
 
-  const grid =
-  document.getElementById(
-    "productGrid"
-  );
+  const box=
+    document.getElementById("products");
 
-  grid.innerHTML="";
+  const search=
+    document.getElementById("searchBox")
+      .value.toLowerCase();
 
-  const filtered =
-  selectedCategory==="All"
-  ?products
-  :products.filter(
-    p=>p.category===selectedCategory
-  );
+  box.innerHTML="";
+
+  const filtered=
+    products.filter(p=>{
+
+      const categoryMatch=
+        selectedCategory==="All" ||
+        p.category===selectedCategory;
+
+      const searchMatch=
+        p.name.toLowerCase().includes(search);
+
+      return categoryMatch && searchMatch;
+
+    });
+
+  document.getElementById("productCount").textContent=
+    filtered.length+" products";
 
   if(filtered.length===0){
 
-    grid.innerHTML=
-    `<div class="empty">
-    No products in this category.
-    </div>`;
+    box.innerHTML=
+      `<div class="empty">
+        No products found.
+      </div>`;
 
     return;
-
   }
 
   filtered.forEach(product=>{
 
-    const card =
-    document.createElement("div");
+    let selectedPack=
+      product.packs[0];
+
+    const card=
+      document.createElement("div");
 
     card.className="product-card";
-
-    const image =
-    product.image ||
-    productPlaceholder(product.name);
-
-    const firstPack =
-    product.packs[0];
 
     card.innerHTML=`
 
       <img
         class="product-image"
-        src="${image}"
+        src="${product.image || placeholder(product.name)}"
         alt="${escapeHtml(product.name)}"
       >
 
@@ -1683,75 +1855,59 @@ function renderProducts(){
           ${escapeHtml(product.name)}
         </h3>
 
-        <select
-          class="pack-select"
-          id="pack-${product.id}"
-          onchange="updateCardPrice(${product.id})"
-        >
-          ${product.packs.map(
-            (pack,index)=>
-            `<option value="${index}">
-              ${escapeHtml(pack.size)}
-              – ₹${Number(pack.price).toLocaleString("en-IN")}
-            </option>`
-          ).join("")}
-        </select>
+        <div class="pack-row" id="packs-${product.id}"></div>
 
-        <div
-          class="product-price"
-          id="price-${product.id}"
-        >
-          ₹${Number(firstPack.price).toLocaleString("en-IN")}
+        <div class="product-price"
+             id="price-${product.id}">
+          ₹${selectedPack.price.toLocaleString("en-IN")}
         </div>
 
-        <div class="small" style="margin-bottom:12px">
-          ${escapeHtml(product.description || "")}
-        </div>
-
-        <button
-          class="btn btn-green add-cart"
-          onclick="addToCart(${product.id})"
-        >
+        <button class="add-btn"
+          onclick="addToCart(${product.id})">
           🛒 Add to Cart
         </button>
 
       </div>
     `;
 
-    grid.appendChild(card);
+    box.appendChild(card);
+
+    const packBox=
+      card.querySelector("#packs-"+product.id);
+
+    product.packs.forEach((pack,index)=>{
+
+      const button=
+        document.createElement("button");
+
+      button.className=
+        "pack-btn "+
+        (index===0?"active":"");
+
+      button.textContent=pack.size;
+
+      button.onclick=()=>{
+
+        selectedPack=pack;
+
+        packBox
+          .querySelectorAll(".pack-btn")
+          .forEach(b=>b.classList.remove("active"));
+
+        button.classList.add("active");
+
+        card.querySelector(
+          "#price-"+product.id
+        ).textContent=
+          "₹"+pack.price.toLocaleString("en-IN");
+
+      };
+
+      packBox.appendChild(button);
+
+    });
 
   });
-
-}
-
-
-function updateCardPrice(productId){
-
-  const product =
-  products.find(
-    p=>p.id===productId
-  );
-
-  const select =
-  document.getElementById(
-    "pack-"+productId
-  );
-
-  const price =
-  document.getElementById(
-    "price-"+productId
-  );
-
-  if(!product || !select)return;
-
-  const pack =
-  product.packs[
-    Number(select.value)
-  ];
-
-  price.textContent=
-  "₹"+Number(pack.price)
-  .toLocaleString("en-IN");
 
 }
 
@@ -1762,202 +1918,111 @@ function updateCardPrice(productId){
 
 function addToCart(productId){
 
-  const product =
-  products.find(
-    p=>p.id===productId
-  );
+  const product=
+    products.find(p=>p.id===productId);
 
   if(!product)return;
 
-  const select =
-  document.getElementById(
-    "pack-"+productId
-  );
+  const pack=product.packs[0];
 
-  const packIndex =
-  Number(select.value);
-
-  const pack =
-  product.packs[packIndex];
-
-  const key =
-  productId+"_"+packIndex;
-
-  const existing =
-  cart.find(
-    item=>item.key===key
-  );
+  const existing=
+    cart.find(item=>
+      item.productId===productId &&
+      item.size===pack.size
+    );
 
   if(existing){
-
     existing.qty++;
-
   }else{
 
     cart.push({
-
-      key:key,
-
-      productId:productId,
-
-      packIndex:packIndex,
-
+      productId,
       name:product.name,
-
       size:pack.size,
-
-      price:Number(pack.price),
-
+      price:pack.price,
       qty:1
-
     });
 
   }
 
   saveAll();
-
   renderCart();
 
   alert(
     product.name+
-    " added to cart."
+    " ("+pack.size+") added to cart."
   );
 
 }
-
-
-function changeQty(key,change){
-
-  const item =
-  cart.find(
-    i=>i.key===key
-  );
-
-  if(!item)return;
-
-  item.qty+=change;
-
-  if(item.qty<=0){
-
-    cart=
-    cart.filter(
-      i=>i.key!==key
-    );
-
-  }
-
-  saveAll();
-
-  renderCart();
-
-}
-
-
-function removeCartItem(key){
-
-  cart=
-  cart.filter(
-    i=>i.key!==key
-  );
-
-  saveAll();
-
-  renderCart();
-
-}
-
 
 function renderCart(){
 
-  const box =
-  document.getElementById(
-    "cartItems"
-  );
+  const box=
+    document.getElementById("cartItems");
 
-  const totalBox =
-  document.getElementById(
-    "cartTotal"
-  );
-
-  const countBox =
-  document.getElementById(
-    "cartCount"
-  );
+  box.innerHTML="";
 
   if(cart.length===0){
 
     box.innerHTML=
-    `<div class="empty">
-      Your cart is empty.<br>
-      Add products above to place your order.
-    </div>`;
-
-    totalBox.textContent="0";
-    countBox.textContent="0";
-
-    return;
+      `<div class="empty">
+        Your cart is empty.<br>
+        Add products above to place your order.
+      </div>`;
 
   }
 
   let total=0;
   let count=0;
 
-  box.innerHTML="";
+  cart.forEach((item,index)=>{
 
-  cart.forEach(item=>{
+    const subtotal=
+      item.price*item.qty;
 
-    const line=
-    item.price*item.qty;
-
-    total+=line;
+    total+=subtotal;
     count+=item.qty;
 
     const div=
-    document.createElement("div");
+      document.createElement("div");
 
     div.className="cart-item";
 
     div.innerHTML=`
 
       <div>
-        <strong>
-          ${escapeHtml(item.name)}
-        </strong>
-        <div class="small">
-          ${escapeHtml(item.size)}
-        </div>
-      </div>
-
-      <div>
-        ₹${item.price.toLocaleString("en-IN")}
+        <strong>${escapeHtml(item.name)}</strong><br>
+        <small>${escapeHtml(item.size)}
+          × ₹${item.price.toLocaleString("en-IN")}
+        </small>
       </div>
 
       <div class="qty">
 
-        <button
-          onclick="changeQty('${item.key}',-1)"
-        >−</button>
+        <button onclick="changeQty(${index},-1)">
+          −
+        </button>
 
         <strong>${item.qty}</strong>
 
-        <button
-          onclick="changeQty('${item.key}',1)"
-        >+</button>
+        <button onclick="changeQty(${index},1)">
+          +
+        </button>
 
       </div>
 
       <div>
         <strong>
-          ₹${line.toLocaleString("en-IN")}
+          ₹${subtotal.toLocaleString("en-IN")}
         </strong>
 
         <button
           class="btn btn-danger"
-          onclick="removeCartItem('${item.key}')"
+          style="padding:5px 8px;margin-left:8px"
+          onclick="removeCartItem(${index})"
         >
-          Remove
+          ✕
         </button>
-
       </div>
 
     `;
@@ -1966,60 +2031,63 @@ function renderCart(){
 
   });
 
-  totalBox.textContent=
-  total.toLocaleString("en-IN");
+  document.getElementById("cartTotal").textContent=
+    total.toLocaleString("en-IN");
 
-  countBox.textContent=count;
+  document.getElementById("cartCount").textContent=
+    count;
 
-}
-
-
-function scrollToCart(){
-
-  document.getElementById(
-    "cartSection"
-  ).scrollIntoView({
-    behavior:"smooth"
-  });
+  document.getElementById("statCart").textContent=
+    count;
 
 }
 
+function changeQty(index,change){
 
-/* =====================================================
-   WHATSAPP ORDER
-===================================================== */
+  cart[index].qty+=change;
+
+  if(cart[index].qty<=0)
+    cart.splice(index,1);
+
+  saveAll();
+  renderCart();
+
+}
+
+function removeCartItem(index){
+
+  cart.splice(index,1);
+
+  saveAll();
+  renderCart();
+
+}
 
 function sendWhatsAppOrder(){
 
   if(cart.length===0){
 
-    alert(
-      "Your cart is empty."
-    );
-
+    alert("Please add products to cart first.");
     return;
 
   }
 
-  const name =
-  document.getElementById(
-    "customerName"
-  ).value.trim();
+  const name=
+    document.getElementById("customerName")
+      .value.trim();
 
-  const phone =
-  document.getElementById(
-    "customerPhone"
-  ).value.trim();
+  const phone=
+    document.getElementById("customerPhone")
+      .value.trim();
 
-  const address =
-  document.getElementById(
-    "customerAddress"
-  ).value.trim();
+  const address=
+    document.getElementById("customerAddress")
+      .value.trim();
 
   if(!name || !phone || !address){
 
     alert(
-      "Please enter your name, contact number and address."
+      "Please enter Name, Contact Number and Address."
     );
 
     return;
@@ -2027,200 +2095,83 @@ function sendWhatsAppOrder(){
   }
 
   let message=
-  "Hello Jayvik, I would like to place an order:%0A%0A";
+`Hello Jayvik, I would like to place an order:
+
+`;
 
   let total=0;
 
   cart.forEach((item,index)=>{
 
-    const line=
-    item.price*item.qty;
+    const subtotal=
+      item.price*item.qty;
 
-    total+=line;
+    total+=subtotal;
 
     message+=
-    `${index+1}. ${item.name} – ${item.size} × ${item.qty} = ₹${line}%0A`;
+`${index+1}. ${item.name} – ${item.size} × ${item.qty} = ₹${subtotal}
+`;
 
   });
 
   message+=
-  `%0A*Total: ₹${total}*%0A%0A`+
-  `Name: ${name}%0A`+
-  `Contact Number: ${phone}%0A`+
-  `Address: ${address}`;
+`
+Total: ₹${total}
 
-  const order={
-
-    id:Date.now(),
-
-    date:new Date().toLocaleString("en-IN"),
-
-    name:name,
-
-    phone:phone,
-
-    address:address,
-
-    items:[...cart],
-
-    total:total,
-
-    status:"New"
-
-  };
-
-  orders.unshift(order);
-
-  saveAll();
-
-  renderAdminOrders();
+Name: ${name}
+Address: ${address}
+Contact Number: ${phone}`;
 
   const url=
-  "https://wa.me/919356959561?text="+
-  message;
+    "https://wa.me/919356959561?text="+
+    encodeURIComponent(message);
 
-  window.open(
-    url,
-    "_blank"
-  );
+  window.open(url,"_blank");
 
 }
 
 
 /* =====================================================
-   ADMIN OPEN/CLOSE
+   ADMIN
 ===================================================== */
 
 function openAdmin(){
 
   document.getElementById(
-    "adminPanel"
+    "adminOverlay"
   ).style.display="block";
 
-  loadAdminForms();
-
+  loadWebsiteEditor();
   renderAdminProducts();
-
   renderAdminCategories();
-
-  renderAdminOrders();
+  updateStats();
+  applyLogo();
 
 }
-
 
 function closeAdmin(){
 
   document.getElementById(
-    "adminPanel"
+    "adminOverlay"
   ).style.display="none";
 
-  renderStore();
-
-  renderCategories();
-
-  renderProducts();
-
 }
 
-
-/* =====================================================
-   ADMIN TABS
-===================================================== */
-
-function showAdminTab(tabId,button){
+function showAdminTab(id,button){
 
   document
-  .querySelectorAll(".admin-section")
-  .forEach(
-    section=>
-    section.classList.remove("active")
-  );
+    .querySelectorAll(".admin-section")
+    .forEach(s=>s.classList.remove("active"));
 
   document
-  .querySelectorAll(".admin-tab")
-  .forEach(
-    tab=>
-    tab.classList.remove("active")
-  );
+    .querySelectorAll(".admin-tab")
+    .forEach(b=>b.classList.remove("active"));
 
-  document.getElementById(
-    tabId
-  ).classList.add("active");
+  document
+    .getElementById(id)
+    .classList.add("active");
 
   button.classList.add("active");
-
-}
-
-
-/* =====================================================
-   STORE SETTINGS
-===================================================== */
-
-function loadAdminForms(){
-
-  document.getElementById(
-    "editStoreName"
-  ).value=store.name;
-
-  document.getElementById(
-    "editTagline"
-  ).value=store.tagline;
-
-  document.getElementById(
-    "editHeroTitle"
-  ).value=store.heroTitle;
-
-  document.getElementById(
-    "editHeroDescription"
-  ).value=store.heroDescription;
-
-  document.getElementById(
-    "editAddress"
-  ).value=store.address;
-
-  document.getElementById(
-    "adminLogoPreview"
-  ).src=
-  store.logo ||
-  createPlaceholderLogo();
-
-}
-
-
-function saveStoreSettings(){
-
-  store.name=
-  document.getElementById(
-    "editStoreName"
-  ).value.trim();
-
-  store.tagline=
-  document.getElementById(
-    "editTagline"
-  ).value.trim();
-
-  store.heroTitle=
-  document.getElementById(
-    "editHeroTitle"
-  ).value.trim();
-
-  store.heroDescription=
-  document.getElementById(
-    "editHeroDescription"
-  ).value.trim();
-
-  store.address=
-  document.getElementById(
-    "editAddress"
-  ).value.trim();
-
-  saveAll();
-
-  renderStore();
-
-  alert(
-    "Store information updated."
-  );
 
 }
 
@@ -2231,119 +2182,70 @@ function saveStoreSettings(){
 
 function renderAdminProducts(){
 
-  const box =
-  document.getElementById(
-    "adminProducts"
-  );
+  const box=
+    document.getElementById("adminProductsList");
 
   box.innerHTML="";
 
   products.forEach(product=>{
 
     const div=
-    document.createElement("div");
+      document.createElement("div");
 
     div.className="admin-product";
 
-    const image =
-    product.image ||
-    productPlaceholder(product.name);
-
     div.innerHTML=`
 
-      <div class="admin-product-top">
+      <img
+        src="${product.image || placeholder(product.name)}"
+      >
 
-        <img
-          class="admin-product-img"
-          id="admin-img-${product.id}"
-          src="${image}"
-        >
+      <div>
 
-        <div style="flex:1">
+        <strong>
+          ${escapeHtml(product.name)}
+        </strong>
 
-          <input
-            class="form-input"
-            value="${escapeAttr(product.name)}"
-            onchange="updateProductName(${product.id},this.value)"
-          >
+        <div class="small">
+          ${escapeHtml(product.category)}
+        </div>
 
-          <br>
+        <div style="margin-top:7px">
 
-          <select
-            class="form-input"
-            onchange="updateProductCategory(${product.id},this.value)"
-          >
-            ${categories.map(c=>
-              `<option
-              ${c===product.category?"selected":""}>
-              ${escapeHtml(c)}
-              </option>`
-            ).join("")}
-          </select>
+          ${product.packs.map(p=>
+            `<span style="
+              display:inline-block;
+              background:#edf5ed;
+              padding:4px 7px;
+              border-radius:6px;
+              margin:2px;
+              font-size:12px">
+              ${escapeHtml(p.size)}
+              ₹${p.price}
+            </span>`
+          ).join("")}
 
         </div>
 
       </div>
 
-      <br>
+      <div class="admin-actions">
 
-      <label>Product Description</label>
+        <button
+          class="btn btn-light"
+          onclick="editProduct(${product.id})"
+        >
+          ✏️ Edit
+        </button>
 
-      <textarea
-        class="form-input"
-        onchange="updateProductDescription(${product.id},this.value)"
-      >${escapeHtml(product.description || "")}</textarea>
+        <button
+          class="btn btn-danger"
+          onclick="deleteProduct(${product.id})"
+        >
+          🗑️ Remove
+        </button>
 
-      <br>
-
-      <label>Product Photo</label>
-
-      <input
-        type="file"
-        accept="image/*"
-        onchange="changeProductPhoto(event,${product.id})"
-      >
-
-      <br><br>
-
-      <button
-        class="btn btn-danger"
-        onclick="removeProductPhoto(${product.id})"
-      >
-        🗑 Remove Photo
-      </button>
-
-      <hr>
-
-      <h4>
-        Pack Sizes & Prices
-      </h4>
-
-      <div id="packs-${product.id}">
-        ${renderPackRows(product)}
       </div>
-
-      <button
-        class="btn btn-light"
-        onclick="addPack(${product.id})"
-      >
-        ➕ Add Pack Size
-      </button>
-
-      <button
-        class="btn btn-green"
-        onclick="saveProductPacks(${product.id})"
-      >
-        💾 Save Prices
-      </button>
-
-      <button
-        class="btn btn-danger"
-        onclick="removeProduct(${product.id})"
-      >
-        🗑 Remove Product
-      </button>
-
     `;
 
     box.appendChild(div);
@@ -2352,318 +2254,10 @@ function renderAdminProducts(){
 
 }
 
-
-function renderPackRows(product){
-
-  return product.packs.map(
-    (pack,index)=>
-    `<div class="pack-row">
-
-      <input
-        class="form-input"
-        id="pack-size-${product.id}-${index}"
-        value="${escapeAttr(pack.size)}"
-        placeholder="Pack size"
-      >
-
-      <input
-        class="form-input"
-        type="number"
-        id="pack-price-${product.id}-${index}"
-        value="${pack.price}"
-        placeholder="Price"
-      >
-
-      <button
-        class="btn btn-danger"
-        onclick="removePack(${product.id},${index})"
-      >
-        ✕
-      </button>
-
-    </div>`
-  ).join("");
-
-}
-
-
-function updateProductName(id,value){
+function deleteProduct(id){
 
   const product=
-  products.find(
-    p=>p.id===id
-  );
-
-  if(!product)return;
-
-  product.name=value.trim();
-
-  saveAll();
-
-  renderProducts();
-
-}
-
-
-function updateProductCategory(id,value){
-
-  const product=
-  products.find(
-    p=>p.id===id
-  );
-
-  if(!product)return;
-
-  product.category=value;
-
-  saveAll();
-
-  renderProducts();
-
-}
-
-
-function updateProductDescription(id,value){
-
-  const product=
-  products.find(
-    p=>p.id===id
-  );
-
-  if(!product)return;
-
-  product.description=value;
-
-  saveAll();
-
-}
-
-
-function changeProductPhoto(event,id){
-
-  const file=
-  event.target.files[0];
-
-  if(!file)return;
-
-  const reader=
-  new FileReader();
-
-  reader.onload=function(e){
-
-    const product=
-    products.find(
-      p=>p.id===id
-    );
-
-    if(!product)return;
-
-    product.image=
-    e.target.result;
-
-    saveAll();
-
-    renderAdminProducts();
-
-    renderProducts();
-
-  };
-
-  reader.readAsDataURL(file);
-
-}
-
-
-function removeProductPhoto(id){
-
-  const product=
-  products.find(
-    p=>p.id===id
-  );
-
-  if(!product)return;
-
-  product.image="";
-
-  saveAll();
-
-  renderAdminProducts();
-
-  renderProducts();
-
-}
-
-
-function addPack(id){
-
-  const product=
-  products.find(
-    p=>p.id===id
-  );
-
-  if(!product)return;
-
-  product.packs.push({
-
-    size:"New Pack",
-
-    price:0
-
-  });
-
-  saveAll();
-
-  renderAdminProducts();
-
-}
-
-
-function removePack(id,index){
-
-  const product=
-  products.find(
-    p=>p.id===id
-  );
-
-  if(!product)return;
-
-  if(product.packs.length<=1){
-
-    alert(
-      "A product must have at least one pack size."
-    );
-
-    return;
-
-  }
-
-  product.packs.splice(
-    index,
-    1
-  );
-
-  saveAll();
-
-  renderAdminProducts();
-
-}
-
-
-function saveProductPacks(id){
-
-  const product=
-  products.find(
-    p=>p.id===id
-  );
-
-  if(!product)return;
-
-  product.packs.forEach(
-    (pack,index)=>{
-
-      const size=
-      document.getElementById(
-        `pack-size-${id}-${index}`
-      );
-
-      const price=
-      document.getElementById(
-        `pack-price-${id}-${index}`
-      );
-
-      if(size)
-      pack.size=
-      size.value.trim();
-
-      if(price)
-      pack.price=
-      Number(price.value);
-
-    }
-  );
-
-  saveAll();
-
-  renderAdminProducts();
-
-  renderProducts();
-
-  alert(
-    "Pack sizes and prices saved."
-  );
-
-}
-
-
-/* =====================================================
-   ADD / REMOVE PRODUCT
-===================================================== */
-
-function addNewProduct(){
-
-  const name=
-  prompt(
-    "Enter product name:"
-  );
-
-  if(!name)return;
-
-  const category=
-  prompt(
-    "Enter category:",
-    categories[0] || "Others"
-  );
-
-  if(!category)return;
-
-  if(!categories.includes(category)){
-
-    categories.push(category);
-
-  }
-
-  const newProduct={
-
-    id:Date.now(),
-
-    name:name,
-
-    category:category,
-
-    description:"",
-
-    image:"",
-
-    packs:[
-      {
-        size:"1 unit",
-        price:0
-      }
-    ]
-
-  };
-
-  products.push(
-    newProduct
-  );
-
-  saveAll();
-
-  renderAdminProducts();
-
-  renderCategories();
-
-  renderProducts();
-
-}
-
-
-function removeProduct(id){
-
-  const product=
-  products.find(
-    p=>p.id===id
-  );
+    products.find(p=>p.id===id);
 
   if(!product)return;
 
@@ -2672,352 +2266,444 @@ function removeProduct(id){
   ))return;
 
   products=
-  products.filter(
-    p=>p.id!==id
-  );
+    products.filter(p=>p.id!==id);
 
   cart=
-  cart.filter(
-    item=>item.productId!==id
-  );
+    cart.filter(item=>item.productId!==id);
 
   saveAll();
 
-  renderAdminProducts();
-
   renderProducts();
-
   renderCart();
+  renderAdminProducts();
+  updateStats();
 
 }
 
 
 /* =====================================================
-   CATEGORY MANAGEMENT
+   PRODUCT EDITOR
 ===================================================== */
 
-function addCategory(){
+let editingPhoto=null;
 
-  const input=
+function openAddProduct(){
+
+  editingPhoto=null;
+
+  document.getElementById("editorTitle")
+    .textContent="Add Product";
+
+  document.getElementById("editProductId")
+    .value="";
+
+  document.getElementById("editProductName")
+    .value="";
+
+  document.getElementById("editProductDescription")
+    .value="";
+
+  fillCategorySelect();
+
+  document.getElementById("editProductCategory")
+    .value=categories[0] || "Others";
+
+  document.getElementById("productPhotoPreview")
+    .src=placeholder("New Product");
+
+  document.getElementById("packEditor")
+    .innerHTML="";
+
+  addPackField();
+
   document.getElementById(
-    "newCategory"
-  );
+    "productEditor"
+  ).style.display="block";
 
-  const name=
-  input.value.trim();
+}
 
-  if(!name)return;
+function editProduct(id){
 
-  if(categories.includes(name)){
+  const product=
+    products.find(p=>p.id===id);
 
-    alert(
-      "Category already exists."
+  if(!product)return;
+
+  editingPhoto=product.image;
+
+  document.getElementById("editorTitle")
+    .textContent="Edit Product";
+
+  document.getElementById("editProductId")
+    .value=id;
+
+  document.getElementById("editProductName")
+    .value=product.name;
+
+  document.getElementById("editProductDescription")
+    .value=product.description || "";
+
+  fillCategorySelect();
+
+  document.getElementById("editProductCategory")
+    .value=product.category;
+
+  document.getElementById("productPhotoPreview")
+    .src=product.image || placeholder(product.name);
+
+  const box=
+    document.getElementById("packEditor");
+
+  box.innerHTML="";
+
+  product.packs.forEach(pack=>{
+    addPackField(pack.size,pack.price);
+  });
+
+  document.getElementById(
+    "productEditor"
+  ).style.display="block";
+
+}
+
+function closeProductEditor(){
+
+  document.getElementById(
+    "productEditor"
+  ).style.display="none";
+
+}
+
+function fillCategorySelect(){
+
+  const select=
+    document.getElementById(
+      "editProductCategory"
     );
 
+  select.innerHTML="";
+
+  categories.forEach(category=>{
+
+    const option=
+      document.createElement("option");
+
+    option.value=category;
+    option.textContent=category;
+
+    select.appendChild(option);
+
+  });
+
+}
+
+function addPackField(size="",price=""){
+
+  const box=
+    document.getElementById("packEditor");
+
+  const row=
+    document.createElement("div");
+
+  row.className="pack-edit";
+
+  row.innerHTML=`
+
+    <input
+      placeholder="Pack size e.g. 1 L"
+      value="${escapeAttr(size)}"
+      class="pack-size"
+    >
+
+    <input
+      type="number"
+      min="0"
+      placeholder="Price"
+      value="${price}"
+      class="pack-price"
+    >
+
+    <button
+      class="btn btn-danger"
+      onclick="this.parentElement.remove()"
+    >
+      Remove
+    </button>
+  `;
+
+  box.appendChild(row);
+
+}
+
+function previewProductPhoto(event){
+
+  const file=event.target.files[0];
+
+  if(!file)return;
+
+  const reader=new FileReader();
+
+  reader.onload=function(e){
+
+    editingPhoto=e.target.result;
+
+    document.getElementById(
+      "productPhotoPreview"
+    ).src=e.target.result;
+
+  };
+
+  reader.readAsDataURL(file);
+
+}
+
+function removeProductPhoto(){
+
+  editingPhoto=null;
+
+  const name=
+    document.getElementById(
+      "editProductName"
+    ).value || "Product";
+
+  document.getElementById(
+    "productPhotoPreview"
+  ).src=placeholder(name);
+
+}
+
+function saveProduct(){
+
+  const id=
+    Number(
+      document.getElementById(
+        "editProductId"
+      ).value
+    );
+
+  const name=
+    document.getElementById(
+      "editProductName"
+    ).value.trim();
+
+  const category=
+    document.getElementById(
+      "editProductCategory"
+    ).value;
+
+  const description=
+    document.getElementById(
+      "editProductDescription"
+    ).value.trim();
+
+  if(!name){
+
+    alert("Enter product name.");
     return;
 
   }
 
-  categories.push(name);
+  const rows=
+    document.querySelectorAll(
+      "#packEditor .pack-edit"
+    );
 
-  input.value="";
+  const packs=[];
+
+  rows.forEach(row=>{
+
+    const size=
+      row.querySelector(".pack-size")
+        .value.trim();
+
+    const price=
+      Number(
+        row.querySelector(".pack-price")
+          .value
+      );
+
+    if(size && price>=0){
+
+      packs.push({
+        size,
+        price
+      });
+
+    }
+
+  });
+
+  if(packs.length===0){
+
+    alert("Add at least one pack size and price.");
+    return;
+
+  }
+
+  if(id){
+
+    const product=
+      products.find(p=>p.id===id);
+
+    product.name=name;
+    product.category=category;
+    product.description=description;
+    product.packs=packs;
+    product.image=
+      editingPhoto || placeholder(name);
+
+  }else{
+
+    products.push({
+
+      id:Date.now(),
+
+      name,
+
+      category,
+
+      image:
+        editingPhoto || placeholder(name),
+
+      packs,
+
+      description
+
+    });
+
+  }
 
   saveAll();
 
-  renderAdminCategories();
+  renderProducts();
+  renderAdminProducts();
+  updateStats();
 
-  renderCategories();
+  closeProductEditor();
+
+  alert("Product saved successfully.");
 
 }
 
+
+/* =====================================================
+   ADMIN CATEGORIES
+===================================================== */
 
 function renderAdminCategories(){
 
   const box=
-  document.getElementById(
-    "adminCategories"
-  );
-
-  box.innerHTML="";
-
-  categories.forEach(
-    category=>{
-
-      const row=
-      document.createElement("div");
-
-      row.className=
-      "category-row";
-
-      const count=
-      products.filter(
-        p=>p.category===category
-      ).length;
-
-      row.innerHTML=`
-
-        <div>
-
-          <strong>
-            ${escapeHtml(category)}
-          </strong>
-
-          <div class="small">
-            ${count} product(s)
-          </div>
-
-        </div>
-
-        <button
-          class="btn btn-danger"
-          onclick="removeCategory('${escapeAttr(category)}')"
-        >
-          🗑 Remove
-        </button>
-
-      `;
-
-      box.appendChild(row);
-
-    }
-  );
-
-}
-
-
-function removeCategory(category){
-
-  const used=
-  products.some(
-    p=>p.category===category
-  );
-
-  if(used){
-
-    alert(
-      "This category contains products. Move or remove those products first."
+    document.getElementById(
+      "adminCategoriesList"
     );
 
-    return;
-
-  }
-
-  if(!confirm(
-    "Remove category "+category+"?"
-  ))return;
-
-  categories=
-  categories.filter(
-    c=>c!==category
-  );
-
-  saveAll();
-
-  renderAdminCategories();
-
-  renderCategories();
-
-}
-
-
-/* =====================================================
-   ADMIN ORDERS
-===================================================== */
-
-function renderAdminOrders(){
-
-  const box=
-  document.getElementById(
-    "adminOrders"
-  );
-
-  if(!box)return;
-
   box.innerHTML="";
 
-  if(orders.length===0){
+  categories.forEach(category=>{
 
-    box.innerHTML=
-    `<div class="empty">
-      No orders yet.
-    </div>`;
+    const row=
+      document.createElement("div");
 
-    return;
+    row.style.cssText=
+      "display:flex;justify-content:space-between;"+
+      "align-items:center;padding:12px 0;"+
+      "border-bottom:1px solid #eee";
 
-  }
+    row.innerHTML=`
 
-  orders.forEach(order=>{
-
-    const div=
-    document.createElement("div");
-
-    div.className=
-    "order-box";
-
-    div.innerHTML=`
-
-      <div style="display:flex;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap">
-
-        <strong>
-          Order #${order.id}
-        </strong>
-
-        <span class="order-status">
-          ${escapeHtml(order.status)}
-        </span>
-
-      </div>
-
-      <p class="small">
-        ${escapeHtml(order.date)}
-      </p>
-
-      <p>
-        <strong>Name:</strong>
-        ${escapeHtml(order.name)}
-        <br>
-
-        <strong>Phone:</strong>
-        ${escapeHtml(order.phone)}
-        <br>
-
-        <strong>Address:</strong>
-        ${escapeHtml(order.address)}
-      </p>
-
-      <h4>
-        Items
-      </h4>
-
-      <ul>
-        ${order.items.map(item=>
-          `<li>
-            ${escapeHtml(item.name)}
-            – ${escapeHtml(item.size)}
-            × ${item.qty}
-            = ₹${(
-              item.price*item.qty
-            ).toLocaleString("en-IN")}
-          </li>`
-        ).join("")}
-      </ul>
-
-      <strong>
-        Total: ₹${order.total.toLocaleString("en-IN")}
-      </strong>
-
-      <br><br>
-
-      <button
-        class="btn btn-light"
-        onclick="markOrderCompleted(${order.id})"
-      >
-        ✓ Mark Completed
-      </button>
+      <strong>${escapeHtml(category)}</strong>
 
       <button
         class="btn btn-danger"
-        onclick="deleteOrder(${order.id})"
+        onclick="removeCategory('${escapeAttr(category)}')"
       >
-        🗑 Delete
+        🗑️ Remove
       </button>
 
     `;
 
-    box.appendChild(div);
+    box.appendChild(row);
 
   });
 
 }
 
 
-function markOrderCompleted(id){
+/* =====================================================
+   STATS
+===================================================== */
 
-  const order=
-  orders.find(
-    o=>o.id===id
-  );
+function updateStats(){
 
-  if(!order)return;
+  document.getElementById("statProducts")
+    .textContent=products.length;
 
-  order.status="Completed";
+  document.getElementById("statCategories")
+    .textContent=categories.length;
 
-  saveAll();
-
-  renderAdminOrders();
-
-}
-
-
-function deleteOrder(id){
-
-  orders=
-  orders.filter(
-    o=>o.id!==id
-  );
-
-  saveAll();
-
-  renderAdminOrders();
-
-}
-
-
-function clearOrders(){
-
-  if(!confirm(
-    "Delete all orders?"
-  ))return;
-
-  orders=[];
-
-  saveAll();
-
-  renderAdminOrders();
+  document.getElementById("statCart")
+    .textContent=
+      cart.reduce((sum,item)=>sum+item.qty,0);
 
 }
 
 
 /* =====================================================
-   SECURITY / DISPLAY HELPERS
+   HELPERS
 ===================================================== */
+
+function scrollToProducts(){
+
+  document
+    .getElementById("productsSection")
+    .scrollIntoView({
+      behavior:"smooth"
+    });
+
+}
+
+function scrollToCart(){
+
+  document
+    .getElementById("cartSection")
+    .scrollIntoView({
+      behavior:"smooth"
+    });
+
+}
 
 function escapeHtml(value){
 
-  return String(value ?? "")
-  .replace(/&/g,"&amp;")
-  .replace(/</g,"&lt;")
-  .replace(/>/g,"&gt;")
-  .replace(/"/g,"&quot;")
-  .replace(/'/g,"&#039;");
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
 }
 
-
 function escapeAttr(value){
 
-  return escapeHtml(value);
+  return String(value)
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
 }
 
 
 /* =====================================================
-   INITIAL LOAD
+   INITIALIZE
 ===================================================== */
 
-renderStore();
+applyLogo();
+applyWebsite();
 
 renderCategories();
-
 renderProducts();
-
 renderCart();
 
 </script>
 
 </body>
 </html>
-```
