@@ -5,19 +5,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Jayvik – The Complete Health Store</title>
-
-<meta name="description"
-content="Jayvik – Natural, organic and healthy food products from trusted sources.">
+<title>Jayvik - The Complete Health Store</title>
 
 <style>
+
 :root{
   --green:#2b8a3e;
-  --dark:#18351f;
-  --light:#f6fbf6;
-  --border:#e2e8e2;
-  --text:#222;
-  --muted:#666;
+  --dark:#183b22;
+  --light:#f4faf4;
+  --border:#e3e8e3;
+  --red:#c62828;
+  --orange:#ef8b00;
 }
 
 *{
@@ -27,22 +25,22 @@ content="Jayvik – Natural, organic and healthy food products from trusted sour
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
-  color:var(--text);
-  background:#fff;
+  background:#f7f9f7;
+  color:#222;
 }
 
 header{
-  background:linear-gradient(135deg,#f4fff4,#ffffff);
+  background:white;
   border-bottom:1px solid var(--border);
-  padding:14px 18px;
   position:sticky;
   top:0;
-  z-index:20;
+  z-index:100;
 }
 
 .header-inner{
   max-width:1200px;
   margin:auto;
+  padding:14px 18px;
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -58,51 +56,53 @@ header{
 .logo{
   width:52px;
   height:52px;
-  border-radius:12px;
   background:var(--green);
-  color:#fff;
+  color:white;
+  border-radius:12px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:25px;
+  font-size:27px;
   font-weight:bold;
 }
 
-.brand-title{
+.brand-name{
   font-size:21px;
   font-weight:bold;
   color:var(--dark);
 }
 
-.brand-subtitle{
-  color:var(--muted);
+.brand-sub{
   font-size:12px;
+  color:#777;
 }
 
-nav{
+.header-buttons{
   display:flex;
-  gap:18px;
+  gap:8px;
 }
 
-nav a{
-  text-decoration:none;
-  color:#444;
-  font-size:14px;
-}
-
-.cart-button{
-  border:0;
-  background:var(--green);
-  color:#fff;
-  padding:10px 14px;
-  border-radius:9px;
-  font-weight:bold;
+button{
   cursor:pointer;
 }
 
+.top-btn{
+  border:1px solid var(--green);
+  background:white;
+  color:var(--green);
+  padding:9px 13px;
+  border-radius:8px;
+  font-weight:bold;
+}
+
+.top-btn.cart{
+  background:var(--green);
+  color:white;
+}
+
 .hero{
-  background:var(--light);
-  padding:38px 18px;
+  background:linear-gradient(135deg,#effbea,#ffffff);
+  padding:35px 18px;
 }
 
 .hero-inner{
@@ -111,1658 +111,1888 @@ nav a{
 }
 
 .hero h1{
-  margin:0 0 10px;
-  font-size:34px;
+  margin:0;
   color:var(--dark);
+  font-size:34px;
 }
 
 .hero p{
-  margin:0;
   max-width:700px;
-  color:var(--muted);
+  color:#666;
+  font-size:16px;
 }
 
-.section{
+.categories{
+  background:white;
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:81px;
+  z-index:90;
+  overflow-x:auto;
+}
+
+.category-inner{
   max-width:1200px;
   margin:auto;
-  padding:28px 18px;
+  display:flex;
+  gap:8px;
+  padding:12px 18px;
+  white-space:nowrap;
+}
+
+.category-btn{
+  border:1px solid #d7dfd7;
+  background:white;
+  color:#555;
+  padding:9px 15px;
+  border-radius:22px;
+  font-size:14px;
+}
+
+.category-btn.active{
+  background:var(--green);
+  border-color:var(--green);
+  color:white;
+}
+
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:25px 18px;
 }
 
 .section-title{
-  margin:0 0 18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
+}
+
+.section-title h2{
+  margin:0;
   color:var(--dark);
 }
 
 .products{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
   gap:18px;
 }
 
 .card{
+  background:white;
   border:1px solid var(--border);
   border-radius:14px;
-  background:#fff;
   overflow:hidden;
-  box-shadow:0 2px 8px rgba(0,0,0,.04);
+  box-shadow:0 2px 7px rgba(0,0,0,.04);
 }
 
 .product-image{
   width:100%;
   height:190px;
   object-fit:cover;
-  background:#f4f4f4;
+  background:#edf4ed;
   display:block;
 }
 
-.card-content{
+.image-placeholder{
+  height:190px;
+  background:#edf4ed;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#789078;
+  font-size:15px;
+}
+
+.card-body{
   padding:15px;
 }
 
 .card h3{
-  margin:0 0 6px;
-  font-size:18px;
+  margin:0 0 5px;
+  color:#222;
 }
 
-.description{
-  font-size:13px;
-  color:var(--muted);
-  min-height:38px;
-  margin-bottom:12px;
+.category-label{
+  font-size:12px;
+  color:var(--green);
+  margin-bottom:10px;
 }
 
-.option-label{
-  font-size:13px;
-  font-weight:bold;
-  margin-bottom:5px;
-}
-
-.size-select{
-  width:100%;
-  padding:10px;
-  border:1px solid #ccc;
+.pack-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border:1px solid #e0e5e0;
+  padding:9px;
   border-radius:8px;
-  background:white;
+  margin-top:7px;
+  gap:8px;
+}
+
+.pack-info{
   font-size:14px;
 }
 
-.product-price{
+.pack-price{
+  font-weight:bold;
   color:var(--green);
-  font-size:18px;
-  font-weight:bold;
-  margin:10px 0;
 }
 
-.quantity-row{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin:8px 0 12px;
-}
-
-.qty-btn{
-  width:34px;
-  height:34px;
-  border:1px solid #ccc;
-  background:#fff;
-  border-radius:7px;
-  font-size:18px;
-  cursor:pointer;
-}
-
-.qty-value{
-  min-width:30px;
-  text-align:center;
-  font-weight:bold;
-}
-
-.add-button{
-  width:100%;
-  border:0;
+.add-btn{
   background:var(--green);
-  color:#fff;
-  padding:11px;
-  border-radius:8px;
+  color:white;
+  border:0;
+  padding:7px 10px;
+  border-radius:7px;
   font-weight:bold;
-  cursor:pointer;
 }
-
-.add-button:hover,
-.cart-button:hover{
-  opacity:.9;
-}
-
-.about{
-  background:#fafafa;
-  border-top:1px solid var(--border);
-  border-bottom:1px solid var(--border);
-}
-
-.contact-box{
-  line-height:1.7;
-  color:var(--muted);
-}
-
-footer{
-  padding:25px 18px;
-  background:#18351f;
-  color:#fff;
-  text-align:center;
-  font-size:13px;
-}
-
-/* CART */
 
 .cart-panel{
   position:fixed;
-  right:-430px;
+  right:0;
   top:0;
   width:min(430px,100%);
-  height:100%;
-  background:#fff;
-  z-index:100;
+  height:100vh;
+  background:white;
+  z-index:300;
   box-shadow:-5px 0 20px rgba(0,0,0,.15);
+  transform:translateX(100%);
   transition:.25s;
-  display:flex;
-  flex-direction:column;
+  overflow-y:auto;
 }
 
 .cart-panel.open{
-  right:0;
+  transform:translateX(0);
 }
 
-.cart-header{
-  padding:17px;
+.panel-header{
+  padding:18px;
   border-bottom:1px solid var(--border);
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
 
-.close-cart{
+.close-btn{
   border:0;
   background:#eee;
-  width:35px;
-  height:35px;
+  width:34px;
+  height:34px;
   border-radius:50%;
-  cursor:pointer;
-  font-size:18px;
 }
 
-.cart-items{
-  flex:1;
-  overflow:auto;
-  padding:15px;
+.cart-content{
+  padding:18px;
 }
 
 .cart-item{
-  border-bottom:1px solid var(--border);
+  border-bottom:1px solid #eee;
   padding:12px 0;
+}
+
+.cart-item-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
 }
 
 .cart-item-name{
   font-weight:bold;
 }
 
-.cart-item-details{
-  font-size:13px;
-  color:var(--muted);
-  margin-top:3px;
-}
-
-.cart-item-actions{
+.cart-controls{
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  margin-top:7px;
+  gap:8px;
+  margin-top:8px;
 }
 
-.remove{
+.qty-btn{
+  width:30px;
+  height:30px;
+  border:1px solid #ddd;
+  background:white;
+  border-radius:6px;
+}
+
+.remove-btn{
   border:0;
-  background:none;
-  color:#c62828;
-  cursor:pointer;
-}
-
-.cart-footer{
-  border-top:1px solid var(--border);
-  padding:15px;
+  background:#fff0f0;
+  color:var(--red);
+  padding:5px 8px;
+  border-radius:5px;
 }
 
 .total{
+  font-size:20px;
+  font-weight:bold;
   display:flex;
   justify-content:space-between;
-  font-size:19px;
-  font-weight:bold;
-  margin-bottom:12px;
+  padding:15px 0;
 }
 
-.customer-input{
+.customer-form{
+  margin-top:15px;
+}
+
+.customer-form label{
+  display:block;
+  margin:10px 0 5px;
+  font-size:14px;
+  font-weight:bold;
+}
+
+.customer-form input,
+.customer-form textarea{
   width:100%;
   padding:11px;
-  border:1px solid #ccc;
+  border:1px solid #ddd;
   border-radius:8px;
-  margin-bottom:9px;
   font-size:14px;
 }
 
-.whatsapp-button{
-  width:100%;
-  padding:13px;
-  border:0;
-  border-radius:9px;
-  background:#25D366;
-  color:#fff;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer;
+.customer-form textarea{
+  min-height:80px;
+  resize:vertical;
 }
 
-.empty-cart{
+.whatsapp-btn{
+  width:100%;
+  border:0;
+  background:#25D366;
+  color:white;
+  padding:13px;
+  border-radius:9px;
+  font-size:16px;
+  font-weight:bold;
+  margin-top:15px;
+}
+
+.empty{
   text-align:center;
-  color:var(--muted);
+  color:#777;
   padding:35px 10px;
 }
 
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.35);
-  z-index:90;
+.admin{
   display:none;
+  background:#fff;
+  padding:25px 18px;
+  border-top:4px solid var(--green);
 }
 
-.overlay.show{
+.admin.show{
   display:block;
+}
+
+.admin-inner{
+  max-width:1200px;
+  margin:auto;
+}
+
+.admin-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+.admin-box{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:18px;
+}
+
+.admin-box h3{
+  margin-top:0;
+}
+
+.admin input,
+.admin select{
+  width:100%;
+  padding:10px;
+  margin:5px 0 10px;
+  border:1px solid #ddd;
+  border-radius:7px;
+}
+
+.admin-btn{
+  padding:9px 13px;
+  border:0;
+  border-radius:7px;
+  background:var(--green);
+  color:white;
+  font-weight:bold;
+}
+
+.danger{
+  background:var(--red);
+}
+
+.admin-product{
+  border:1px solid #ddd;
+  padding:10px;
+  border-radius:8px;
+  margin-top:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+.admin-product small{
+  color:#777;
+}
+
+.photo-preview{
+  width:80px;
+  height:60px;
+  object-fit:cover;
+  border-radius:6px;
+  margin-top:5px;
+}
+
+footer{
+  margin-top:40px;
+  background:#17371f;
+  color:white;
+  padding:25px 18px;
+}
+
+.footer-inner{
+  max-width:1200px;
+  margin:auto;
+}
+
+.footer-small{
+  color:#cbd8ce;
+  font-size:13px;
 }
 
 @media(max-width:700px){
 
-  nav{
-    display:none;
+  .header-inner{
+    padding:10px;
+  }
+
+  .brand-name{
+    font-size:17px;
+  }
+
+  .logo{
+    width:45px;
+    height:45px;
   }
 
   .hero h1{
     font-size:27px;
   }
 
+  .admin-grid{
+    grid-template-columns:1fr;
+  }
+
   .products{
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:repeat(2,1fr);
     gap:10px;
   }
 
-  .product-image{
+  .product-image,
+  .image-placeholder{
     height:145px;
   }
 
-  .card-content{
-    padding:11px;
+  .card-body{
+    padding:10px;
   }
 
   .card h3{
-    font-size:16px;
+    font-size:15px;
   }
+
 }
 
 @media(max-width:430px){
 
   .products{
-    grid-template-columns:1fr;
+    grid-template-columns:1fr 1fr;
   }
 
-  .product-image{
-    height:190px;
+  .pack-row{
+    display:block;
   }
+
+  .pack-row .add-btn{
+    width:100%;
+    margin-top:6px;
+  }
+
 }
+
 </style>
 </head>
 
 <body>
 
 <header>
-  <div class="header-inner">
 
-    <div class="brand">
-      <div class="logo">J</div>
-      <div>
-        <div class="brand-title">Jayvik</div>
-        <div class="brand-subtitle">The Complete Health Store</div>
-      </div>
-    </div>
+<div class="header-inner">
 
-    <nav>
-      <a href="#products">Products</a>
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
-    </nav>
+<div class="brand">
 
-    <button class="cart-button" onclick="openCart()">
-      🛒 Cart (<span id="cartCount">0</span>)
-    </button>
+<div class="logo">J</div>
 
-  </div>
+<div>
+<div class="brand-name">Jayvik</div>
+<div class="brand-sub">The Complete Health Store</div>
+</div>
+
+</div>
+
+<div class="header-buttons">
+
+<button class="top-btn" onclick="toggleAdmin()">
+Admin
+</button>
+
+<button class="top-btn cart" onclick="openCart()">
+🛒 Cart <span id="cartCount">0</span>
+</button>
+
+</div>
+
+</div>
+
 </header>
 
 
 <section class="hero">
-  <div class="hero-inner">
-    <h1>Pure • Natural • Healthy</h1>
 
-    <p>
-      Natural and healthy products from trusted sources.
-      Select your products, choose the required size and send your order
-      directly to Jayvik on WhatsApp.
-    </p>
-  </div>
-</section>
+<div class="hero-inner">
 
+<h1>Pure • Natural • From the Farm</h1>
 
-<section id="products" class="section">
+<p>
+Shop natural, organic and healthy products from Jayvik –
+The Complete Health Store.
+</p>
 
-  <h2 class="section-title">Our Products</h2>
-
-  <div class="products">
-
-
-    <!-- GROUNDNUT OIL -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/groundnut-oil.jpg"
-        alt="Groundnut Oil"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Groundnut+Oil'"
-      >
-
-      <div class="card-content">
-
-        <h3>Groundnut Oil</h3>
-
-        <div class="description">
-          Traditional cold-pressed groundnut oil.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="groundnut-size"
-                onchange="updatePrice('groundnut')">
-
-          <option value="5 Litre" data-price="1500">5 Litre — ₹1,500</option>
-          <option value="1 Litre" data-price="310">1 Litre — ₹310</option>
-          <option value="500 ml" data-price="155">500 ml — ₹155</option>
-
-        </select>
-
-        <div class="product-price" id="groundnut-price">
-          ₹1,500
-        </div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('groundnut',-1)">−</button>
-          <span class="qty-value" id="groundnut-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('groundnut',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('groundnut','Groundnut Oil','groundnut-size','groundnut-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- MUSTARD OIL -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/mustard-oil.jpg"
-        alt="Mustard Oil"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Mustard+Oil'"
-      >
-
-      <div class="card-content">
-
-        <h3>Mustard Oil</h3>
-
-        <div class="description">
-          Natural cold-pressed mustard oil.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="mustard-size"
-                onchange="updatePrice('mustard')">
-
-          <option value="1 Litre" data-price="360">1 Litre — ₹360</option>
-          <option value="500 ml" data-price="190">500 ml — ₹190</option>
-
-        </select>
-
-        <div class="product-price" id="mustard-price">
-          ₹360
-        </div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('mustard',-1)">−</button>
-          <span class="qty-value" id="mustard-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('mustard',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('mustard','Mustard Oil','mustard-size','mustard-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- FLAXSEED OIL -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/flaxseed-oil.jpg"
-        alt="Flaxseed Oil"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Flaxseed+Oil'"
-      >
-
-      <div class="card-content">
-
-        <h3>Flaxseed Oil</h3>
-
-        <div class="description">
-          Natural flaxseed oil.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="flaxseed-size"
-                onchange="updatePrice('flaxseed')">
-
-          <option value="1 Litre" data-price="420">1 Litre — ₹420</option>
-          <option value="500 ml" data-price="220">500 ml — ₹220</option>
-
-        </select>
-
-        <div class="product-price" id="flaxseed-price">
-          ₹420
-        </div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('flaxseed',-1)">−</button>
-          <span class="qty-value" id="flaxseed-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('flaxseed',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('flaxseed','Flaxseed Oil','flaxseed-size','flaxseed-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- SESAME OIL -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/sesame-oil.jpg"
-        alt="Sesame Oil"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Sesame+Oil'"
-      >
-
-      <div class="card-content">
-
-        <h3>Sesame Oil (Til Tel)</h3>
-
-        <div class="description">
-          Natural sesame oil.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="sesame-size"
-                onchange="updatePrice('sesame')">
-
-          <option value="1 Litre" data-price="540">1 Litre — ₹540</option>
-          <option value="500 ml" data-price="280">500 ml — ₹280</option>
-
-        </select>
-
-        <div class="product-price" id="sesame-price">
-          ₹540
-        </div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('sesame',-1)">−</button>
-          <span class="qty-value" id="sesame-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('sesame',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('sesame','Sesame Oil (Til Tel)','sesame-size','sesame-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- COCONUT OIL -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/coconut-oil.jpg"
-        alt="Coconut Oil"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Coconut+Oil'"
-      >
-
-      <div class="card-content">
-
-        <h3>Coconut Oil</h3>
-
-        <div class="description">
-          Natural coconut oil.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="coconut-size"
-                onchange="updatePrice('coconut')">
-
-          <option value="1 Litre" data-price="600">1 Litre — ₹600</option>
-          <option value="500 ml" data-price="310">500 ml — ₹310</option>
-
-        </select>
-
-        <div class="product-price" id="coconut-price">
-          ₹600
-        </div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('coconut',-1)">−</button>
-          <span class="qty-value" id="coconut-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('coconut',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('coconut','Coconut Oil','coconut-size','coconut-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- SUNFLOWER OIL -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/sunflower-oil.jpg"
-        alt="Sunflower Oil"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Sunflower+Oil'"
-      >
-
-      <div class="card-content">
-
-        <h3>Sunflower Oil</h3>
-
-        <div class="description">
-          Natural sunflower oil.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="sunflower-size"
-                onchange="updatePrice('sunflower')">
-
-          <option value="1 Litre" data-price="370">1 Litre — ₹370</option>
-
-        </select>
-
-        <div class="product-price" id="sunflower-price">
-          ₹370
-        </div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('sunflower',-1)">−</button>
-          <span class="qty-value" id="sunflower-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('sunflower',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('sunflower','Sunflower Oil','sunflower-size','sunflower-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- KARDAI OIL -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/kardai-oil.jpg"
-        alt="Kardai Oil"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Kardai+Oil'"
-      >
-
-      <div class="card-content">
-
-        <h3>Kardai Oil</h3>
-
-        <div class="description">
-          Natural safflower oil.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="kardai-size"
-                onchange="updatePrice('kardai')">
-
-          <option value="1 Litre" data-price="370">1 Litre — ₹370</option>
-
-        </select>
-
-        <div class="product-price" id="kardai-price">
-          ₹370
-        </div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('kardai',-1)">−</button>
-          <span class="qty-value" id="kardai-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('kardai',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('kardai','Kardai Oil','kardai-size','kardai-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- BADAM OIL -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/badam-oil.jpg"
-        alt="Badam Oil"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Badam+Oil'"
-      >
-
-      <div class="card-content">
-
-        <h3>Badam Oil</h3>
-
-        <div class="description">
-          Natural almond oil.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="badam-size">
-
-          <option value="100 ml" data-price="270">100 ml — ₹270</option>
-
-        </select>
-
-        <div class="product-price">₹270</div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('badam',-1)">−</button>
-          <span class="qty-value" id="badam-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('badam',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('badam','Badam Oil','badam-size','badam-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- CASTOR OIL -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/castor-oil.jpg"
-        alt="Castor Oil"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Castor+Oil'"
-      >
-
-      <div class="card-content">
-
-        <h3>Castor Oil</h3>
-
-        <div class="description">
-          Natural castor oil.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="castor-size">
-
-          <option value="100 ml" data-price="60">100 ml — ₹60</option>
-
-        </select>
-
-        <div class="product-price">₹60</div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('castor',-1)">−</button>
-          <span class="qty-value" id="castor-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('castor',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('castor','Castor Oil','castor-size','castor-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- GIR COW GHEE -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/gir-cow-ghee.jpg"
-        alt="Gir Cow Ghee"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Gir+Cow+Ghee'"
-      >
-
-      <div class="card-content">
-
-        <h3>Gir Cow Ghee</h3>
-
-        <div class="description">
-          A2 Gir cow ghee made using traditional Bilona method.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="ghee-size"
-                onchange="updatePrice('ghee')">
-
-          <option value="1 Litre" data-price="1600">1 Litre — ₹1,600</option>
-          <option value="500 ml" data-price="850">500 ml — ₹850</option>
-
-        </select>
-
-        <div class="product-price" id="ghee-price">
-          ₹1,600
-        </div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('ghee',-1)">−</button>
-          <span class="qty-value" id="ghee-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('ghee',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('ghee','Gir Cow Ghee','ghee-size','ghee-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- JEERA -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/jeera.jpg"
-        alt="Organic Jeera"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Jeera'"
-      >
-
-      <div class="card-content">
-
-        <h3>Organic Jeera</h3>
-
-        <div class="description">
-          Naturally grown cumin seeds.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="jeera-size">
-
-          <option value="100 gm" data-price="60">100 gm — ₹60</option>
-
-        </select>
-
-        <div class="product-price">₹60</div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('jeera',-1)">−</button>
-          <span class="qty-value" id="jeera-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('jeera',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('jeera','Organic Jeera','jeera-size','jeera-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- RAJGIRA -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/rajgira.jpg"
-        alt="Rajgira"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Rajgira'"
-      >
-
-      <div class="card-content">
-
-        <h3>Rajgira</h3>
-
-        <div class="description">
-          Naturally grown unpolished Rajgira.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="rajgira-size">
-
-          <option value="1 kg" data-price="240">1 kg — ₹240</option>
-
-        </select>
-
-        <div class="product-price">₹240</div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('rajgira',-1)">−</button>
-          <span class="qty-value" id="rajgira-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('rajgira',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('rajgira','Rajgira','rajgira-size','rajgira-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- RAJGIRA FLOUR -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/rajgira-flour.jpg"
-        alt="Rajgira Flour"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Rajgira+Flour'"
-      >
-
-      <div class="card-content">
-
-        <h3>Rajgira Flour</h3>
-
-        <div class="description">
-          Naturally grown Rajgira flour.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="rajgiraflour-size">
-
-          <option value="1 kg" data-price="300">1 kg — ₹300</option>
-          <option value="500 gm" data-price="160">500 gm — ₹160</option>
-
-        </select>
-
-        <div class="product-price">₹300</div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('rajgiraflour',-1)">−</button>
-          <span class="qty-value" id="rajgiraflour-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('rajgiraflour',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('rajgiraflour','Rajgira Flour','rajgiraflour-size','rajgiraflour-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- BHAGAR -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/bhagar.jpg"
-        alt="Bhagar"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Bhagar'"
-      >
-
-      <div class="card-content">
-
-        <h3>Bhagar</h3>
-
-        <div class="description">
-          Naturally grown unpolished Bhagar.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="bhagar-size">
-
-          <option value="1 kg" data-price="200">1 kg — ₹200</option>
-          <option value="500 gm" data-price="110">500 gm — ₹110</option>
-
-        </select>
-
-        <div class="product-price">₹200</div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('bhagar',-1)">−</button>
-          <span class="qty-value" id="bhagar-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('bhagar',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('bhagar','Bhagar','bhagar-size','bhagar-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- VARAI -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/varai.jpg"
-        alt="Varai"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Varai'"
-      >
-
-      <div class="card-content">
-
-        <h3>Varai / Little Millet</h3>
-
-        <div class="description">
-          Naturally grown unpolished millet.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="varai-size">
-
-          <option value="1 kg" data-price="220">1 kg — ₹220</option>
-          <option value="500 gm" data-price="120">500 gm — ₹120</option>
-
-        </select>
-
-        <div class="product-price">₹220</div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('varai',-1)">−</button>
-          <span class="qty-value" id="varai-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('varai',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('varai','Varai / Little Millet','varai-size','varai-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- JOWAR FLAKES -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/jowar-flakes.jpg"
-        alt="Jowar Flakes"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Jowar+Flakes'"
-      >
-
-      <div class="card-content">
-
-        <h3>Jowar Flakes</h3>
-
-        <div class="description">
-          Natural millet flakes.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="jowarflakes-size">
-
-          <option value="1 kg" data-price="160">1 kg — ₹160</option>
-          <option value="500 gm" data-price="90">500 gm — ₹90</option>
-
-        </select>
-
-        <div class="product-price">₹160</div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('jowarflakes',-1)">−</button>
-          <span class="qty-value" id="jowarflakes-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('jowarflakes',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('jowarflakes','Jowar Flakes','jowarflakes-size','jowarflakes-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- RAGI FLAKES -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/ragi-flakes.jpg"
-        alt="Ragi Flakes"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Ragi+Flakes'"
-      >
-
-      <div class="card-content">
-
-        <h3>Ragi Flakes</h3>
-
-        <div class="description">
-          Natural millet flakes.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="ragiflakes-size">
-
-          <option value="1 kg" data-price="200">1 kg — ₹200</option>
-          <option value="500 gm" data-price="110">500 gm — ₹110</option>
-
-        </select>
-
-        <div class="product-price">₹200</div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('ragiflakes',-1)">−</button>
-          <span class="qty-value" id="ragiflakes-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('ragiflakes',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('ragiflakes','Ragi Flakes','ragiflakes-size','ragiflakes-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-
-    <!-- MISHRI -->
-
-    <div class="card">
-
-      <img
-        class="product-image"
-        src="images/mishri.jpg"
-        alt="Mishri"
-        onerror="this.src='https://via.placeholder.com/600x400?text=Mishri'"
-      >
-
-      <div class="card-content">
-
-        <h3>Mishri / Rock Sugar</h3>
-
-        <div class="description">
-          Traditional natural rock sugar.
-        </div>
-
-        <div class="option-label">Select Size</div>
-
-        <select class="size-select" id="mishri-size">
-
-          <option value="100 gm" data-price="40">100 gm — ₹40</option>
-
-        </select>
-
-        <div class="product-price">₹40</div>
-
-        <div class="quantity-row">
-          <button class="qty-btn" onclick="changeQty('mishri',-1)">−</button>
-          <span class="qty-value" id="mishri-qty">1</span>
-          <button class="qty-btn" onclick="changeQty('mishri',1)">+</button>
-        </div>
-
-        <button class="add-button"
-          onclick="addToCart('mishri','Mishri / Rock Sugar','mishri-size','mishri-qty')">
-          Add to Cart
-        </button>
-
-      </div>
-    </div>
-
-  </div>
-</section>
-
-
-<section id="about" class="about">
-  <div class="section">
-
-    <h2>About Jayvik</h2>
-
-    <p>
-      Jayvik – The Complete Health Store brings natural and healthy
-      food products closer to your home. We focus on quality,
-      natural products and fair pricing.
-    </p>
-
-  </div>
-</section>
-
-
-<section id="contact" class="section">
-
-  <h2>Contact</h2>
-
-  <div class="contact-box">
-
-    <strong>Jayvik – The Complete Health Store</strong><br>
-
-    Plot no 34, 35, Kohale Layout,<br>
-    Godhani Road, Zingabai Takali,<br>
-    Nagpur – 440030<br><br>
-
-    📞 <a href="tel:+919356959561">+91 9356959561</a>
-
-  </div>
+</div>
 
 </section>
 
 
-<footer>
-  © Jayvik – The Complete Health Store
-</footer>
+<!-- CATEGORY TABS -->
 
+<div class="categories">
 
-<!-- CART -->
-
-<div class="overlay" id="overlay" onclick="closeCart()"></div>
-
-<div class="cart-panel" id="cartPanel">
-
-  <div class="cart-header">
-
-    <strong>🛒 Your Order</strong>
-
-    <button class="close-cart" onclick="closeCart()">×</button>
-
-  </div>
-
-  <div class="cart-items" id="cartItems">
-
-    <div class="empty-cart">
-      Your cart is empty.
-    </div>
-
-  </div>
-
-  <div class="cart-footer">
-
-    <div class="total">
-      <span>Total</span>
-      <span>₹<span id="cartTotal">0</span></span>
-    </div>
-
-    <input
-      id="customerName"
-      class="customer-input"
-      type="text"
-      placeholder="Your Name"
-    >
-
-    <input
-      id="customerAddress"
-      class="customer-input"
-      type="text"
-      placeholder="Delivery Address"
-    >
-
-    <button class="whatsapp-button" onclick="sendWhatsAppOrder()">
-      📲 Send Order on WhatsApp
-    </button>
-
-  </div>
+<div class="category-inner" id="categoryTabs"></div>
 
 </div>
 
 
+<!-- PRODUCTS -->
+
+<main class="container">
+
+<div class="section-title">
+
+<h2 id="categoryTitle">All Products</h2>
+
+</div>
+
+<div class="products" id="products"></div>
+
+</main>
+
+
+<!-- ADMIN -->
+
+<section class="admin" id="adminPanel">
+
+<div class="admin-inner">
+
+<div class="section-title">
+
+<h2>Admin Product Management</h2>
+
+<button class="top-btn" onclick="toggleAdmin()">
+Close
+</button>
+
+</div>
+
+
+<div class="admin-grid">
+
+
+<!-- ADD PRODUCT -->
+
+<div class="admin-box">
+
+<h3>Add Product</h3>
+
+<label>Product Name</label>
+
+<input id="productName"
+placeholder="Example: Groundnut Oil">
+
+
+<label>Category</label>
+
+<select id="productCategory"></select>
+
+
+<label>Photo</label>
+
+<input
+type="file"
+id="productPhoto"
+accept="image/*"
+>
+
+
+<label>Pack Size</label>
+
+<input
+id="packSize"
+placeholder="Example: 1 L"
+>
+
+
+<label>Price</label>
+
+<input
+id="packPrice"
+type="number"
+placeholder="Example: 310"
+>
+
+
+<button class="admin-btn" onclick="addProduct()">
+Add Product
+</button>
+
+</div>
+
+
+<!-- ADD PACK -->
+
+<div class="admin-box">
+
+<h3>Add Pack Size to Existing Product</h3>
+
+<label>Select Product</label>
+
+<select id="existingProduct"></select>
+
+
+<label>Pack Size</label>
+
+<input
+id="newPackSize"
+placeholder="Example: 500 ml"
+>
+
+
+<label>Price</label>
+
+<input
+id="newPackPrice"
+type="number"
+placeholder="Example: 190"
+>
+
+
+<button class="admin-btn" onclick="addPack()">
+Add Pack Size
+</button>
+
+</div>
+
+
+<!-- CATEGORY MANAGEMENT -->
+
+<div class="admin-box">
+
+<h3>Category Management</h3>
+
+<label>New Category</label>
+
+<input
+id="newCategory"
+placeholder="Example: Organic Snacks"
+>
+
+<button class="admin-btn" onclick="addCategory()">
+Add Category
+</button>
+
+<br><br>
+
+<div id="adminCategories"></div>
+
+</div>
+
+
+<!-- PRODUCT MANAGEMENT -->
+
+<div class="admin-box">
+
+<h3>Products</h3>
+
+<div id="adminProducts"></div>
+
+</div>
+
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- CART -->
+
+<div class="cart-panel" id="cartPanel">
+
+<div class="panel-header">
+
+<strong>🛒 Your Order</strong>
+
+<button class="close-btn" onclick="closeCart()">×</button>
+
+</div>
+
+<div class="cart-content">
+
+<div id="cartItems"></div>
+
+<div class="total">
+
+<span>Total</span>
+
+<span id="cartTotal">₹0</span>
+
+</div>
+
+
+<div class="customer-form">
+
+<label>Name *</label>
+
+<input
+id="customerName"
+placeholder="Your name"
+>
+
+
+<label>Address *</label>
+
+<textarea
+id="customerAddress"
+placeholder="Delivery address"
+></textarea>
+
+
+<label>Contact Number *</label>
+
+<input
+id="customerPhone"
+type="tel"
+placeholder="10 digit mobile number"
+>
+
+
+<button class="whatsapp-btn" onclick="sendWhatsApp()">
+
+📱 Send Order on WhatsApp
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<footer>
+
+<div class="footer-inner">
+
+<strong>Jayvik - The Complete Health Store</strong>
+
+<p class="footer-small">
+Plot no 34, 35, Kohale Layout, Godhani Road,
+Zingabai Takali, Nagpur 440030
+</p>
+
+<p class="footer-small">
+Call / WhatsApp: +91 9356959561
+</p>
+
+</div>
+
+</footer>
+
+
 <script>
 
-let cart = [];
+/* =========================================================
+   DEFAULT PRODUCT DATA
+   ========================================================= */
 
-const quantities = {};
+const defaultCategories = [
+
+"Cold Pressed Oils",
+"Ghee",
+"Millet Corner",
+"Spices",
+"Jaggery",
+"Honey",
+"Dals/Lentils",
+"Dryfruit",
+"Vegetables",
+"Fruits",
+"Others"
+
+];
 
 
-/* CHANGE QUANTITY */
+const defaultProducts = [
 
-function changeQty(id,change){
+{
+ id:1,
+ name:"Groundnut Oil",
+ category:"Cold Pressed Oils",
+ photo:"",
+ packs:[
+  {size:"5 L",price:1500},
+  {size:"1 L",price:310},
+  {size:"500 ml",price:160}
+ ]
+},
 
-  if(!quantities[id]){
-    quantities[id] = 1;
-  }
+{
+ id:2,
+ name:"Mustard Oil",
+ category:"Cold Pressed Oils",
+ photo:"",
+ packs:[
+  {size:"1 L",price:360},
+  {size:"500 ml",price:190}
+ ]
+},
 
-  quantities[id] += change;
+{
+ id:3,
+ name:"Flaxseed Oil",
+ category:"Cold Pressed Oils",
+ photo:"",
+ packs:[
+  {size:"1 L",price:420},
+  {size:"500 ml",price:220}
+ ]
+},
 
-  if(quantities[id] < 1){
-    quantities[id] = 1;
-  }
+{
+ id:4,
+ name:"Sesame Oil",
+ category:"Cold Pressed Oils",
+ photo:"",
+ packs:[
+  {size:"1 L",price:540},
+  {size:"500 ml",price:280}
+ ]
+},
 
-  const element = document.getElementById(id + "-qty");
+{
+ id:5,
+ name:"Coconut Oil",
+ category:"Cold Pressed Oils",
+ photo:"",
+ packs:[
+  {size:"1 L",price:600},
+  {size:"500 ml",price:310}
+ ]
+},
 
-  if(element){
-    element.textContent = quantities[id];
-  }
+{
+ id:6,
+ name:"Sunflower Oil",
+ category:"Cold Pressed Oils",
+ photo:"",
+ packs:[
+  {size:"1 L",price:370}
+ ]
+},
+
+{
+ id:7,
+ name:"Kardai Oil",
+ category:"Cold Pressed Oils",
+ photo:"",
+ packs:[
+  {size:"1 L",price:370}
+ ]
+},
+
+{
+ id:8,
+ name:"Gir Cow Ghee",
+ category:"Ghee",
+ photo:"",
+ packs:[
+  {size:"1 L",price:1600},
+  {size:"500 ml",price:850}
+ ]
+},
+
+{
+ id:9,
+ name:"Jeera",
+ category:"Spices",
+ photo:"",
+ packs:[
+  {size:"100 g",price:60}
+ ]
+},
+
+{
+ id:10,
+ name:"Rajgira",
+ category:"Millet Corner",
+ photo:"",
+ packs:[
+  {size:"1 kg",price:240}
+ ]
+},
+
+{
+ id:11,
+ name:"Rajgira Flour",
+ category:"Millet Corner",
+ photo:"",
+ packs:[
+  {size:"1 kg",price:300},
+  {size:"500 g",price:160}
+ ]
+},
+
+{
+ id:12,
+ name:"Bhagar",
+ category:"Millet Corner",
+ photo:"",
+ packs:[
+  {size:"1 kg",price:200},
+  {size:"500 g",price:110}
+ ]
+},
+
+{
+ id:13,
+ name:"Varai / Kutki / Little Millet",
+ category:"Millet Corner",
+ photo:"",
+ packs:[
+  {size:"1 kg",price:220},
+  {size:"500 g",price:120}
+ ]
+},
+
+{
+ id:14,
+ name:"Jowar Flakes",
+ category:"Millet Corner",
+ photo:"",
+ packs:[
+  {size:"1 kg",price:160},
+  {size:"500 g",price:90}
+ ]
+},
+
+{
+ id:15,
+ name:"Ragi Flakes",
+ category:"Millet Corner",
+ photo:"",
+ packs:[
+  {size:"1 kg",price:200},
+  {size:"500 g",price:110}
+ ]
+},
+
+{
+ id:16,
+ name:"Mishri",
+ category:"Others",
+ photo:"",
+ packs:[
+  {size:"100 g",price:40}
+ ]
+},
+
+{
+ id:17,
+ name:"Badam Oil",
+ category:"Others",
+ photo:"",
+ packs:[
+  {size:"100 ml",price:270}
+ ]
+},
+
+{
+ id:18,
+ name:"Castor Oil",
+ category:"Others",
+ photo:"",
+ packs:[
+  {size:"100 ml",price:60}
+ ]
+}
+
+];
+
+
+/* =========================================================
+   LOCAL STORAGE
+   ========================================================= */
+
+let categories =
+JSON.parse(localStorage.getItem("jayvik_categories"))
+|| defaultCategories;
+
+let products =
+JSON.parse(localStorage.getItem("jayvik_products"))
+|| defaultProducts;
+
+let cart =
+JSON.parse(localStorage.getItem("jayvik_cart"))
+|| [];
+
+let activeCategory = "All";
+
+
+function saveData(){
+
+ localStorage.setItem(
+  "jayvik_categories",
+  JSON.stringify(categories)
+ );
+
+ localStorage.setItem(
+  "jayvik_products",
+  JSON.stringify(products)
+ );
+
+ localStorage.setItem(
+  "jayvik_cart",
+  JSON.stringify(cart)
+ );
+
 }
 
 
-/* UPDATE PRICE */
+/* =========================================================
+   CATEGORY TABS
+   ========================================================= */
 
-function updatePrice(id){
+function renderCategories(){
 
-  const select = document.getElementById(id + "-size");
+ const container =
+ document.getElementById("categoryTabs");
 
-  if(!select) return;
+ container.innerHTML="";
 
-  const option = select.options[select.selectedIndex];
+ const all =
+ document.createElement("button");
 
-  const price = option.getAttribute("data-price");
+ all.className =
+ "category-btn " +
+ (activeCategory==="All" ? "active":"");
 
-  const priceElement = document.getElementById(id + "-price");
+ all.textContent="All Products";
 
-  if(priceElement){
-    priceElement.textContent =
-      "₹" + Number(price).toLocaleString("en-IN");
-  }
+ all.onclick=()=>{
+  activeCategory="All";
+  renderCategories();
+  renderProducts();
+ };
+
+ container.appendChild(all);
+
+
+ categories.forEach(category=>{
+
+  const btn =
+  document.createElement("button");
+
+  btn.className =
+  "category-btn " +
+  (activeCategory===category ? "active":"");
+
+  btn.textContent=category;
+
+  btn.onclick=()=>{
+
+   activeCategory=category;
+
+   renderCategories();
+   renderProducts();
+
+  };
+
+  container.appendChild(btn);
+
+ });
+
 }
 
 
-/* ADD TO CART */
+/* =========================================================
+   PRODUCTS
+   ========================================================= */
 
-function addToCart(id,name,sizeId,qtyId){
+function renderProducts(){
 
-  const select = document.getElementById(sizeId);
+ const container =
+ document.getElementById("products");
 
-  const option = select.options[select.selectedIndex];
+ container.innerHTML="";
 
-  const size = option.value;
+ const list =
+ activeCategory==="All"
+ ? products
+ : products.filter(
+   p=>p.category===activeCategory
+ );
 
-  const price = Number(option.getAttribute("data-price"));
 
-  const quantity =
-    quantities[id] || 1;
+ document.getElementById("categoryTitle")
+ .textContent =
+ activeCategory==="All"
+ ? "All Products"
+ : activeCategory;
 
-  const existing =
-    cart.find(item =>
-      item.id === id &&
-      item.size === size
-    );
 
-  if(existing){
+ if(list.length===0){
 
-    existing.quantity += quantity;
+  container.innerHTML=
+  `<div class="empty">
+   No products available in this category.
+  </div>`;
+
+  return;
+
+ }
+
+
+ list.forEach(product=>{
+
+  const card =
+  document.createElement("div");
+
+  card.className="card";
+
+
+  let imageHTML;
+
+  if(product.photo){
+
+   imageHTML=
+   `<img class="product-image"
+   src="${product.photo}"
+   alt="${product.name}">`;
 
   }else{
 
-    cart.push({
-      id:id,
-      name:name,
-      size:size,
-      price:price,
-      quantity:quantity
-    });
+   imageHTML=
+   `<div class="image-placeholder">
+   📷 Product Photo
+   </div>`;
 
   }
 
-  quantities[id] = 1;
 
-  const qtyElement =
-    document.getElementById(qtyId);
+  let packsHTML="";
 
-  if(qtyElement){
-    qtyElement.textContent = "1";
-  }
+  product.packs.forEach(
+   (pack,index)=>{
 
-  updateCart();
+    packsHTML+=`
 
-  openCart();
-}
+    <div class="pack-row">
 
+      <div class="pack-info">
 
-/* UPDATE CART */
+        <div>${pack.size}</div>
 
-function updateCart(){
-
-  const container =
-    document.getElementById("cartItems");
-
-  const count =
-    document.getElementById("cartCount");
-
-  const totalElement =
-    document.getElementById("cartTotal");
-
-  if(cart.length === 0){
-
-    container.innerHTML =
-      '<div class="empty-cart">Your cart is empty.</div>';
-
-    count.textContent = "0";
-
-    totalElement.textContent = "0";
-
-    return;
-  }
-
-
-  let total = 0;
-  let countItems = 0;
-
-  let html = "";
-
-
-  cart.forEach((item,index)=>{
-
-    const itemTotal =
-      item.price * item.quantity;
-
-    total += itemTotal;
-
-    countItems += item.quantity;
-
-
-    html += `
-
-      <div class="cart-item">
-
-        <div class="cart-item-name">
-          ${item.name}
-        </div>
-
-        <div class="cart-item-details">
-          ${item.size} × ${item.quantity}
-          — ₹${itemTotal.toLocaleString("en-IN")}
-        </div>
-
-        <div class="cart-item-actions">
-
-          <div>
-
-            <button class="qty-btn"
-              onclick="cartQty(${index},-1)">
-              −
-            </button>
-
-            <strong style="margin:0 8px">
-              ${item.quantity}
-            </strong>
-
-            <button class="qty-btn"
-              onclick="cartQty(${index},1)">
-              +
-            </button>
-
-          </div>
-
-          <button class="remove"
-            onclick="removeCart(${index})">
-            Remove
-          </button>
-
+        <div class="pack-price">
+        ₹${pack.price}
         </div>
 
       </div>
 
+      <button
+      class="add-btn"
+      onclick="addToCart(${product.id},${index})">
+
+      Add
+
+      </button>
+
+    </div>
+
     `;
+
+   }
+  );
+
+
+  card.innerHTML=`
+
+  ${imageHTML}
+
+  <div class="card-body">
+
+   <h3>${product.name}</h3>
+
+   <div class="category-label">
+   ${product.category}
+   </div>
+
+   ${packsHTML}
+
+  </div>
+
+  `;
+
+
+  container.appendChild(card);
+
+ });
+
+}
+
+
+/* =========================================================
+   CART
+   ========================================================= */
+
+function addToCart(productId,packIndex){
+
+ const product =
+ products.find(p=>p.id===productId);
+
+ const pack =
+ product.packs[packIndex];
+
+
+ const existing =
+ cart.find(
+  item =>
+  item.productId===productId &&
+  item.packIndex===packIndex
+ );
+
+
+ if(existing){
+
+  existing.qty++;
+
+ }else{
+
+  cart.push({
+
+   productId,
+   packIndex,
+   qty:1
 
   });
 
+ }
 
-  container.innerHTML = html;
 
-  count.textContent = countItems;
+ saveData();
 
-  totalElement.textContent =
-    total.toLocaleString("en-IN");
+ updateCart();
+
+ openCart();
+
 }
 
 
-/* CART QUANTITY */
+function updateCart(){
 
-function cartQty(index,change){
+ const container =
+ document.getElementById("cartItems");
 
-  cart[index].quantity += change;
+ container.innerHTML="";
 
-  if(cart[index].quantity <= 0){
+ let total=0;
+ let count=0;
 
-    cart.splice(index,1);
 
-  }
+ if(cart.length===0){
 
-  updateCart();
+  container.innerHTML=
+  `<div class="empty">
+  Your cart is empty.
+  </div>`;
+
+ }
+
+
+ cart.forEach((item,index)=>{
+
+  const product =
+  products.find(
+   p=>p.id===item.productId
+  );
+
+  if(!product) return;
+
+  const pack =
+  product.packs[item.packIndex];
+
+  if(!pack) return;
+
+
+  const lineTotal =
+  pack.price * item.qty;
+
+  total += lineTotal;
+
+  count += item.qty;
+
+
+  container.innerHTML += `
+
+  <div class="cart-item">
+
+   <div class="cart-item-top">
+
+    <div>
+
+     <div class="cart-item-name">
+     ${product.name}
+     </div>
+
+     <div class="small">
+     ${pack.size} × ${item.qty}
+     </div>
+
+    </div>
+
+    <strong>
+    ₹${lineTotal}
+    </strong>
+
+   </div>
+
+
+   <div class="cart-controls">
+
+    <button
+    class="qty-btn"
+    onclick="changeQty(${index},-1)">
+    −
+    </button>
+
+    <strong>${item.qty}</strong>
+
+    <button
+    class="qty-btn"
+    onclick="changeQty(${index},1)">
+    +
+    </button>
+
+    <button
+    class="remove-btn"
+    onclick="removeCartItem(${index})">
+    Remove
+    </button>
+
+   </div>
+
+  </div>
+
+  `;
+
+ });
+
+
+ document.getElementById("cartTotal")
+ .textContent="₹"+total.toLocaleString("en-IN");
+
+ document.getElementById("cartCount")
+ .textContent=count;
+
 }
 
 
-/* REMOVE */
+function changeQty(index,change){
 
-function removeCart(index){
+ cart[index].qty += change;
+
+ if(cart[index].qty<=0){
 
   cart.splice(index,1);
 
-  updateCart();
+ }
+
+ saveData();
+ updateCart();
+
 }
 
 
-/* OPEN CART */
+function removeCartItem(index){
+
+ cart.splice(index,1);
+
+ saveData();
+ updateCart();
+
+}
+
 
 function openCart(){
 
-  document
-    .getElementById("cartPanel")
-    .classList.add("open");
-
-  document
-    .getElementById("overlay")
-    .classList.add("show");
+ document
+ .getElementById("cartPanel")
+ .classList.add("open");
 
 }
 
-
-/* CLOSE CART */
 
 function closeCart(){
 
-  document
-    .getElementById("cartPanel")
-    .classList.remove("open");
-
-  document
-    .getElementById("overlay")
-    .classList.remove("show");
+ document
+ .getElementById("cartPanel")
+ .classList.remove("open");
 
 }
 
 
-/* SEND WHATSAPP */
+/* =========================================================
+   WHATSAPP ORDER
+   ========================================================= */
 
-function sendWhatsAppOrder(){
+function sendWhatsApp(){
 
-  if(cart.length === 0){
+ if(cart.length===0){
 
-    alert("Please add at least one product to your cart.");
+  alert("Please add products to your cart first.");
 
-    return;
-  }
+  return;
 
-
-  const name =
-    document.getElementById("customerName").value.trim();
-
-  const address =
-    document.getElementById("customerAddress").value.trim();
+ }
 
 
-  if(!name){
+ const name =
+ document.getElementById("customerName")
+ .value.trim();
 
-    alert("Please enter your name.");
+ const address =
+ document.getElementById("customerAddress")
+ .value.trim();
 
-    return;
-  }
-
-
-  if(!address){
-
-    alert("Please enter your delivery address.");
-
-    return;
-  }
+ const phone =
+ document.getElementById("customerPhone")
+ .value.trim();
 
 
-  let message =
-    "🌿 *JAYVIK – THE COMPLETE HEALTH STORE*%0A";
+ if(!name || !address || !phone){
+
+  alert(
+   "Please enter Name, Address and Contact Number."
+  );
+
+  return;
+
+ }
+
+
+ let message =
+ "Hello Jayvik, I would like to place an order:%0A%0A";
+
+ let total=0;
+
+
+ cart.forEach((item,index)=>{
+
+  const product =
+  products.find(
+   p=>p.id===item.productId
+  );
+
+  if(!product) return;
+
+  const pack =
+  product.packs[item.packIndex];
+
+  if(!pack) return;
+
+  const lineTotal =
+  pack.price * item.qty;
+
+  total += lineTotal;
+
 
   message +=
-    "━━━━━━━━━━━━━━━━━━%0A";
+  `${index+1}. ${product.name} – ${pack.size} × ${item.qty} = ₹${lineTotal}%0A`;
 
-  message +=
-    "🛒 *New Order*%0A%0A";
-
-
-  message +=
-    "👤 Name: " +
-    encodeURIComponent(name) +
-    "%0A";
-
-  message +=
-    "📍 Address: " +
-    encodeURIComponent(address) +
-    "%0A%0A";
+ });
 
 
-  message +=
-    "📦 *Order Details*%0A";
+ message +=
+ `%0A*Total: ₹${total.toLocaleString("en-IN")}*%0A%0A`;
+
+ message +=
+ `Name: ${encodeURIComponent(name)}%0A`;
+
+ message +=
+ `Address: ${encodeURIComponent(address)}%0A`;
+
+ message +=
+ `Contact Number: ${encodeURIComponent(phone)}`;
 
 
-  let total = 0;
+ /*
+  YOUR JAYVIK WHATSAPP NUMBER
+  */
+
+ const whatsappNumber =
+ "919356959561";
 
 
-  cart.forEach((item,index)=>{
-
-    const itemTotal =
-      item.price * item.quantity;
-
-    total += itemTotal;
+ const url =
+ `https://wa.me/${whatsappNumber}?text=${message}`;
 
 
-    message +=
+ window.open(url,"_blank");
 
-      (index + 1) +
-      ". " +
-      encodeURIComponent(item.name) +
-      " – " +
-      encodeURIComponent(item.size) +
-      " × " +
-      item.quantity +
-      " = ₹" +
-      itemTotal +
-      "%0A";
+}
+
+
+/* =========================================================
+   ADMIN
+   ========================================================= */
+
+function toggleAdmin(){
+
+ const panel =
+ document.getElementById("adminPanel");
+
+ panel.classList.toggle("show");
+
+ if(panel.classList.contains("show")){
+
+  renderAdmin();
+
+ }
+
+}
+
+
+function renderAdmin(){
+
+ const categorySelect =
+ document.getElementById("productCategory");
+
+ categorySelect.innerHTML="";
+
+ categories.forEach(c=>{
+
+  categorySelect.innerHTML +=
+  `<option value="${c}">${c}</option>`;
+
+ });
+
+
+ const existing =
+ document.getElementById("existingProduct");
+
+ existing.innerHTML="";
+
+ products.forEach(p=>{
+
+  existing.innerHTML +=
+  `<option value="${p.id}">
+  ${p.name}
+  </option>`;
+
+ });
+
+
+ const adminCategories =
+ document.getElementById("adminCategories");
+
+ adminCategories.innerHTML="";
+
+ categories.forEach((category,index)=>{
+
+  adminCategories.innerHTML += `
+
+  <div class="admin-product">
+
+   <span>${category}</span>
+
+   <button
+   class="admin-btn danger"
+   onclick="removeCategory(${index})">
+
+   Remove
+
+   </button>
+
+  </div>
+
+  `;
+
+ });
+
+
+ const adminProducts =
+ document.getElementById("adminProducts");
+
+ adminProducts.innerHTML="";
+
+
+ products.forEach(product=>{
+
+  adminProducts.innerHTML += `
+
+  <div class="admin-product">
+
+   <div>
+
+    <strong>${product.name}</strong>
+
+    <br>
+
+    <small>
+    ${product.category} |
+    ${product.packs.length} pack size(s)
+    </small>
+
+   </div>
+
+   <button
+   class="admin-btn danger"
+   onclick="removeProduct(${product.id})">
+
+   Remove
+
+   </button>
+
+  </div>
+
+  `;
+
+ });
+
+}
+
+
+/* =========================================================
+   ADD PRODUCT
+   ========================================================= */
+
+function addProduct(){
+
+ const name =
+ document.getElementById("productName")
+ .value.trim();
+
+ const category =
+ document.getElementById("productCategory")
+ .value;
+
+ const size =
+ document.getElementById("packSize")
+ .value.trim();
+
+ const price =
+ Number(
+  document.getElementById("packPrice").value
+ );
+
+ const file =
+ document.getElementById("productPhoto")
+ .files[0];
+
+
+ if(!name || !category || !size || !price){
+
+  alert(
+   "Please fill Product Name, Category, Pack Size and Price."
+  );
+
+  return;
+
+ }
+
+
+ function finish(photoData){
+
+  products.push({
+
+   id:Date.now(),
+
+   name,
+
+   category,
+
+   photo:photoData || "",
+
+   packs:[
+    {
+     size,
+     price
+    }
+   ]
 
   });
 
 
-  message +=
-    "%0A━━━━━━━━━━━━━━━━━━%0A";
+  saveData();
 
-  message +=
-    "💰 *Total: ₹" +
-    total +
-    "*%0A";
-
-  message +=
-    "━━━━━━━━━━━━━━━━━━%0A";
-
-  message +=
-    "Thank you for ordering from Jayvik! 🌿";
+  renderCategories();
+  renderProducts();
+  renderAdmin();
 
 
-  /*
-    Jayvik WhatsApp number:
-    +91 9356959561
-  */
-
-  const whatsappNumber =
-    "919356959561";
+  document.getElementById("productName").value="";
+  document.getElementById("packSize").value="";
+  document.getElementById("packPrice").value="";
+  document.getElementById("productPhoto").value="";
 
 
-  const url =
-    "https://wa.me/" +
-    whatsappNumber +
-    "?text=" +
-    message;
+  alert("Product added successfully.");
+
+ }
 
 
-  window.open(url,"_blank");
+ if(file){
+
+  const reader =
+  new FileReader();
+
+  reader.onload =
+  function(e){
+
+   finish(e.target.result);
+
+  };
+
+  reader.readAsDataURL(file);
+
+ }else{
+
+  finish("");
+
+ }
 
 }
+
+
+/* =========================================================
+   ADD PACK SIZE
+   ========================================================= */
+
+function addPack(){
+
+ const productId =
+ Number(
+  document.getElementById("existingProduct").value
+ );
+
+ const size =
+ document.getElementById("newPackSize")
+ .value.trim();
+
+ const price =
+ Number(
+  document.getElementById("newPackPrice").value
+ );
+
+
+ if(!size || !price){
+
+  alert("Enter pack size and price.");
+
+  return;
+
+ }
+
+
+ const product =
+ products.find(
+  p=>p.id===productId
+ );
+
+
+ if(!product) return;
+
+
+ product.packs.push({
+
+  size,
+  price
+
+ });
+
+
+ saveData();
+
+ renderProducts();
+ renderAdmin();
+
+
+ document.getElementById("newPackSize").value="";
+ document.getElementById("newPackPrice").value="";
+
+
+ alert("Pack size added.");
+
+}
+
+
+/* =========================================================
+   REMOVE PRODUCT
+   ========================================================= */
+
+function removeProduct(id){
+
+ const product =
+ products.find(p=>p.id===id);
+
+ if(!product) return;
+
+
+ if(!confirm(
+  `Remove "${product.name}"?`
+ )) return;
+
+
+ products =
+ products.filter(
+  p=>p.id!==id
+ );
+
+
+ cart =
+ cart.filter(
+  item=>item.productId!==id
+ );
+
+
+ saveData();
+
+ renderProducts();
+ renderAdmin();
+ updateCart();
+
+}
+
+
+/* =========================================================
+   CATEGORY
+   ========================================================= */
+
+function addCategory(){
+
+ const input =
+ document.getElementById("newCategory");
+
+ const name =
+ input.value.trim();
+
+
+ if(!name){
+
+  alert("Enter a category name.");
+
+  return;
+
+ }
+
+
+ if(categories.includes(name)){
+
+  alert("Category already exists.");
+
+  return;
+
+ }
+
+
+ categories.push(name);
+
+ saveData();
+
+ input.value="";
+
+ renderCategories();
+ renderAdmin();
+
+}
+
+
+function removeCategory(index){
+
+ const category =
+ categories[index];
+
+
+ const used =
+ products.some(
+  p=>p.category===category
+ );
+
+
+ if(used){
+
+  alert(
+   "This category is being used by products. Remove or move those products first."
+  );
+
+  return;
+
+ }
+
+
+ if(!confirm(
+  `Remove "${category}" category?`
+ )) return;
+
+
+ categories.splice(index,1);
+
+ saveData();
+
+ renderCategories();
+ renderAdmin();
+
+}
+
+
+/* =========================================================
+   START APP
+   ========================================================= */
+
+renderCategories();
+
+renderProducts();
+
+updateCart();
 
 </script>
 
