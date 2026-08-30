@@ -1,163 +1,1022 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Jayvik - The Complete Health Store</title>
-  <meta name="description" content="Jayvik - Organic, natural & healthy food products. From khandsari, jaggery, millets to cold-pressed oils. Shop direct from the farm.">
-  <style>
-    :root{--accent:#2b8a3e;--muted:#666}
-    *{box-sizing:border-box}
-    body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;margin:0;color:#222;line-height:1.45}
-    header{background:linear-gradient(90deg,#f7fff7,#ffffff);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee}
-    .brand{display:flex;gap:12px;align-items:center}
-    .logo{width:56px;height:56px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
-    nav a{margin-left:14px;text-decoration:none;color:var(--muted)}
-    .hero{padding:34px 20px;display:flex;flex-wrap:wrap;gap:20px;align-items:center}
-    .hero .copy{flex:1;min-width:260px}
-    .hero h1{margin:0 0 10px;font-size:28px}
-    .cta{display:inline-block;padding:10px 16px;background:var(--accent);color:white;border-radius:8px;text-decoration:none}
-    .products{padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
-    .card{border:1px solid #eee;padding:12px;border-radius:10px;background:white}
-    .card img{width:100%;height:130px;object-fit:cover;border-radius:6px}
-    .price{font-weight:700;color:var(--accent)}
-    footer{padding:18px 20px;border-top:1px solid #eee;background:#fafafa}
-    .contact{display:flex;flex-direction:column;gap:6px}
-    .small{font-size:13px;color:var(--muted)}
-    @media(min-width:900px){.hero h1{font-size:38px}}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jayvik – The Complete Health Store</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f7faf7;
+  color:#222;
+}
+
+header{
+  background:#ffffff;
+  padding:15px;
+  position:sticky;
+  top:0;
+  z-index:100;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.header-inner{
+  max-width:1100px;
+  margin:auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.logo-box{
+  width:48px;
+  height:48px;
+  border-radius:12px;
+  background:#2b8a3e;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:25px;
+  font-weight:bold;
+}
+
+.logo h1{
+  margin:0;
+  font-size:20px;
+}
+
+.logo small{
+  color:#666;
+}
+
+.cart-button{
+  background:#2b8a3e;
+  color:white;
+  border:0;
+  border-radius:10px;
+  padding:11px 15px;
+  font-size:15px;
+  cursor:pointer;
+}
+
+.hero{
+  max-width:1100px;
+  margin:auto;
+  padding:30px 15px 20px;
+}
+
+.hero-box{
+  background:linear-gradient(135deg,#e9f8eb,#ffffff);
+  border-radius:18px;
+  padding:28px 20px;
+}
+
+.hero h2{
+  margin:0 0 8px;
+  font-size:30px;
+}
+
+.hero p{
+  color:#666;
+  margin:0;
+}
+
+.categories{
+  max-width:1100px;
+  margin:auto;
+  padding:10px 15px 5px;
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+}
+
+.category{
+  border:1px solid #d8e5d9;
+  background:white;
+  padding:9px 15px;
+  border-radius:25px;
+  white-space:nowrap;
+  cursor:pointer;
+}
+
+.category.active{
+  background:#2b8a3e;
+  color:white;
+  border-color:#2b8a3e;
+}
+
+.products{
+  max-width:1100px;
+  margin:auto;
+  padding:15px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+  gap:15px;
+}
+
+.card{
+  background:white;
+  border:1px solid #e5e5e5;
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 2px 7px rgba(0,0,0,.04);
+}
+
+.product-image{
+  height:170px;
+  background:#f0f4f0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#777;
+  font-size:48px;
+}
+
+.card-content{
+  padding:13px;
+}
+
+.card h3{
+  margin:0 0 7px;
+  font-size:17px;
+}
+
+.price{
+  color:#2b8a3e;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.quantity{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border:1px solid #ddd;
+  border-radius:9px;
+  overflow:hidden;
+}
+
+.quantity button{
+  width:40px;
+  height:38px;
+  border:0;
+  background:#f1f5f1;
+  font-size:20px;
+  cursor:pointer;
+}
+
+.quantity span{
+  font-weight:bold;
+}
+
+.cart-section{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  z-index:200;
+}
+
+.cart-box{
+  position:absolute;
+  right:0;
+  top:0;
+  height:100%;
+  width:min(440px,100%);
+  background:white;
+  padding:20px;
+  overflow-y:auto;
+}
+
+.cart-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.close{
+  border:0;
+  background:#eee;
+  border-radius:50%;
+  width:36px;
+  height:36px;
+  cursor:pointer;
+  font-size:18px;
+}
+
+.cart-item{
+  padding:12px 0;
+  border-bottom:1px solid #eee;
+}
+
+.cart-item strong{
+  display:block;
+}
+
+.cart-controls{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:6px;
+}
+
+.cart-controls button{
+  border:1px solid #ddd;
+  background:white;
+  border-radius:6px;
+  padding:3px 9px;
+  cursor:pointer;
+}
+
+.total{
+  font-size:20px;
+  font-weight:bold;
+  margin:20px 0;
+  display:flex;
+  justify-content:space-between;
+}
+
+.form-group{
+  margin-bottom:12px;
+}
+
+.form-group label{
+  display:block;
+  font-size:14px;
+  margin-bottom:5px;
+}
+
+.form-group input,
+.form-group textarea{
+  width:100%;
+  padding:10px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  font-size:15px;
+}
+
+.whatsapp{
+  width:100%;
+  border:0;
+  border-radius:10px;
+  padding:13px;
+  background:#25D366;
+  color:white;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.empty{
+  color:#777;
+  text-align:center;
+  padding:30px 0;
+}
+
+footer{
+  margin-top:30px;
+  padding:25px 15px;
+  background:#ffffff;
+  border-top:1px solid #eee;
+  text-align:center;
+  color:#666;
+  font-size:13px;
+}
+
+@media(max-width:600px){
+  .hero h2{font-size:25px}
+  .products{
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+  }
+  .product-image{height:130px}
+  .card-content{padding:10px}
+  .card h3{font-size:15px}
+}
+</style>
 </head>
+
 <body>
-  <header>
-    <div class="brand">
-      <div class="logo">J</div>
+
+<header>
+  <div class="header-inner">
+
+    <div class="logo">
+      <div class="logo-box">J</div>
       <div>
-        <div style="font-weight:700">Jayvik</div>
-        <div class="small">The Complete Health Store</div>
+        <h1>Jayvik</h1>
+        <small>The Complete Health Store</small>
       </div>
     </div>
-    <nav>
-      <a href="#products">Products</a>
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </header>
 
-  <section class="hero">
-    <div class="copy">
-      <h1>Pure • Natural • From the farm</h1>
-      <p class="small">Organic khandsari, jaggery, millets, dals, cold-pressed oils and more — sourced directly with no middlemen.</p>
-      <p style="margin-top:12px"><a class="cta" href="#products">Shop Products</a></p>
+    <button class="cart-button" onclick="openCart()">
+      🛒 Cart <span id="cartCount">0</span>
+    </button>
+
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-box">
+    <h2>Pure • Natural • Healthy</h2>
+    <p>
+      Quality natural products from Jayvik – The Complete Health Store.
+      Select your products and send your order directly on WhatsApp.
+    </p>
+  </div>
+</section>
+
+<div class="categories">
+
+  <button class="category active" onclick="filterProducts('all',this)">
+    All
+  </button>
+
+  <button class="category" onclick="filterProducts('oil',this)">
+    🫒 Oils
+  </button>
+
+  <button class="category" onclick="filterProducts('ghee',this)">
+    🐄 Ghee
+  </button>
+
+  <button class="category" onclick="filterProducts('sweetener',this)">
+    🍯 Jaggery & Sugar
+  </button>
+
+  <button class="category" onclick="filterProducts('millet',this)">
+    🌾 Millets
+  </button>
+
+  <button class="category" onclick="filterProducts('dal',this)">
+    🫘 Pulses
+  </button>
+
+  <button class="category" onclick="filterProducts('other',this)">
+    🌿 Other
+  </button>
+
+</div>
+
+<div class="products" id="products"></div>
+
+<footer>
+  <strong>Jayvik – The Complete Health Store</strong><br>
+  Plot no 34, 35, Kohale Layout, Godhani Road,
+  Zingabai Takali, Nagpur – 440030<br><br>
+  📞 +91 9356959561
+</footer>
+
+<!-- CART -->
+
+<div class="cart-section" id="cartSection">
+
+  <div class="cart-box">
+
+    <div class="cart-header">
+      <h2>Your Order</h2>
+      <button class="close" onclick="closeCart()">×</button>
     </div>
 
-    <div style="min-width:240px">
-      <div style="border-radius:10px;border:1px solid #eee;padding:12px;background:#fff">
-        <strong>Store Info</strong>
-        <p class="small" style="margin:6px 0 0">Jayvik - The Complete Health Store</p>
-        <p class="small" style="margin:4px 0">Plot no 34, 35, Kohale layout, Godhani road, Zingabai takali, Nagpur 440030</p>
-        <p style="margin:4px 0"><a href="tel:+919356959561">+91 9356959561</a></p>
-      </div>
-    </div>
-  </section>
+    <div id="cartItems"></div>
 
-  <section id="products">
-    <div style="padding:16px 20px"><h2 style="margin:0 0 10px">Featured Products</h2></div>
-    <div class="products">
-      <!-- Replace images with your product photos. Use Unsplash or local images. -->
+    <div class="total">
+      <span>Total</span>
+      <span id="cartTotal">₹0</span>
+    </div>
+
+    <div class="form-group">
+      <label>Customer Name</label>
+      <input id="customerName" type="text" placeholder="Enter your name">
+    </div>
+
+    <div class="form-group">
+      <label>Mobile Number</label>
+      <input id="customerMobile" type="tel" placeholder="Enter mobile number">
+    </div>
+
+    <div class="form-group">
+      <label>Delivery Address</label>
+      <textarea id="customerAddress" rows="3"
+        placeholder="Enter delivery address"></textarea>
+    </div>
+
+    <button class="whatsapp" onclick="sendWhatsApp()">
+      📱 Send Order on WhatsApp
+    </button>
+
+  </div>
+
+</div>
+
+<script>
+
+const products = [
+
+  {
+    id:1,
+    name:"Groundnut Oil",
+    category:"oil",
+    price:310,
+    unit:"1 Litre",
+    icon:"🥜"
+  },
+
+  {
+    id:2,
+    name:"Groundnut Oil",
+    category:"oil",
+    price:1500,
+    unit:"5 Litre",
+    icon:"🥜"
+  },
+
+  {
+    id:3,
+    name:"Mustard Oil",
+    category:"oil",
+    price:360,
+    unit:"1 Litre",
+    icon:"🌼"
+  },
+
+  {
+    id:4,
+    name:"Mustard Oil",
+    category:"oil",
+    price:190,
+    unit:"500 ml",
+    icon:"🌼"
+  },
+
+  {
+    id:5,
+    name:"Flaxseed Oil",
+    category:"oil",
+    price:420,
+    unit:"1 Litre",
+    icon:"🌿"
+  },
+
+  {
+    id:6,
+    name:"Flaxseed Oil",
+    category:"oil",
+    price:220,
+    unit:"500 ml",
+    icon:"🌿"
+  },
+
+  {
+    id:7,
+    name:"Sesame Oil",
+    category:"oil",
+    price:540,
+    unit:"1 Litre",
+    icon:"🌱"
+  },
+
+  {
+    id:8,
+    name:"Sesame Oil",
+    category:"oil",
+    price:280,
+    unit:"500 ml",
+    icon:"🌱"
+  },
+
+  {
+    id:9,
+    name:"Coconut Oil",
+    category:"oil",
+    price:600,
+    unit:"1 Litre",
+    icon:"🥥"
+  },
+
+  {
+    id:10,
+    name:"Coconut Oil",
+    category:"oil",
+    price:310,
+    unit:"500 ml",
+    icon:"🥥"
+  },
+
+  {
+    id:11,
+    name:"Sunflower Oil",
+    category:"oil",
+    price:370,
+    unit:"1 Litre",
+    icon:"🌻"
+  },
+
+  {
+    id:12,
+    name:"Kardai Oil",
+    category:"oil",
+    price:370,
+    unit:"1 Litre",
+    icon:"🌼"
+  },
+
+  {
+    id:13,
+    name:"Almond Oil",
+    category:"oil",
+    price:270,
+    unit:"100 ml",
+    icon:"🌰"
+  },
+
+  {
+    id:14,
+    name:"Castor Oil",
+    category:"oil",
+    price:60,
+    unit:"100 ml",
+    icon:"🌿"
+  },
+
+  {
+    id:15,
+    name:"Gir Cow Ghee",
+    category:"ghee",
+    price:1600,
+    unit:"1 Litre",
+    icon:"🐄"
+  },
+
+  {
+    id:16,
+    name:"Gir Cow Ghee",
+    category:"ghee",
+    price:850,
+    unit:"500 ml",
+    icon:"🐄"
+  },
+
+  {
+    id:17,
+    name:"Jaggery",
+    category:"sweetener",
+    price:140,
+    unit:"1 kg",
+    icon:"🍯"
+  },
+
+  {
+    id:18,
+    name:"Khandsari Sugar",
+    category:"sweetener",
+    price:120,
+    unit:"1 kg",
+    icon:"🍚"
+  },
+
+  {
+    id:19,
+    name:"Mishri",
+    category:"sweetener",
+    price:40,
+    unit:"100 g",
+    icon:"🍬"
+  },
+
+  {
+    id:20,
+    name:"Rajgira",
+    category:"millet",
+    price:240,
+    unit:"1 kg",
+    icon:"🌾"
+  },
+
+  {
+    id:21,
+    name:"Rajgira Flour",
+    category:"millet",
+    price:300,
+    unit:"1 kg",
+    icon:"🌾"
+  },
+
+  {
+    id:22,
+    name:"Rajgira Flour",
+    category:"millet",
+    price:160,
+    unit:"500 g",
+    icon:"🌾"
+  },
+
+  {
+    id:23,
+    name:"Bhagar",
+    category:"millet",
+    price:200,
+    unit:"1 kg",
+    icon:"🌾"
+  },
+
+  {
+    id:24,
+    name:"Bhagar",
+    category:"millet",
+    price:110,
+    unit:"500 g",
+    icon:"🌾"
+  },
+
+  {
+    id:25,
+    name:"Varai / Kutki / Little Millet",
+    category:"millet",
+    price:220,
+    unit:"1 kg",
+    icon:"🌾"
+  },
+
+  {
+    id:26,
+    name:"Varai / Kutki / Little Millet",
+    category:"millet",
+    price:120,
+    unit:"500 g",
+    icon:"🌾"
+  },
+
+  {
+    id:27,
+    name:"Jowar Flakes",
+    category:"millet",
+    price:160,
+    unit:"1 kg",
+    icon:"🌾"
+  },
+
+  {
+    id:28,
+    name:"Jowar Flakes",
+    category:"millet",
+    price:90,
+    unit:"500 g",
+    icon:"🌾"
+  },
+
+  {
+    id:29,
+    name:"Ragi Flakes",
+    category:"millet",
+    price:200,
+    unit:"1 kg",
+    icon:"🌾"
+  },
+
+  {
+    id:30,
+    name:"Ragi Flakes",
+    category:"millet",
+    price:110,
+    unit:"500 g",
+    icon:"🌾"
+  },
+
+  {
+    id:31,
+    name:"Jeera",
+    category:"other",
+    price:60,
+    unit:"100 g",
+    icon:"🌿"
+  },
+
+  {
+    id:32,
+    name:"Organic Toor Dal",
+    category:"dal",
+    price:200,
+    unit:"1 kg",
+    icon:"🫘"
+  }
+
+];
+
+let cart = {};
+
+function renderProducts(category="all"){
+
+  const container=document.getElementById("products");
+
+  const list =
+    category==="all"
+    ? products
+    : products.filter(p=>p.category===category);
+
+  container.innerHTML="";
+
+  list.forEach(p=>{
+
+    const qty=cart[p.id] || 0;
+
+    container.innerHTML += `
+
       <div class="card">
-        <img src="https://source.unsplash.com/featured/?jaggery" alt="Organic Jaggery">
-        <h3 style="margin:8px 0 4px">Organic Jaggery Powder</h3>
-        <div class="price">₹140 / kg</div>
-        <div class="small">100% natural, unrefined.</div>
+
+        <div class="product-image">
+          ${p.icon}
+        </div>
+
+        <div class="card-content">
+
+          <h3>${p.name}</h3>
+
+          <div class="price">
+            ₹${p.price} / ${p.unit}
+          </div>
+
+          <div class="quantity">
+
+            <button onclick="changeQty(${p.id},-1)">
+              −
+            </button>
+
+            <span id="qty-${p.id}">
+              ${qty}
+            </span>
+
+            <button onclick="changeQty(${p.id},1)">
+              +
+            </button>
+
+          </div>
+
+        </div>
+
       </div>
 
-      <div class="card">
-        <img src="https://source.unsplash.com/featured/?sugar" alt="Khandsari">
-        <h3 style="margin:8px 0 4px">Khandsari Sugar (Organic)</h3>
-        <div class="price">₹120 / kg</div>
-        <div class="small">Traditional khandsari sugar, minimal processing.</div>
-      </div>
+    `;
 
-      <div class="card">
-        <img src="https://source.unsplash.com/featured/?lentils" alt="Dal">
-        <h3 style="margin:8px 0 4px">Organic Toor Dal</h3>
-        <div class="price">₹200 / kg</div>
-        <div class="small">FPO-sourced, certified organic (where available).</div>
-      </div>
+  });
 
-      <div class="card">
-        <img src="https://source.unsplash.com/featured/?oil" alt="Cold Pressed Oil">
-        <h3 style="margin:8px 0 4px">Wood Pressed Groundnut Oil</h3>
-        <div class="price">₹350 / 1L</div>
-        <div class="small">Traditional extraction; retains nutrients.</div>
-      </div>
+}
 
-    </div>
-  </section>
+function changeQty(id,change){
 
-  <section id="about" style="padding:20px">
-    <h2>About Jayvik</h2>
-    <p class="small">Jayvik connects customers directly with small farmers and FPOs. We prioritise natural farming practices, minimal processing, and fair pricing. Buy directly from the source — fresher, cheaper, honest.</p>
-  </section>
+  cart[id]=(cart[id] || 0)+change;
 
-  <section id="contact" style="padding:20px">
-    <h2>Contact</h2>
-    <div class="contact">
-      <div class="small">Call/WhatsApp: <a href="tel:+919356959561">+91 9356959561</a></div>
-      <div class="small">Address: Plot no 34, 35, Kohale layout, Godhani road, Zingabai takali, Nagpur 440030</div>
-      <div style="margin-top:8px">
-        <!-- Simple zero-fee contact: mailto link. For better contact use Google Forms (free) and embed. -->
-        <form onsubmit="window.location='mailto:jayvik.store@example.com?subject=Order%20/Query%20from%20Website&body='+encodeURIComponent(document.getElementById('msg').value);return false;">
-          <label class="small">Message:</label><br>
-          <textarea id="msg" rows="4" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd"></textarea><br>
-          <button type="submit" style="margin-top:8px;padding:8px 12px;border-radius:8px;border:none;background:var(--accent);color:white">Send Email</button>
-        </form>
-      </div>
-    </div>
-  </section>
+  if(cart[id]<0){
+    cart[id]=0;
+  }
 
-  <footer>
-    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <div class="small">© Jayvik - The Complete Health Store</div>
-      <div class="small">Built for zero cost • Host on GitHub Pages or Netlify</div>
-    </div>
-  </footer>
+  updateCartCount();
+  renderProducts(currentCategory);
+}
 
-  <!-- Minimal JS to make product placeholders easy to replace -->
-  <script>
-    // Quick helper: replace placeholder images with your filenames placed next to index.html
-    // Example: put 'khandsari.jpg' into same folder and call setImage('khandsari.jpg', 0)
-    function setImage(filename, cardIndex){
-      const imgs = document.querySelectorAll('.card img');
-      if(imgs[cardIndex]) imgs[cardIndex].src = filename;
+function updateCartCount(){
+
+  let count=0;
+
+  Object.values(cart).forEach(q=>{
+    count+=q;
+  });
+
+  document.getElementById("cartCount").textContent=count;
+
+}
+
+let currentCategory="all";
+
+function filterProducts(category,button){
+
+  currentCategory=category;
+
+  document.querySelectorAll(".category")
+    .forEach(b=>b.classList.remove("active"));
+
+  button.classList.add("active");
+
+  renderProducts(category);
+
+  window.scrollTo({
+    top:document.querySelector(".categories").offsetTop-70,
+    behavior:"smooth"
+  });
+
+}
+
+function openCart(){
+
+  document.getElementById("cartSection").style.display="block";
+
+  renderCart();
+
+}
+
+function closeCart(){
+
+  document.getElementById("cartSection").style.display="none";
+
+}
+
+function renderCart(){
+
+  const container=document.getElementById("cartItems");
+
+  let total=0;
+  let html="";
+
+  products.forEach(p=>{
+
+    const qty=cart[p.id] || 0;
+
+    if(qty>0){
+
+      const amount=p.price*qty;
+
+      total+=amount;
+
+      html += `
+
+        <div class="cart-item">
+
+          <strong>${p.name}</strong>
+
+          <div>
+            ${p.unit} × ${qty}
+            = ₹${amount}
+          </div>
+
+          <div class="cart-controls">
+
+            <button onclick="changeCartQty(${p.id},-1)">
+              −
+            </button>
+
+            <span>${qty}</span>
+
+            <button onclick="changeCartQty(${p.id},1)">
+              +
+            </button>
+
+          </div>
+
+        </div>
+
+      `;
+
     }
-  </script>
+
+  });
+
+  if(!html){
+
+    html=`
+      <div class="empty">
+        Your cart is empty.<br>
+        Please select products first.
+      </div>
+    `;
+
+  }
+
+  container.innerHTML=html;
+
+  document.getElementById("cartTotal").textContent=
+    "₹"+total;
+
+}
+
+function changeCartQty(id,change){
+
+  cart[id]=(cart[id] || 0)+change;
+
+  if(cart[id]<0){
+    cart[id]=0;
+  }
+
+  updateCartCount();
+  renderCart();
+  renderProducts(currentCategory);
+
+}
+
+function sendWhatsApp(){
+
+  let items=[];
+  let total=0;
+
+  products.forEach(p=>{
+
+    const qty=cart[p.id] || 0;
+
+    if(qty>0){
+
+      const amount=p.price*qty;
+
+      total+=amount;
+
+      items.push(
+        "• "+p.name+
+        " ("+p.unit+") × "+qty+
+        " = ₹"+amount
+      );
+
+    }
+
+  });
+
+  if(items.length===0){
+
+    alert("Please add at least one product to your cart.");
+
+    return;
+
+  }
+
+  const name=
+    document.getElementById("customerName").value.trim();
+
+  const mobile=
+    document.getElementById("customerMobile").value.trim();
+
+  const address=
+    document.getElementById("customerAddress").value.trim();
+
+  if(!name){
+
+    alert("Please enter your name.");
+
+    return;
+
+  }
+
+  if(!mobile){
+
+    alert("Please enter your mobile number.");
+
+    return;
+
+  }
+
+  if(!address){
+
+    alert("Please enter your delivery address.");
+
+    return;
+
+  }
+
+  let message=
+`*JAYVIK – THE COMPLETE HEALTH STORE*
+
+*New Order*
+
+Customer Name: ${name}
+Mobile: ${mobile}
+
+*Order Details:*
+
+${items.join("\n")}
+
+*Total: ₹${total}*
+
+Delivery Address:
+${address}
+
+Please confirm my order.
+
+Thank you.
+`;
+
+  const whatsappNumber="919356959561";
+
+  const url=
+    "https://wa.me/"+
+    whatsappNumber+
+    "?text="+
+    encodeURIComponent(message);
+
+  window.open(url,"_blank");
+
+}
+
+renderProducts();
+
+</script>
+
 </body>
 </html>
-
-
-<!--
-  DEPLOYMENT + ZERO-FEE STEPS (copy these into README.md in the repo):
-
-  1) Create a free GitHub account (if you don't have one).
-  2) Create a new public repository named 'jayvik-website' (or any name).
-  3) Upload this file as index.html to the repository root.
-  4) In the repo -> Settings -> Pages -> Source: select branch 'main' and folder '/ (root)'. Save.
-     GitHub will publish at: https://<your-username>.github.io/<repo-name>/  (usually within a minute).
-
-  ALTERNATIVE: Netlify (drag-and-drop)
-  - Go to netlify.com (free tier). Drag & drop the folder containing index.html into Sites panel. It publishes a free URL.
-
-  FREE IMAGE SOURCES: Unsplash, Pexels (use their photos and download & rename to replace unsplash placeholders).
-
-  CUSTOM DOMAIN (optional, free-ish): Buy a domain or use free subdomain from providers; GitHub/Netlify let you add a custom domain.
-
-  MAKING CHANGES:
-  - Edit index.html locally, commit/push to GitHub to update the site.
-  - Replace product images in the repo and update names used in setImage() or src attributes.
-
-  HELP: If you want, I can:
-  - Customize the content (product names, prices, photos).
-  - Convert this into a multi-page or React-based site (still can be hosted free).
-  - Generate a ready-to-upload ZIP file.
--->
