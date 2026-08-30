@@ -4,30 +4,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Jayvik - The Complete Health Store</title>
+<title>Jayvik – The Complete Health Store</title>
 
 <style>
-
 :root{
-  --green:#2b8a3e;
-  --dark:#183b22;
-  --light:#f4faf4;
-  --border:#e3e8e3;
-  --red:#c62828;
-  --orange:#ef8b00;
+  --green:#2e7d32;
+  --light-green:#eaf6ea;
+  --dark:#183d20;
+  --orange:#f39c12;
+  --red:#d32f2f;
+  --gray:#666;
+  --light:#f7f9f7;
+  --white:#fff;
+  --border:#e2e7e2;
 }
 
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
-  background:#f7f9f7;
+  background:var(--light);
   color:#222;
 }
+
+/* HEADER */
 
 header{
   background:white;
@@ -35,35 +36,37 @@ header{
   position:sticky;
   top:0;
   z-index:100;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
 }
 
 .header-inner{
   max-width:1200px;
   margin:auto;
-  padding:14px 18px;
+  padding:12px 18px;
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:15px;
 }
 
-.brand{
+.logo-area{
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:10px;
 }
 
 .logo{
-  width:52px;
-  height:52px;
-  background:var(--green);
+  width:55px;
+  height:55px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#2e7d32,#66bb6a);
   color:white;
-  border-radius:12px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:27px;
+  font-size:28px;
   font-weight:bold;
+  box-shadow:0 3px 8px rgba(46,125,50,.25);
 }
 
 .brand-name{
@@ -74,767 +77,583 @@ header{
 
 .brand-sub{
   font-size:12px;
-  color:#777;
+  color:var(--gray);
 }
 
-.header-buttons{
-  display:flex;
-  gap:8px;
-}
-
-button{
+.cart-button{
+  border:0;
+  background:var(--green);
+  color:white;
+  padding:11px 16px;
+  border-radius:10px;
+  font-weight:bold;
   cursor:pointer;
 }
 
-.top-btn{
-  border:1px solid var(--green);
-  background:white;
-  color:var(--green);
-  padding:9px 13px;
-  border-radius:8px;
-  font-weight:bold;
-}
-
-.top-btn.cart{
-  background:var(--green);
-  color:white;
-}
+/* HERO */
 
 .hero{
-  background:linear-gradient(135deg,#effbea,#ffffff);
-  padding:35px 18px;
-}
-
-.hero-inner{
   max-width:1200px;
   margin:auto;
+  padding:28px 18px 20px;
+}
+
+.hero-box{
+  background:linear-gradient(135deg,#eaf6ea,#ffffff);
+  border-radius:18px;
+  padding:28px;
+  border:1px solid #dcebdc;
 }
 
 .hero h1{
-  margin:0;
+  margin:0 0 8px;
   color:var(--dark);
-  font-size:34px;
+  font-size:32px;
 }
 
 .hero p{
-  max-width:700px;
-  color:#666;
-  font-size:16px;
+  margin:0;
+  color:var(--gray);
 }
 
-.categories{
-  background:white;
-  border-bottom:1px solid var(--border);
-  position:sticky;
-  top:81px;
-  z-index:90;
-  overflow-x:auto;
-}
+/* CATEGORY */
 
-.category-inner{
+.category-section{
   max-width:1200px;
   margin:auto;
+  padding:0 18px 15px;
+}
+
+.category-scroll{
   display:flex;
-  gap:8px;
-  padding:12px 18px;
-  white-space:nowrap;
+  gap:9px;
+  overflow-x:auto;
+  padding-bottom:5px;
 }
 
 .category-btn{
-  border:1px solid #d7dfd7;
+  flex:0 0 auto;
+  padding:10px 14px;
+  border:1px solid #cfd8cf;
   background:white;
-  color:#555;
-  padding:9px 15px;
   border-radius:22px;
-  font-size:14px;
+  cursor:pointer;
+  font-weight:600;
+  color:#456;
 }
 
 .category-btn.active{
   background:var(--green);
-  border-color:var(--green);
   color:white;
+  border-color:var(--green);
 }
 
-.container{
+/* PRODUCTS */
+
+.products-section{
   max-width:1200px;
   margin:auto;
-  padding:25px 18px;
+  padding:10px 18px 40px;
 }
 
-.section-title{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:18px;
-}
-
-.section-title h2{
-  margin:0;
-  color:var(--dark);
-}
-
-.products{
+.products-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
   gap:18px;
 }
 
-.card{
+.product-card{
   background:white;
-  border:1px solid var(--border);
-  border-radius:14px;
+  border-radius:15px;
   overflow:hidden;
-  box-shadow:0 2px 7px rgba(0,0,0,.04);
+  border:1px solid var(--border);
+  box-shadow:0 2px 8px rgba(0,0,0,.04);
 }
 
-.product-image{
+.product-photo{
   width:100%;
-  height:190px;
+  height:180px;
   object-fit:cover;
-  background:#edf4ed;
+  background:#f0f4f0;
   display:block;
 }
 
-.image-placeholder{
-  height:190px;
-  background:#edf4ed;
+.photo-placeholder{
+  width:100%;
+  height:180px;
   display:flex;
   align-items:center;
   justify-content:center;
-  color:#789078;
-  font-size:15px;
+  background:#eef5ee;
+  color:#7b8b7b;
+  font-size:14px;
 }
 
-.card-body{
-  padding:15px;
+.product-info{
+  padding:14px;
 }
 
-.card h3{
-  margin:0 0 5px;
-  color:#222;
+.product-name{
+  font-size:18px;
+  font-weight:bold;
+  margin-bottom:6px;
 }
 
-.category-label{
-  font-size:12px;
+.product-description{
+  color:var(--gray);
+  font-size:13px;
+  margin-bottom:12px;
+}
+
+.size-select{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #d5ddd5;
+  background:white;
+  margin-bottom:9px;
+}
+
+.product-price{
+  font-size:17px;
   color:var(--green);
+  font-weight:bold;
   margin-bottom:10px;
 }
 
-.pack-row{
+.quantity-row{
   display:flex;
-  align-items:center;
-  justify-content:space-between;
-  border:1px solid #e0e5e0;
-  padding:9px;
-  border-radius:8px;
-  margin-top:7px;
   gap:8px;
-}
-
-.pack-info{
-  font-size:14px;
-}
-
-.pack-price{
-  font-weight:bold;
-  color:var(--green);
-}
-
-.add-btn{
-  background:var(--green);
-  color:white;
-  border:0;
-  padding:7px 10px;
-  border-radius:7px;
-  font-weight:bold;
-}
-
-.cart-panel{
-  position:fixed;
-  right:0;
-  top:0;
-  width:min(430px,100%);
-  height:100vh;
-  background:white;
-  z-index:300;
-  box-shadow:-5px 0 20px rgba(0,0,0,.15);
-  transform:translateX(100%);
-  transition:.25s;
-  overflow-y:auto;
-}
-
-.cart-panel.open{
-  transform:translateX(0);
-}
-
-.panel-header{
-  padding:18px;
-  border-bottom:1px solid var(--border);
-  display:flex;
-  justify-content:space-between;
   align-items:center;
-}
-
-.close-btn{
-  border:0;
-  background:#eee;
-  width:34px;
-  height:34px;
-  border-radius:50%;
-}
-
-.cart-content{
-  padding:18px;
-}
-
-.cart-item{
-  border-bottom:1px solid #eee;
-  padding:12px 0;
-}
-
-.cart-item-top{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-}
-
-.cart-item-name{
-  font-weight:bold;
-}
-
-.cart-controls{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-top:8px;
 }
 
 .qty-btn{
-  width:30px;
-  height:30px;
-  border:1px solid #ddd;
+  width:38px;
+  height:38px;
+  border:1px solid #ccd5cc;
   background:white;
-  border-radius:6px;
-}
-
-.remove-btn{
-  border:0;
-  background:#fff0f0;
-  color:var(--red);
-  padding:5px 8px;
-  border-radius:5px;
-}
-
-.total{
+  border-radius:8px;
   font-size:20px;
+  cursor:pointer;
+}
+
+.qty{
+  width:45px;
+  text-align:center;
   font-weight:bold;
+}
+
+.add-cart{
+  flex:1;
+  height:38px;
+  border:0;
+  background:var(--green);
+  color:white;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* CART */
+
+.cart-panel{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  z-index:200;
+}
+
+.cart-box{
+  background:white;
+  width:min(520px,94%);
+  max-height:92vh;
+  overflow:auto;
+  margin:4vh auto;
+  border-radius:18px;
+  padding:20px;
+}
+
+.cart-header{
   display:flex;
   justify-content:space-between;
-  padding:15px 0;
+  align-items:center;
 }
 
-.customer-form{
-  margin-top:15px;
+.close{
+  border:0;
+  background:#eee;
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  cursor:pointer;
 }
 
-.customer-form label{
-  display:block;
-  margin:10px 0 5px;
-  font-size:14px;
+.cart-item{
+  padding:12px 0;
+  border-bottom:1px solid #eee;
+}
+
+.cart-item-title{
   font-weight:bold;
+}
+
+.cart-total{
+  font-size:20px;
+  font-weight:bold;
+  margin:18px 0;
+  color:var(--green);
 }
 
 .customer-form input,
 .customer-form textarea{
   width:100%;
   padding:11px;
-  border:1px solid #ddd;
+  margin:6px 0;
+  border:1px solid #d5ddd5;
   border-radius:8px;
-  font-size:14px;
-}
-
-.customer-form textarea{
-  min-height:80px;
-  resize:vertical;
+  font-family:inherit;
 }
 
 .whatsapp-btn{
   width:100%;
+  padding:14px;
   border:0;
+  border-radius:10px;
   background:#25D366;
   color:white;
-  padding:13px;
-  border-radius:9px;
   font-size:16px;
   font-weight:bold;
-  margin-top:15px;
+  cursor:pointer;
 }
 
-.empty{
-  text-align:center;
-  color:#777;
-  padding:35px 10px;
-}
+/* ADMIN */
 
-.admin{
-  display:none;
-  background:#fff;
-  padding:25px 18px;
-  border-top:4px solid var(--green);
-}
-
-.admin.show{
-  display:block;
-}
-
-.admin-inner{
+.admin-section{
   max-width:1200px;
-  margin:auto;
+  margin:20px auto;
+  padding:20px 18px 50px;
+}
+
+.admin-box{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:20px;
+}
+
+.admin-title{
+  color:var(--dark);
 }
 
 .admin-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:20px;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:10px;
 }
 
-.admin-box{
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:18px;
-}
-
-.admin-box h3{
-  margin-top:0;
-}
-
-.admin input,
-.admin select{
-  width:100%;
+.admin-grid input,
+.admin-grid select{
   padding:10px;
-  margin:5px 0 10px;
-  border:1px solid #ddd;
-  border-radius:7px;
+  border:1px solid #d5ddd5;
+  border-radius:8px;
 }
 
-.admin-btn{
-  padding:9px 13px;
+.admin-button{
   border:0;
-  border-radius:7px;
-  background:var(--green);
-  color:white;
+  padding:11px 14px;
+  border-radius:8px;
+  cursor:pointer;
   font-weight:bold;
 }
 
-.danger{
-  background:var(--red);
+.add-product-btn{
+  background:var(--green);
+  color:white;
 }
 
-.admin-product{
-  border:1px solid #ddd;
-  padding:10px;
-  border-radius:8px;
-  margin-top:8px;
+.remove-btn{
+  background:#ffebee;
+  color:var(--red);
+}
+
+.photo-btn{
+  background:#eef5ff;
+  color:#245;
+}
+
+.admin-products{
+  margin-top:20px;
+}
+
+.admin-product-row{
   display:flex;
   justify-content:space-between;
   align-items:center;
   gap:10px;
+  padding:12px 0;
+  border-bottom:1px solid #eee;
 }
 
-.admin-product small{
-  color:#777;
-}
-
-.photo-preview{
-  width:80px;
-  height:60px;
-  object-fit:cover;
-  border-radius:6px;
-  margin-top:5px;
-}
+/* FOOTER */
 
 footer{
-  margin-top:40px;
-  background:#17371f;
+  background:#183d20;
   color:white;
   padding:25px 18px;
+  text-align:center;
 }
 
-.footer-inner{
-  max-width:1200px;
-  margin:auto;
+footer small{
+  opacity:.85;
 }
 
-.footer-small{
-  color:#cbd8ce;
-  font-size:13px;
-}
-
-@media(max-width:700px){
-
-  .header-inner{
-    padding:10px;
-  }
-
-  .brand-name{
-    font-size:17px;
-  }
-
-  .logo{
-    width:45px;
-    height:45px;
-  }
-
-  .hero h1{
-    font-size:27px;
-  }
-
-  .admin-grid{
-    grid-template-columns:1fr;
-  }
-
-  .products{
+@media(max-width:600px){
+  .hero h1{font-size:25px}
+  .products-grid{
     grid-template-columns:repeat(2,1fr);
     gap:10px;
   }
-
-  .product-image,
-  .image-placeholder{
-    height:145px;
+  .product-photo,
+  .photo-placeholder{
+    height:135px;
   }
-
-  .card-body{
+  .product-info{
     padding:10px;
   }
-
-  .card h3{
+  .product-name{
     font-size:15px;
   }
-
 }
-
-@media(max-width:430px){
-
-  .products{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .pack-row{
-    display:block;
-  }
-
-  .pack-row .add-btn{
-    width:100%;
-    margin-top:6px;
-  }
-
-}
-
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <header>
+  <div class="header-inner">
 
-<div class="header-inner">
+    <div class="logo-area">
 
-<div class="brand">
+      <!-- JAYVIK LOGO -->
+      <div class="logo">J</div>
 
-<div class="logo">J</div>
+      <div>
+        <div class="brand-name">JAYVIK</div>
+        <div class="brand-sub">The Complete Health Store</div>
+      </div>
 
-<div>
-<div class="brand-name">Jayvik</div>
-<div class="brand-sub">The Complete Health Store</div>
-</div>
+    </div>
 
-</div>
+    <button class="cart-button" onclick="openCart()">
+      🛒 Cart (<span id="cartCount">0</span>)
+    </button>
 
-<div class="header-buttons">
-
-<button class="top-btn" onclick="toggleAdmin()">
-Admin
-</button>
-
-<button class="top-btn cart" onclick="openCart()">
-🛒 Cart <span id="cartCount">0</span>
-</button>
-
-</div>
-
-</div>
-
+  </div>
 </header>
 
 
+<!-- HERO -->
 <section class="hero">
 
-<div class="hero-inner">
+  <div class="hero-box">
 
-<h1>Pure • Natural • From the Farm</h1>
+    <h1>Pure • Natural • From the Farm 🌱</h1>
 
-<p>
-Shop natural, organic and healthy products from Jayvik –
-The Complete Health Store.
-</p>
+    <p>
+      Natural and healthy products from Jayvik – The Complete Health Store.
+      Select your products, choose the required size and send your order directly on WhatsApp.
+    </p>
 
-</div>
+  </div>
 
 </section>
 
 
-<!-- CATEGORY TABS -->
+<!-- CATEGORIES -->
+<section class="category-section">
 
-<div class="categories">
+  <div class="category-scroll" id="categories">
 
-<div class="category-inner" id="categoryTabs"></div>
+    <button class="category-btn active"
+      onclick="filterCategory('All',this)">All</button>
 
-</div>
+    <button class="category-btn"
+      onclick="filterCategory('Cold Pressed Oils',this)">Cold Pressed Oils</button>
+
+    <button class="category-btn"
+      onclick="filterCategory('Ghee',this)">Ghee</button>
+
+    <button class="category-btn"
+      onclick="filterCategory('Millet Corner',this)">Millet Corner</button>
+
+    <button class="category-btn"
+      onclick="filterCategory('Spices',this)">Spices</button>
+
+    <button class="category-btn"
+      onclick="filterCategory('Jaggery',this)">Jaggery</button>
+
+    <button class="category-btn"
+      onclick="filterCategory('Honey',this)">Honey</button>
+
+    <button class="category-btn"
+      onclick="filterCategory('Dals/Lentils',this)">Dals/Lentils</button>
+
+    <button class="category-btn"
+      onclick="filterCategory('Dry Fruits',this)">Dry Fruits</button>
+
+    <button class="category-btn"
+      onclick="filterCategory('Vegetables',this)">Vegetables</button>
+
+    <button class="category-btn"
+      onclick="filterCategory('Fruits',this)">Fruits</button>
+
+    <button class="category-btn"
+      onclick="filterCategory('Others',this)">Others</button>
+
+  </div>
+
+</section>
 
 
 <!-- PRODUCTS -->
+<section class="products-section">
 
-<main class="container">
+  <h2>Our Products</h2>
 
-<div class="section-title">
-
-<h2 id="categoryTitle">All Products</h2>
-
-</div>
-
-<div class="products" id="products"></div>
-
-</main>
-
-
-<!-- ADMIN -->
-
-<section class="admin" id="adminPanel">
-
-<div class="admin-inner">
-
-<div class="section-title">
-
-<h2>Admin Product Management</h2>
-
-<button class="top-btn" onclick="toggleAdmin()">
-Close
-</button>
-
-</div>
-
-
-<div class="admin-grid">
-
-
-<!-- ADD PRODUCT -->
-
-<div class="admin-box">
-
-<h3>Add Product</h3>
-
-<label>Product Name</label>
-
-<input id="productName"
-placeholder="Example: Groundnut Oil">
-
-
-<label>Category</label>
-
-<select id="productCategory"></select>
-
-
-<label>Photo</label>
-
-<input
-type="file"
-id="productPhoto"
-accept="image/*"
->
-
-
-<label>Pack Size</label>
-
-<input
-id="packSize"
-placeholder="Example: 1 L"
->
-
-
-<label>Price</label>
-
-<input
-id="packPrice"
-type="number"
-placeholder="Example: 310"
->
-
-
-<button class="admin-btn" onclick="addProduct()">
-Add Product
-</button>
-
-</div>
-
-
-<!-- ADD PACK -->
-
-<div class="admin-box">
-
-<h3>Add Pack Size to Existing Product</h3>
-
-<label>Select Product</label>
-
-<select id="existingProduct"></select>
-
-
-<label>Pack Size</label>
-
-<input
-id="newPackSize"
-placeholder="Example: 500 ml"
->
-
-
-<label>Price</label>
-
-<input
-id="newPackPrice"
-type="number"
-placeholder="Example: 190"
->
-
-
-<button class="admin-btn" onclick="addPack()">
-Add Pack Size
-</button>
-
-</div>
-
-
-<!-- CATEGORY MANAGEMENT -->
-
-<div class="admin-box">
-
-<h3>Category Management</h3>
-
-<label>New Category</label>
-
-<input
-id="newCategory"
-placeholder="Example: Organic Snacks"
->
-
-<button class="admin-btn" onclick="addCategory()">
-Add Category
-</button>
-
-<br><br>
-
-<div id="adminCategories"></div>
-
-</div>
-
-
-<!-- PRODUCT MANAGEMENT -->
-
-<div class="admin-box">
-
-<h3>Products</h3>
-
-<div id="adminProducts"></div>
-
-</div>
-
-
-</div>
-
-</div>
+  <div class="products-grid" id="productsGrid"></div>
 
 </section>
 
 
 <!-- CART -->
-
 <div class="cart-panel" id="cartPanel">
 
-<div class="panel-header">
+  <div class="cart-box">
 
-<strong>🛒 Your Order</strong>
+    <div class="cart-header">
+      <h2>Your Order</h2>
 
-<button class="close-btn" onclick="closeCart()">×</button>
+      <button class="close" onclick="closeCart()">✕</button>
+    </div>
 
-</div>
+    <div id="cartItems"></div>
 
-<div class="cart-content">
+    <div class="cart-total">
+      Total: ₹<span id="cartTotal">0</span>
+    </div>
 
-<div id="cartItems"></div>
+    <div class="customer-form">
 
-<div class="total">
+      <h3>Customer Details</h3>
 
-<span>Total</span>
+      <input
+        id="customerName"
+        placeholder="Name *">
 
-<span id="cartTotal">₹0</span>
+      <textarea
+        id="customerAddress"
+        rows="3"
+        placeholder="Full Address *"></textarea>
 
-</div>
+      <input
+        id="customerPhone"
+        type="tel"
+        placeholder="Contact Number *">
 
+    </div>
 
-<div class="customer-form">
+    <br>
 
-<label>Name *</label>
+    <button class="whatsapp-btn" onclick="sendWhatsApp()">
+      💬 Send Order on WhatsApp
+    </button>
 
-<input
-id="customerName"
-placeholder="Your name"
->
-
-
-<label>Address *</label>
-
-<textarea
-id="customerAddress"
-placeholder="Delivery address"
-></textarea>
-
-
-<label>Contact Number *</label>
-
-<input
-id="customerPhone"
-type="tel"
-placeholder="10 digit mobile number"
->
-
-
-<button class="whatsapp-btn" onclick="sendWhatsApp()">
-
-📱 Send Order on WhatsApp
-
-</button>
-
-</div>
-
-</div>
+  </div>
 
 </div>
 
 
+<!-- ADMIN -->
+<section class="admin-section">
+
+  <div class="admin-box">
+
+    <h2 class="admin-title">🔐 Admin Product Management</h2>
+
+    <p>
+      Add products, prices, sizes and photos from this dashboard.
+    </p>
+
+    <div class="admin-grid">
+
+      <input id="newName"
+        placeholder="Product name">
+
+      <select id="newCategory">
+        <option>Cold Pressed Oils</option>
+        <option>Ghee</option>
+        <option>Millet Corner</option>
+        <option>Spices</option>
+        <option>Jaggery</option>
+        <option>Honey</option>
+        <option>Dals/Lentils</option>
+        <option>Dry Fruits</option>
+        <option>Vegetables</option>
+        <option>Fruits</option>
+        <option>Others</option>
+      </select>
+
+      <input id="newSize"
+        placeholder="Size e.g. 1 L">
+
+      <input id="newPrice"
+        type="number"
+        placeholder="Price">
+
+      <input id="newPhoto"
+        placeholder="Photo filename e.g. oil.jpg">
+
+    </div>
+
+    <br>
+
+    <button class="admin-button add-product-btn"
+      onclick="addProduct()">
+      ➕ Add Product
+    </button>
+
+    <div class="admin-products">
+
+      <h3>Products</h3>
+
+      <div id="adminProducts"></div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- FOOTER -->
 <footer>
 
-<div class="footer-inner">
+  <strong>JAYVIK – The Complete Health Store</strong>
 
-<strong>Jayvik - The Complete Health Store</strong>
+  <br>
 
-<p class="footer-small">
-Plot no 34, 35, Kohale Layout, Godhani Road,
-Zingabai Takali, Nagpur 440030
-</p>
+  <small>
+    Plot no 34, 35, Kohale Layout, Godhani Road,
+    Zingabai Takali, Nagpur 440030
+  </small>
 
-<p class="footer-small">
-Call / WhatsApp: +91 9356959561
-</p>
+  <br><br>
 
-</div>
+  <small>
+    📞 +91 9356959561
+  </small>
 
 </footer>
 
@@ -842,1157 +661,783 @@ Call / WhatsApp: +91 9356959561
 <script>
 
 /* =========================================================
-   DEFAULT PRODUCT DATA
+   PRODUCT DATABASE
    ========================================================= */
 
-const defaultCategories = [
-
-"Cold Pressed Oils",
-"Ghee",
-"Millet Corner",
-"Spices",
-"Jaggery",
-"Honey",
-"Dals/Lentils",
-"Dryfruit",
-"Vegetables",
-"Fruits",
-"Others"
-
-];
-
-
-const defaultProducts = [
-
-{
- id:1,
- name:"Groundnut Oil",
- category:"Cold Pressed Oils",
- photo:"",
- packs:[
-  {size:"5 L",price:1500},
-  {size:"1 L",price:310},
-  {size:"500 ml",price:160}
- ]
-},
-
-{
- id:2,
- name:"Mustard Oil",
- category:"Cold Pressed Oils",
- photo:"",
- packs:[
-  {size:"1 L",price:360},
-  {size:"500 ml",price:190}
- ]
-},
-
-{
- id:3,
- name:"Flaxseed Oil",
- category:"Cold Pressed Oils",
- photo:"",
- packs:[
-  {size:"1 L",price:420},
-  {size:"500 ml",price:220}
- ]
-},
-
-{
- id:4,
- name:"Sesame Oil",
- category:"Cold Pressed Oils",
- photo:"",
- packs:[
-  {size:"1 L",price:540},
-  {size:"500 ml",price:280}
- ]
-},
-
-{
- id:5,
- name:"Coconut Oil",
- category:"Cold Pressed Oils",
- photo:"",
- packs:[
-  {size:"1 L",price:600},
-  {size:"500 ml",price:310}
- ]
-},
-
-{
- id:6,
- name:"Sunflower Oil",
- category:"Cold Pressed Oils",
- photo:"",
- packs:[
-  {size:"1 L",price:370}
- ]
-},
-
-{
- id:7,
- name:"Kardai Oil",
- category:"Cold Pressed Oils",
- photo:"",
- packs:[
-  {size:"1 L",price:370}
- ]
-},
-
-{
- id:8,
- name:"Gir Cow Ghee",
- category:"Ghee",
- photo:"",
- packs:[
-  {size:"1 L",price:1600},
-  {size:"500 ml",price:850}
- ]
-},
-
-{
- id:9,
- name:"Jeera",
- category:"Spices",
- photo:"",
- packs:[
-  {size:"100 g",price:60}
- ]
-},
-
-{
- id:10,
- name:"Rajgira",
- category:"Millet Corner",
- photo:"",
- packs:[
-  {size:"1 kg",price:240}
- ]
-},
-
-{
- id:11,
- name:"Rajgira Flour",
- category:"Millet Corner",
- photo:"",
- packs:[
-  {size:"1 kg",price:300},
-  {size:"500 g",price:160}
- ]
-},
-
-{
- id:12,
- name:"Bhagar",
- category:"Millet Corner",
- photo:"",
- packs:[
-  {size:"1 kg",price:200},
-  {size:"500 g",price:110}
- ]
-},
-
-{
- id:13,
- name:"Varai / Kutki / Little Millet",
- category:"Millet Corner",
- photo:"",
- packs:[
-  {size:"1 kg",price:220},
-  {size:"500 g",price:120}
- ]
-},
-
-{
- id:14,
- name:"Jowar Flakes",
- category:"Millet Corner",
- photo:"",
- packs:[
-  {size:"1 kg",price:160},
-  {size:"500 g",price:90}
- ]
-},
-
-{
- id:15,
- name:"Ragi Flakes",
- category:"Millet Corner",
- photo:"",
- packs:[
-  {size:"1 kg",price:200},
-  {size:"500 g",price:110}
- ]
-},
-
-{
- id:16,
- name:"Mishri",
- category:"Others",
- photo:"",
- packs:[
-  {size:"100 g",price:40}
- ]
-},
-
-{
- id:17,
- name:"Badam Oil",
- category:"Others",
- photo:"",
- packs:[
-  {size:"100 ml",price:270}
- ]
-},
-
-{
- id:18,
- name:"Castor Oil",
- category:"Others",
- photo:"",
- packs:[
-  {size:"100 ml",price:60}
- ]
-}
-
-];
-
-
-/* =========================================================
-   LOCAL STORAGE
-   ========================================================= */
-
-let categories =
-JSON.parse(localStorage.getItem("jayvik_categories"))
-|| defaultCategories;
-
-let products =
-JSON.parse(localStorage.getItem("jayvik_products"))
-|| defaultProducts;
-
-let cart =
-JSON.parse(localStorage.getItem("jayvik_cart"))
-|| [];
-
-let activeCategory = "All";
-
-
-function saveData(){
-
- localStorage.setItem(
-  "jayvik_categories",
-  JSON.stringify(categories)
- );
-
- localStorage.setItem(
-  "jayvik_products",
-  JSON.stringify(products)
- );
-
- localStorage.setItem(
-  "jayvik_cart",
-  JSON.stringify(cart)
- );
-
-}
-
-
-/* =========================================================
-   CATEGORY TABS
-   ========================================================= */
-
-function renderCategories(){
-
- const container =
- document.getElementById("categoryTabs");
-
- container.innerHTML="";
-
- const all =
- document.createElement("button");
-
- all.className =
- "category-btn " +
- (activeCategory==="All" ? "active":"");
-
- all.textContent="All Products";
-
- all.onclick=()=>{
-  activeCategory="All";
-  renderCategories();
-  renderProducts();
- };
-
- container.appendChild(all);
-
-
- categories.forEach(category=>{
-
-  const btn =
-  document.createElement("button");
-
-  btn.className =
-  "category-btn " +
-  (activeCategory===category ? "active":"");
-
-  btn.textContent=category;
-
-  btn.onclick=()=>{
-
-   activeCategory=category;
-
-   renderCategories();
-   renderProducts();
-
-  };
-
-  container.appendChild(btn);
-
- });
-
-}
-
-
-/* =========================================================
-   PRODUCTS
-   ========================================================= */
-
-function renderProducts(){
-
- const container =
- document.getElementById("products");
-
- container.innerHTML="";
-
- const list =
- activeCategory==="All"
- ? products
- : products.filter(
-   p=>p.category===activeCategory
- );
-
-
- document.getElementById("categoryTitle")
- .textContent =
- activeCategory==="All"
- ? "All Products"
- : activeCategory;
-
-
- if(list.length===0){
-
-  container.innerHTML=
-  `<div class="empty">
-   No products available in this category.
-  </div>`;
-
-  return;
-
- }
-
-
- list.forEach(product=>{
-
-  const card =
-  document.createElement("div");
-
-  card.className="card";
-
-
-  let imageHTML;
-
-  if(product.photo){
-
-   imageHTML=
-   `<img class="product-image"
-   src="${product.photo}"
-   alt="${product.name}">`;
-
-  }else{
-
-   imageHTML=
-   `<div class="image-placeholder">
-   📷 Product Photo
-   </div>`;
-
+let products = [
+
+  {
+    id:1,
+    name:"Groundnut Oil",
+    category:"Cold Pressed Oils",
+    description:"Traditional cold pressed groundnut oil.",
+    options:[
+      {size:"5 L",price:1500},
+      {size:"1 L",price:310},
+      {size:"500 ml",price:160}
+    ],
+    photo:""
+  },
+
+  {
+    id:2,
+    name:"Mustard Oil",
+    category:"Cold Pressed Oils",
+    description:"Traditional cold pressed mustard oil.",
+    options:[
+      {size:"1 L",price:360},
+      {size:"500 ml",price:190}
+    ],
+    photo:""
+  },
+
+  {
+    id:3,
+    name:"Flaxseed Oil",
+    category:"Cold Pressed Oils",
+    description:"Cold pressed flaxseed oil.",
+    options:[
+      {size:"1 L",price:420},
+      {size:"500 ml",price:220}
+    ],
+    photo:""
+  },
+
+  {
+    id:4,
+    name:"Sesame Oil",
+    category:"Cold Pressed Oils",
+    description:"Traditional cold pressed sesame oil.",
+    options:[
+      {size:"1 L",price:540},
+      {size:"500 ml",price:280}
+    ],
+    photo:""
+  },
+
+  {
+    id:5,
+    name:"Coconut Oil",
+    category:"Cold Pressed Oils",
+    description:"Natural coconut oil.",
+    options:[
+      {size:"1 L",price:600},
+      {size:"500 ml",price:310}
+    ],
+    photo:""
+  },
+
+  {
+    id:6,
+    name:"Sunflower Oil",
+    category:"Cold Pressed Oils",
+    description:"Natural sunflower oil.",
+    options:[
+      {size:"1 L",price:370}
+    ],
+    photo:""
+  },
+
+  {
+    id:7,
+    name:"Kardai Oil",
+    category:"Cold Pressed Oils",
+    description:"Traditional safflower oil.",
+    options:[
+      {size:"1 L",price:370}
+    ],
+    photo:""
+  },
+
+  {
+    id:8,
+    name:"Gir Cow Ghee",
+    category:"Ghee",
+    description:"A2 Gir cow ghee made using bilona method.",
+    options:[
+      {size:"1 L",price:1600},
+      {size:"500 ml",price:850}
+    ],
+    photo:""
+  },
+
+  {
+    id:9,
+    name:"Jeera",
+    category:"Spices",
+    description:"Natural cumin seeds.",
+    options:[
+      {size:"100 g",price:60}
+    ],
+    photo:""
+  },
+
+  {
+    id:10,
+    name:"Rajgira",
+    category:"Millet Corner",
+    description:"Naturally grown rajgira.",
+    options:[
+      {size:"1 kg",price:240}
+    ],
+    photo:""
+  },
+
+  {
+    id:11,
+    name:"Rajgira Flour",
+    category:"Millet Corner",
+    description:"Naturally grown rajgira flour.",
+    options:[
+      {size:"1 kg",price:300},
+      {size:"500 g",price:160}
+    ],
+    photo:""
+  },
+
+  {
+    id:12,
+    name:"Bhagar",
+    category:"Millet Corner",
+    description:"Naturally grown barnyard millet.",
+    options:[
+      {size:"1 kg",price:200},
+      {size:"500 g",price:110}
+    ],
+    photo:""
+  },
+
+  {
+    id:13,
+    name:"Varai / Little Millet",
+    category:"Millet Corner",
+    description:"Naturally grown little millet.",
+    options:[
+      {size:"1 kg",price:220},
+      {size:"500 g",price:120}
+    ],
+    photo:""
+  },
+
+  {
+    id:14,
+    name:"Jowar Flakes",
+    category:"Millet Corner",
+    description:"Healthy jowar flakes.",
+    options:[
+      {size:"1 kg",price:160},
+      {size:"500 g",price:90}
+    ],
+    photo:""
+  },
+
+  {
+    id:15,
+    name:"Ragi Flakes",
+    category:"Millet Corner",
+    description:"Healthy ragi flakes.",
+    options:[
+      {size:"1 kg",price:200},
+      {size:"500 g",price:110}
+    ],
+    photo:""
+  },
+
+  {
+    id:16,
+    name:"Badam Oil",
+    category:"Others",
+    description:"Natural almond oil.",
+    options:[
+      {size:"100 ml",price:270}
+    ],
+    photo:""
+  },
+
+  {
+    id:17,
+    name:"Castor Oil",
+    category:"Others",
+    description:"Natural castor oil.",
+    options:[
+      {size:"100 ml",price:60}
+    ],
+    photo:""
+  },
+
+  {
+    id:18,
+    name:"Mishri",
+    category:"Jaggery",
+    description:"Natural rock sugar.",
+    options:[
+      {size:"100 g",price:40}
+    ],
+    photo:""
   }
 
-
-  let packsHTML="";
-
-  product.packs.forEach(
-   (pack,index)=>{
-
-    packsHTML+=`
-
-    <div class="pack-row">
-
-      <div class="pack-info">
-
-        <div>${pack.size}</div>
-
-        <div class="pack-price">
-        ₹${pack.price}
-        </div>
-
-      </div>
-
-      <button
-      class="add-btn"
-      onclick="addToCart(${product.id},${index})">
-
-      Add
-
-      </button>
-
-    </div>
-
-    `;
-
-   }
-  );
-
-
-  card.innerHTML=`
-
-  ${imageHTML}
-
-  <div class="card-body">
-
-   <h3>${product.name}</h3>
-
-   <div class="category-label">
-   ${product.category}
-   </div>
-
-   ${packsHTML}
-
-  </div>
-
-  `;
-
-
-  container.appendChild(card);
-
- });
-
-}
+];
 
 
 /* =========================================================
    CART
    ========================================================= */
 
-function addToCart(productId,packIndex){
-
- const product =
- products.find(p=>p.id===productId);
-
- const pack =
- product.packs[packIndex];
+let cart=[];
+let currentCategory="All";
 
 
- const existing =
- cart.find(
-  item =>
-  item.productId===productId &&
-  item.packIndex===packIndex
- );
+/* DISPLAY PRODUCTS */
 
+function renderProducts(){
 
- if(existing){
+  const grid=document.getElementById("productsGrid");
 
-  existing.qty++;
+  grid.innerHTML="";
 
- }else{
+  let filtered=products.filter(p =>
+    currentCategory==="All" ||
+    p.category===currentCategory
+  );
 
-  cart.push({
+  if(filtered.length===0){
 
-   productId,
-   packIndex,
-   qty:1
+    grid.innerHTML=
+      "<p>No products available in this category.</p>";
+
+    return;
+  }
+
+  filtered.forEach(product=>{
+
+    const card=document.createElement("div");
+
+    card.className="product-card";
+
+    let photoHTML="";
+
+    if(product.photo){
+
+      photoHTML=
+        `<img class="product-photo"
+        src="${product.photo}"
+        alt="${product.name}"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="photo-placeholder" style="display:none">
+        📷 Product Photo
+        </div>`;
+
+    }else{
+
+      photoHTML=
+        `<div class="photo-placeholder">
+        📷 Product Photo
+        </div>`;
+
+    }
+
+    let optionsHTML=product.options.map(
+      (option,index)=>
+      `<option value="${index}">
+        ${option.size} – ₹${option.price}
+      </option>`
+    ).join("");
+
+    card.innerHTML=`
+
+      ${photoHTML}
+
+      <div class="product-info">
+
+        <div class="product-name">
+          ${product.name}
+        </div>
+
+        <div class="product-description">
+          ${product.description}
+        </div>
+
+        <select
+          class="size-select"
+          id="size-${product.id}">
+          ${optionsHTML}
+        </select>
+
+        <div class="product-price"
+          id="price-${product.id}">
+          ₹${product.options[0].price}
+        </div>
+
+        <div class="quantity-row">
+
+          <button class="qty-btn"
+            onclick="changeQty(${product.id},-1)">
+            −
+          </button>
+
+          <span class="qty"
+            id="qty-${product.id}">
+            1
+          </span>
+
+          <button class="qty-btn"
+            onclick="changeQty(${product.id},1)">
+            +
+          </button>
+
+          <button class="add-cart"
+            onclick="addToCart(${product.id})">
+            Add
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    grid.appendChild(card);
+
+    document
+      .getElementById(`size-${product.id}`)
+      .addEventListener("change",function(){
+
+        const selected=
+          product.options[this.value];
+
+        document.getElementById(
+          `price-${product.id}`
+        ).innerText=
+          "₹"+selected.price;
+
+      });
 
   });
 
- }
-
-
- saveData();
-
- updateCart();
-
- openCart();
-
 }
 
+
+/* QUANTITY */
+
+function changeQty(id,change){
+
+  const element=
+    document.getElementById("qty-"+id);
+
+  let qty=parseInt(element.innerText)+change;
+
+  if(qty<1)qty=1;
+
+  element.innerText=qty;
+}
+
+
+/* ADD TO CART */
+
+function addToCart(id){
+
+  const product=
+    products.find(p=>p.id===id);
+
+  const sizeIndex=
+    document.getElementById("size-"+id).value;
+
+  const qty=
+    parseInt(document.getElementById("qty-"+id).innerText);
+
+  const option=
+    product.options[sizeIndex];
+
+  const existing=
+    cart.find(item=>
+      item.id===id &&
+      item.size===option.size
+    );
+
+  if(existing){
+
+    existing.qty+=qty;
+
+  }else{
+
+    cart.push({
+      id:id,
+      name:product.name,
+      size:option.size,
+      price:option.price,
+      qty:qty
+    });
+
+  }
+
+  updateCart();
+
+  document.getElementById(
+    "qty-"+id
+  ).innerText=1;
+
+  alert("Added to cart ✓");
+}
+
+
+/* CART UPDATE */
 
 function updateCart(){
 
- const container =
- document.getElementById("cartItems");
-
- container.innerHTML="";
-
- let total=0;
- let count=0;
-
-
- if(cart.length===0){
-
-  container.innerHTML=
-  `<div class="empty">
-  Your cart is empty.
-  </div>`;
-
- }
-
-
- cart.forEach((item,index)=>{
-
-  const product =
-  products.find(
-   p=>p.id===item.productId
-  );
-
-  if(!product) return;
-
-  const pack =
-  product.packs[item.packIndex];
-
-  if(!pack) return;
-
-
-  const lineTotal =
-  pack.price * item.qty;
-
-  total += lineTotal;
-
-  count += item.qty;
-
-
-  container.innerHTML += `
-
-  <div class="cart-item">
-
-   <div class="cart-item-top">
-
-    <div>
-
-     <div class="cart-item-name">
-     ${product.name}
-     </div>
-
-     <div class="small">
-     ${pack.size} × ${item.qty}
-     </div>
-
-    </div>
-
-    <strong>
-    ₹${lineTotal}
-    </strong>
-
-   </div>
-
-
-   <div class="cart-controls">
-
-    <button
-    class="qty-btn"
-    onclick="changeQty(${index},-1)">
-    −
-    </button>
-
-    <strong>${item.qty}</strong>
-
-    <button
-    class="qty-btn"
-    onclick="changeQty(${index},1)">
-    +
-    </button>
-
-    <button
-    class="remove-btn"
-    onclick="removeCartItem(${index})">
-    Remove
-    </button>
-
-   </div>
-
-  </div>
-
-  `;
-
- });
-
-
- document.getElementById("cartTotal")
- .textContent="₹"+total.toLocaleString("en-IN");
-
- document.getElementById("cartCount")
- .textContent=count;
+  document.getElementById(
+    "cartCount"
+  ).innerText=
+    cart.reduce((sum,item)=>sum+item.qty,0);
 
 }
 
 
-function changeQty(index,change){
-
- cart[index].qty += change;
-
- if(cart[index].qty<=0){
-
-  cart.splice(index,1);
-
- }
-
- saveData();
- updateCart();
-
-}
-
-
-function removeCartItem(index){
-
- cart.splice(index,1);
-
- saveData();
- updateCart();
-
-}
-
+/* OPEN CART */
 
 function openCart(){
 
- document
- .getElementById("cartPanel")
- .classList.add("open");
+  renderCart();
+
+  document.getElementById(
+    "cartPanel"
+  ).style.display="block";
 
 }
 
+
+/* CLOSE CART */
 
 function closeCart(){
 
- document
- .getElementById("cartPanel")
- .classList.remove("open");
+  document.getElementById(
+    "cartPanel"
+  ).style.display="none";
 
 }
 
 
-/* =========================================================
-   WHATSAPP ORDER
-   ========================================================= */
+/* RENDER CART */
+
+function renderCart(){
+
+  const container=
+    document.getElementById("cartItems");
+
+  container.innerHTML="";
+
+  if(cart.length===0){
+
+    container.innerHTML=
+      "<p>Your cart is empty.</p>";
+
+    document.getElementById(
+      "cartTotal"
+    ).innerText="0";
+
+    return;
+  }
+
+  let total=0;
+
+  cart.forEach((item,index)=>{
+
+    const itemTotal=
+      item.price*item.qty;
+
+    total+=itemTotal;
+
+    const div=
+      document.createElement("div");
+
+    div.className="cart-item";
+
+    div.innerHTML=`
+
+      <div class="cart-item-title">
+        ${index+1}. ${item.name}
+      </div>
+
+      <div>
+        ${item.size} × ${item.qty}
+        = ₹${itemTotal}
+      </div>
+
+      <button
+        class="admin-button remove-btn"
+        onclick="removeCartItem(${index})">
+        Remove
+      </button>
+
+    `;
+
+    container.appendChild(div);
+
+  });
+
+  document.getElementById(
+    "cartTotal"
+  ).innerText=total;
+
+}
+
+
+/* REMOVE CART ITEM */
+
+function removeCartItem(index){
+
+  cart.splice(index,1);
+
+  updateCart();
+
+  renderCart();
+
+}
+
+
+/* SEND WHATSAPP */
 
 function sendWhatsApp(){
 
- if(cart.length===0){
+  if(cart.length===0){
 
-  alert("Please add products to your cart first.");
+    alert("Please add products to your cart.");
 
-  return;
+    return;
+  }
 
- }
+  const name=
+    document.getElementById(
+      "customerName"
+    ).value.trim();
 
+  const address=
+    document.getElementById(
+      "customerAddress"
+    ).value.trim();
 
- const name =
- document.getElementById("customerName")
- .value.trim();
+  const phone=
+    document.getElementById(
+      "customerPhone"
+    ).value.trim();
 
- const address =
- document.getElementById("customerAddress")
- .value.trim();
+  if(!name || !address || !phone){
 
- const phone =
- document.getElementById("customerPhone")
- .value.trim();
+    alert(
+      "Please enter Name, Address and Contact Number."
+    );
 
+    return;
+  }
 
- if(!name || !address || !phone){
+  let message=
+    "Hello Jayvik, I would like to place an order:%0A%0A";
 
-  alert(
-   "Please enter Name, Address and Contact Number."
-  );
+  let total=0;
 
-  return;
+  cart.forEach((item,index)=>{
 
- }
+    const itemTotal=
+      item.price*item.qty;
 
+    total+=itemTotal;
 
- let message =
- "Hello Jayvik, I would like to place an order:%0A%0A";
+    message+=
+      `${index+1}. ${item.name} – ${item.size} × ${item.qty} = ₹${itemTotal}%0A`;
 
- let total=0;
+  });
 
+  message+=
+    `%0A*Total: ₹${total}*%0A%0A`;
 
- cart.forEach((item,index)=>{
+  message+=
+    `Name: ${encodeURIComponent(name)}%0A`;
 
-  const product =
-  products.find(
-   p=>p.id===item.productId
-  );
+  message+=
+    `Address: ${encodeURIComponent(address)}%0A`;
 
-  if(!product) return;
+  message+=
+    `Contact Number: ${encodeURIComponent(phone)}`;
 
-  const pack =
-  product.packs[item.packIndex];
+  const whatsappNumber=
+    "919356959561";
 
-  if(!pack) return;
+  const url=
+    "https://wa.me/"+
+    whatsappNumber+
+    "?text="+message;
 
-  const lineTotal =
-  pack.price * item.qty;
+  window.open(url,"_blank");
 
-  total += lineTotal;
-
-
-  message +=
-  `${index+1}. ${product.name} – ${pack.size} × ${item.qty} = ₹${lineTotal}%0A`;
-
- });
-
-
- message +=
- `%0A*Total: ₹${total.toLocaleString("en-IN")}*%0A%0A`;
-
- message +=
- `Name: ${encodeURIComponent(name)}%0A`;
-
- message +=
- `Address: ${encodeURIComponent(address)}%0A`;
-
- message +=
- `Contact Number: ${encodeURIComponent(phone)}`;
+}
 
 
- /*
-  YOUR JAYVIK WHATSAPP NUMBER
-  */
+/* CATEGORY FILTER */
 
- const whatsappNumber =
- "919356959561";
+function filterCategory(category,button){
 
+  currentCategory=category;
 
- const url =
- `https://wa.me/${whatsappNumber}?text=${message}`;
+  document
+    .querySelectorAll(".category-btn")
+    .forEach(btn =>
+      btn.classList.remove("active")
+    );
 
+  button.classList.add("active");
 
- window.open(url,"_blank");
+  renderProducts();
 
 }
 
 
 /* =========================================================
-   ADMIN
-   ========================================================= */
-
-function toggleAdmin(){
-
- const panel =
- document.getElementById("adminPanel");
-
- panel.classList.toggle("show");
-
- if(panel.classList.contains("show")){
-
-  renderAdmin();
-
- }
-
-}
-
-
-function renderAdmin(){
-
- const categorySelect =
- document.getElementById("productCategory");
-
- categorySelect.innerHTML="";
-
- categories.forEach(c=>{
-
-  categorySelect.innerHTML +=
-  `<option value="${c}">${c}</option>`;
-
- });
-
-
- const existing =
- document.getElementById("existingProduct");
-
- existing.innerHTML="";
-
- products.forEach(p=>{
-
-  existing.innerHTML +=
-  `<option value="${p.id}">
-  ${p.name}
-  </option>`;
-
- });
-
-
- const adminCategories =
- document.getElementById("adminCategories");
-
- adminCategories.innerHTML="";
-
- categories.forEach((category,index)=>{
-
-  adminCategories.innerHTML += `
-
-  <div class="admin-product">
-
-   <span>${category}</span>
-
-   <button
-   class="admin-btn danger"
-   onclick="removeCategory(${index})">
-
-   Remove
-
-   </button>
-
-  </div>
-
-  `;
-
- });
-
-
- const adminProducts =
- document.getElementById("adminProducts");
-
- adminProducts.innerHTML="";
-
-
- products.forEach(product=>{
-
-  adminProducts.innerHTML += `
-
-  <div class="admin-product">
-
-   <div>
-
-    <strong>${product.name}</strong>
-
-    <br>
-
-    <small>
-    ${product.category} |
-    ${product.packs.length} pack size(s)
-    </small>
-
-   </div>
-
-   <button
-   class="admin-btn danger"
-   onclick="removeProduct(${product.id})">
-
-   Remove
-
-   </button>
-
-  </div>
-
-  `;
-
- });
-
-}
-
-
-/* =========================================================
-   ADD PRODUCT
+   ADMIN PRODUCT MANAGEMENT
    ========================================================= */
 
 function addProduct(){
 
- const name =
- document.getElementById("productName")
- .value.trim();
+  const name=
+    document.getElementById("newName")
+    .value.trim();
 
- const category =
- document.getElementById("productCategory")
- .value;
+  const category=
+    document.getElementById("newCategory")
+    .value;
 
- const size =
- document.getElementById("packSize")
- .value.trim();
+  const size=
+    document.getElementById("newSize")
+    .value.trim();
 
- const price =
- Number(
-  document.getElementById("packPrice").value
- );
+  const price=
+    parseFloat(
+      document.getElementById("newPrice")
+      .value
+    );
 
- const file =
- document.getElementById("productPhoto")
- .files[0];
+  const photo=
+    document.getElementById("newPhoto")
+    .value.trim();
 
+  if(!name || !size || !price){
 
- if(!name || !category || !size || !price){
+    alert(
+      "Please enter Product Name, Size and Price."
+    );
 
-  alert(
-   "Please fill Product Name, Category, Pack Size and Price."
-  );
-
-  return;
-
- }
-
-
- function finish(photoData){
+    return;
+  }
 
   products.push({
 
-   id:Date.now(),
+    id:Date.now(),
 
-   name,
+    name:name,
 
-   category,
+    category:category,
 
-   photo:photoData || "",
+    description:"Jayvik natural product.",
 
-   packs:[
-    {
-     size,
-     price
-    }
-   ]
+    options:[
+      {
+        size:size,
+        price:price
+      }
+    ],
+
+    photo:photo
 
   });
 
+  document.getElementById("newName").value="";
+  document.getElementById("newSize").value="";
+  document.getElementById("newPrice").value="";
+  document.getElementById("newPhoto").value="";
 
-  saveData();
-
-  renderCategories();
   renderProducts();
   renderAdmin();
 
-
-  document.getElementById("productName").value="";
-  document.getElementById("packSize").value="";
-  document.getElementById("packPrice").value="";
-  document.getElementById("productPhoto").value="";
-
-
-  alert("Product added successfully.");
-
- }
-
-
- if(file){
-
-  const reader =
-  new FileReader();
-
-  reader.onload =
-  function(e){
-
-   finish(e.target.result);
-
-  };
-
-  reader.readAsDataURL(file);
-
- }else{
-
-  finish("");
-
- }
+  alert("Product added ✓");
 
 }
 
 
-/* =========================================================
-   ADD PACK SIZE
-   ========================================================= */
+/* ADMIN PRODUCT LIST */
 
-function addPack(){
+function renderAdmin(){
 
- const productId =
- Number(
-  document.getElementById("existingProduct").value
- );
+  const container=
+    document.getElementById(
+      "adminProducts"
+    );
 
- const size =
- document.getElementById("newPackSize")
- .value.trim();
+  container.innerHTML="";
 
- const price =
- Number(
-  document.getElementById("newPackPrice").value
- );
+  products.forEach(product=>{
 
+    const row=
+      document.createElement("div");
 
- if(!size || !price){
+    row.className=
+      "admin-product-row";
 
-  alert("Enter pack size and price.");
+    row.innerHTML=`
 
-  return;
+      <div>
+        <strong>${product.name}</strong>
+        <br>
+        <small>
+          ${product.category}
+        </small>
+      </div>
 
- }
+      <button
+        class="admin-button remove-btn"
+        onclick="removeProduct(${product.id})">
+        🗑 Remove
+      </button>
 
+    `;
 
- const product =
- products.find(
-  p=>p.id===productId
- );
+    container.appendChild(row);
 
-
- if(!product) return;
-
-
- product.packs.push({
-
-  size,
-  price
-
- });
-
-
- saveData();
-
- renderProducts();
- renderAdmin();
-
-
- document.getElementById("newPackSize").value="";
- document.getElementById("newPackPrice").value="";
-
-
- alert("Pack size added.");
+  });
 
 }
 
 
-/* =========================================================
-   REMOVE PRODUCT
-   ========================================================= */
+/* REMOVE PRODUCT */
 
 function removeProduct(id){
 
- const product =
- products.find(p=>p.id===id);
+  const product=
+    products.find(p=>p.id===id);
 
- if(!product) return;
+  if(!product)return;
 
+  const confirmDelete=
+    confirm(
+      "Remove "+product.name+"?"
+    );
 
- if(!confirm(
-  `Remove "${product.name}"?`
- )) return;
+  if(!confirmDelete)return;
 
+  products=
+    products.filter(p=>p.id!==id);
 
- products =
- products.filter(
-  p=>p.id!==id
- );
+  cart=
+    cart.filter(item=>item.id!==id);
 
+  updateCart();
 
- cart =
- cart.filter(
-  item=>item.productId!==id
- );
-
-
- saveData();
-
- renderProducts();
- renderAdmin();
- updateCart();
+  renderProducts();
+  renderAdmin();
 
 }
 
 
-/* =========================================================
-   CATEGORY
-   ========================================================= */
-
-function addCategory(){
-
- const input =
- document.getElementById("newCategory");
-
- const name =
- input.value.trim();
-
-
- if(!name){
-
-  alert("Enter a category name.");
-
-  return;
-
- }
-
-
- if(categories.includes(name)){
-
-  alert("Category already exists.");
-
-  return;
-
- }
-
-
- categories.push(name);
-
- saveData();
-
- input.value="";
-
- renderCategories();
- renderAdmin();
-
-}
-
-
-function removeCategory(index){
-
- const category =
- categories[index];
-
-
- const used =
- products.some(
-  p=>p.category===category
- );
-
-
- if(used){
-
-  alert(
-   "This category is being used by products. Remove or move those products first."
-  );
-
-  return;
-
- }
-
-
- if(!confirm(
-  `Remove "${category}" category?`
- )) return;
-
-
- categories.splice(index,1);
-
- saveData();
-
- renderCategories();
- renderAdmin();
-
-}
-
-
-/* =========================================================
-   START APP
-   ========================================================= */
-
-renderCategories();
+/* INITIAL LOAD */
 
 renderProducts();
-
-updateCart();
+renderAdmin();
 
 </script>
 
