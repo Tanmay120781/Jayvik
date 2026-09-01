@@ -1,5 +1,5 @@
-```html
 <!doctype html>
+
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -10,8 +10,8 @@
 :root{
   --green:#267a35;
   --green2:#3fa64d;
-  --dark:#17351d;
   --light:#f4faf4;
+  --dark:#17351d;
   --gold:#d99b18;
   --muted:#6b7280;
   --danger:#c62828;
@@ -20,13 +20,9 @@
   --shadow:0 10px 30px rgba(0,0,0,.08);
 }
 
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
-html{
-  scroll-behavior:smooth;
-}
+html{scroll-behavior:smooth}
 
 body{
   margin:0;
@@ -35,10 +31,7 @@ body{
   color:#202820;
 }
 
-button,
-input,
-textarea,
-select{
+button,input,textarea,select{
   font:inherit;
 }
 
@@ -47,33 +40,26 @@ button{
 }
 
 button:disabled{
-  opacity:.55;
+  opacity:.6;
   cursor:not-allowed;
 }
 
-/* =========================
-   TOP BAR
-========================= */
-
 .topbar{
-  background:var(--dark);
-  color:#fff;
-  padding:8px 20px;
+  background:linear-gradient(90deg,#17351d,#267a35,#17351d);
+  color:white;
+  padding:9px 20px;
   text-align:center;
   font-size:13px;
+  font-weight:600;
 }
 
-/* =========================
-   HEADER
-========================= */
-
 header{
-  background:#fff;
+  background:rgba(255,255,255,.97);
   border-bottom:1px solid var(--border);
   position:sticky;
   top:0;
   z-index:50;
-  box-shadow:0 3px 15px rgba(0,0,0,.05);
+  box-shadow:0 2px 15px rgba(0,0,0,.05);
 }
 
 .header-inner{
@@ -94,17 +80,18 @@ header{
 }
 
 .logo{
-  width:70px;
-  height:70px;
-  border-radius:16px;
+  width:68px;
+  height:68px;
+  border-radius:17px;
   object-fit:contain;
   background:#edf7ed;
   border:2px solid #d8ead8;
-  padding:4px;
+  padding:5px;
+  flex:none;
 }
 
 .brand-title{
-  font-size:24px;
+  font-size:23px;
   font-weight:850;
   color:var(--green);
 }
@@ -112,6 +99,7 @@ header{
 .brand-sub{
   font-size:13px;
   color:var(--muted);
+  margin-top:2px;
 }
 
 .header-actions{
@@ -120,29 +108,26 @@ header{
   align-items:center;
 }
 
-/* =========================
-   BUTTONS
-========================= */
-
 .btn{
   border:0;
   border-radius:10px;
   padding:11px 16px;
   font-weight:750;
+  transition:.18s;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
 }
 
 .btn-green{
   background:var(--green);
-  color:#fff;
-}
-
-.btn-green:hover{
-  background:#1f682c;
+  color:white;
 }
 
 .btn-dark{
   background:var(--dark);
-  color:#fff;
+  color:white;
 }
 
 .btn-light{
@@ -157,34 +142,31 @@ header{
 
 .btn-gold{
   background:#fff4d6;
-  color:#795d12;
+  color:#76550c;
 }
-
-/* =========================
-   HERO
-========================= */
 
 .hero{
   background:
     radial-gradient(circle at 80% 30%,#dff2df,transparent 35%),
     linear-gradient(135deg,#f4fbf4,#fff);
-  padding:55px 20px;
+  padding:65px 20px;
 }
 
 .hero-inner{
   max-width:1300px;
   margin:auto;
   display:grid;
-  grid-template-columns:1.5fr 1fr;
-  gap:35px;
+  grid-template-columns:1.45fr .75fr;
+  gap:45px;
   align-items:center;
 }
 
 .hero h1{
-  font-size:50px;
-  line-height:1.08;
+  font-size:52px;
+  line-height:1.06;
   margin:0 0 18px;
   color:var(--dark);
+  letter-spacing:-1.5px;
 }
 
 .hero h1 span{
@@ -193,17 +175,24 @@ header{
 
 .hero p{
   font-size:17px;
-  line-height:1.7;
   color:#59635a;
-  max-width:680px;
+  max-width:700px;
+  line-height:1.7;
+}
+
+.hero-buttons{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:24px;
 }
 
 .hero-card{
-  background:#fff;
-  border-radius:25px;
+  background:white;
+  border-radius:24px;
   padding:28px;
   box-shadow:var(--shadow);
-  border:1px solid var(--border);
+  border:1px solid #e4eee4;
 }
 
 .hero-logo{
@@ -215,26 +204,23 @@ header{
 }
 
 .store-address{
-  margin-top:15px;
+  margin-top:18px;
   text-align:center;
   color:#606a61;
-  line-height:1.6;
+  line-height:1.65;
+  font-size:14px;
 }
 
 .store-address a{
   color:var(--green);
-  font-weight:750;
+  font-weight:700;
   text-decoration:none;
 }
-
-/* =========================
-   MAIN
-========================= */
 
 .container{
   max-width:1300px;
   margin:auto;
-  padding:32px 20px;
+  padding:35px 20px;
 }
 
 .section-title{
@@ -253,17 +239,18 @@ header{
 .categories{
   display:flex;
   flex-wrap:wrap;
-  gap:10px;
-  margin-bottom:25px;
+  gap:9px;
+  margin-bottom:22px;
 }
 
 .category-btn{
   border:1px solid #d9e7d9;
-  background:#fff;
+  background:white;
   color:#34513a;
   border-radius:25px;
-  padding:10px 17px;
+  padding:9px 16px;
   font-weight:650;
+  transition:.18s;
 }
 
 .category-btn:hover{
@@ -272,44 +259,48 @@ header{
 
 .category-btn.active{
   background:var(--green);
-  color:#fff;
+  color:white;
   border-color:var(--green);
+}
+
+.search-wrap{
+  position:relative;
+  margin-bottom:24px;
 }
 
 .search{
   width:100%;
-  padding:13px 16px;
+  padding:14px 18px 14px 45px;
   border:1px solid #d9e4d9;
-  border-radius:11px;
-  margin-bottom:22px;
-  background:#fff;
+  border-radius:12px;
+  background:white;
   outline:none;
 }
 
-.search:focus,
-input:focus,
-textarea:focus,
-select:focus{
+.search:focus{
   border-color:var(--green);
-  box-shadow:0 0 0 3px rgba(38,122,53,.08);
+  box-shadow:0 0 0 3px rgba(38,122,53,.1);
 }
 
-/* =========================
-   PRODUCTS
-========================= */
+.search-icon{
+  position:absolute;
+  left:16px;
+  top:12px;
+  font-size:20px;
+}
 
 .products{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(235px,1fr));
   gap:20px;
 }
 
 .product-card{
-  background:#fff;
-  border:1px solid var(--border);
+  background:white;
+  border:1px solid #e4ebe4;
   border-radius:18px;
   overflow:hidden;
-  box-shadow:0 4px 17px rgba(0,0,0,.05);
+  box-shadow:0 4px 16px rgba(0,0,0,.05);
   transition:.2s;
 }
 
@@ -334,35 +325,36 @@ select:focus{
   color:var(--green);
   font-weight:850;
   text-transform:uppercase;
-  letter-spacing:.6px;
+  letter-spacing:.7px;
 }
 
 .product-name{
-  margin:7px 0 9px;
-  font-size:19px;
+  margin:7px 0 8px;
+  font-size:18px;
   line-height:1.3;
 }
 
 .product-description{
-  color:#6b746c;
+  color:#69736b;
   font-size:13px;
   line-height:1.5;
   min-height:38px;
+  margin-bottom:10px;
 }
 
 .pack-row{
   display:flex;
   flex-wrap:wrap;
-  gap:7px;
-  margin:12px 0;
+  gap:6px;
+  margin-bottom:11px;
 }
 
 .pack-btn{
   border:1px solid #d8e5d8;
-  background:#fff;
+  background:white;
   border-radius:8px;
-  padding:7px 10px;
-  font-size:13px;
+  padding:6px 9px;
+  font-size:12px;
 }
 
 .pack-btn.active{
@@ -376,33 +368,29 @@ select:focus{
   font-size:21px;
   font-weight:850;
   color:var(--green);
-  margin-bottom:12px;
+  margin-bottom:11px;
 }
 
 .add-btn{
   width:100%;
   border:0;
   background:var(--green);
-  color:#fff;
+  color:white;
   padding:12px;
   border-radius:9px;
   font-weight:800;
 }
 
 .add-btn:hover{
-  background:#1f682c;
+  background:#1e662b;
 }
 
-/* =========================
-   CART
-========================= */
-
 .cart-box{
-  background:#fff;
-  border-radius:20px;
-  padding:23px;
+  background:white;
+  border-radius:18px;
+  padding:22px;
   box-shadow:var(--shadow);
-  border:1px solid var(--border);
+  border:1px solid #e5ece5;
 }
 
 .cart-item{
@@ -411,7 +399,7 @@ select:focus{
   gap:15px;
   align-items:center;
   border-bottom:1px solid #eee;
-  padding:14px 0;
+  padding:13px 0;
 }
 
 .qty{
@@ -424,7 +412,7 @@ select:focus{
   width:31px;
   height:31px;
   border:1px solid #ddd;
-  background:#fff;
+  background:white;
   border-radius:7px;
 }
 
@@ -439,43 +427,55 @@ select:focus{
 .customer-form{
   display:grid;
   gap:12px;
-  margin-top:22px;
+  margin-top:24px;
+}
+
+.customer-form h3{
+  margin-bottom:0;
 }
 
 .customer-form input,
-.customer-form textarea{
+.customer-form textarea,
+.admin-form input,
+.admin-form textarea,
+.admin-form select{
   width:100%;
   border:1px solid #d7dfd7;
-  border-radius:9px;
+  border-radius:10px;
   padding:12px;
-  background:#fff;
+  background:white;
   outline:none;
 }
 
+.customer-form input:focus,
+.customer-form textarea:focus,
+.admin-form input:focus,
+.admin-form textarea:focus,
+.admin-form select:focus{
+  border-color:var(--green);
+  box-shadow:0 0 0 3px rgba(38,122,53,.08);
+}
+
 .customer-form textarea{
-  min-height:100px;
+  min-height:95px;
   resize:vertical;
 }
 
 .whatsapp{
   width:100%;
   background:#25d366;
-  color:#fff;
+  color:white;
   border:0;
   padding:14px;
   border-radius:10px;
   font-size:16px;
   font-weight:850;
-  margin-top:5px;
+  margin-top:4px;
 }
 
-/* =========================
-   FOOTER
-========================= */
-
 footer{
-  background:var(--dark);
-  color:#fff;
+  background:#17351d;
+  color:white;
   margin-top:50px;
   padding:35px 20px;
 }
@@ -487,53 +487,42 @@ footer{
   justify-content:space-between;
   gap:25px;
   flex-wrap:wrap;
+  line-height:1.7;
 }
 
-/* =========================
-   LOADING
-========================= */
-
-.loading{
-  padding:50px;
-  text-align:center;
-  color:#667067;
-  background:#fff;
-  border-radius:16px;
-}
-
-.spinner{
-  width:35px;
-  height:35px;
-  border:4px solid #dce8dc;
-  border-top-color:var(--green);
-  border-radius:50%;
-  animation:spin .8s linear infinite;
-  margin:0 auto 15px;
-}
-
-@keyframes spin{
-  to{transform:rotate(360deg)}
+.footer-title{
+  font-size:18px;
+  font-weight:800;
 }
 
 .empty{
   text-align:center;
-  padding:40px;
+  padding:40px 20px;
   color:#7b857d;
-  background:#fff;
+  background:white;
   border-radius:15px;
+  border:1px solid var(--border);
 }
 
-/* =========================
-   ADMIN OVERLAY
-========================= */
+.loading{
+  text-align:center;
+  padding:50px;
+  color:#657065;
+}
+
+/* ADMIN */
 
 .admin-overlay{
   display:none;
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.65);
+  background:rgba(0,0,0,.62);
   z-index:100;
   overflow:auto;
+}
+
+.admin-overlay.open{
+  display:block;
 }
 
 .admin-panel{
@@ -542,8 +531,8 @@ footer{
 }
 
 .admin-header{
-  background:var(--dark);
-  color:#fff;
+  background:linear-gradient(110deg,#17351d,#267a35);
+  color:white;
   padding:14px 20px;
   position:sticky;
   top:0;
@@ -568,8 +557,8 @@ footer{
 .admin-logo{
   width:60px;
   height:60px;
-  background:#fff;
-  border-radius:12px;
+  background:white;
+  border-radius:13px;
   object-fit:contain;
   padding:4px;
 }
@@ -589,15 +578,16 @@ footer{
 
 .admin-tab{
   border:0;
-  background:#e4ebe4;
-  padding:11px 16px;
+  background:#e3eae3;
+  color:#344538;
+  padding:11px 15px;
   border-radius:9px;
   font-weight:750;
 }
 
 .admin-tab.active{
   background:var(--green);
-  color:#fff;
+  color:white;
 }
 
 .admin-section{
@@ -615,63 +605,17 @@ footer{
 }
 
 .admin-card{
-  background:#fff;
+  background:white;
   border-radius:17px;
   padding:21px;
   box-shadow:0 5px 20px rgba(0,0,0,.06);
+  border:1px solid #e8eee8;
   margin-bottom:20px;
 }
 
 .admin-card h3{
   margin-top:0;
   color:var(--dark);
-}
-
-.admin-form{
-  display:grid;
-  gap:10px;
-}
-
-.admin-form label{
-  font-weight:700;
-  font-size:14px;
-  color:#39453b;
-  margin-top:5px;
-}
-
-.admin-form input,
-.admin-form textarea,
-.admin-form select{
-  width:100%;
-  border:1px solid #d7dfd7;
-  border-radius:9px;
-  padding:11px;
-  background:#fff;
-  outline:none;
-}
-
-.admin-form textarea{
-  min-height:100px;
-  resize:vertical;
-}
-
-.notice{
-  background:#fff8df;
-  border:1px solid #f1dfa1;
-  padding:12px;
-  border-radius:10px;
-  font-size:13px;
-  color:#715b14;
-  line-height:1.5;
-}
-
-.success-box{
-  background:#eaf7ec;
-  border:1px solid #c9e6ce;
-  padding:12px;
-  border-radius:10px;
-  color:#25632e;
-  font-size:13px;
 }
 
 .logo-preview{
@@ -683,6 +627,35 @@ footer{
   background:#edf5ed;
   border-radius:18px;
   padding:8px;
+}
+
+.stat-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+}
+
+.stat-card{
+  border:1px solid var(--border);
+  border-radius:15px;
+  padding:20px;
+  background:linear-gradient(145deg,#fff,#f6faf6);
+}
+
+.stat-icon{
+  font-size:25px;
+}
+
+.stat-value{
+  font-size:32px;
+  font-weight:900;
+  color:var(--green);
+  margin-top:6px;
+}
+
+.stat-label{
+  color:#6b756d;
+  font-size:13px;
 }
 
 .admin-product{
@@ -719,114 +692,187 @@ footer{
   margin-bottom:8px;
 }
 
-.pack-edit input{
-  width:100%;
-  border:1px solid #d7dfd7;
-  border-radius:8px;
-  padding:10px;
+.notice{
+  background:#fff8df;
+  border:1px solid #f1dfa1;
+  padding:12px;
+  border-radius:10px;
+  font-size:13px;
+  color:#715b14;
+  line-height:1.5;
 }
 
-.stat-grid{
+.success-notice{
+  background:#edf9ee;
+  border:1px solid #cce6cf;
+  color:#24642d;
+}
+
+.category-admin-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:13px 0;
+  border-bottom:1px solid #eee;
+}
+
+.admin-form{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:15px;
+  gap:9px;
 }
 
-.stat-card{
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:15px;
+.admin-form label{
+  font-size:13px;
+  font-weight:750;
+  color:#485249;
+}
+
+.admin-form textarea{
+  min-height:110px;
+  resize:vertical;
+}
+
+.login-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  z-index:200;
+  align-items:center;
+  justify-content:center;
   padding:20px;
-  box-shadow:0 4px 15px rgba(0,0,0,.04);
 }
 
-.stat-label{
-  color:#687269;
+.login-overlay.open{
+  display:flex;
+}
+
+.login-card{
+  width:min(430px,100%);
+  background:white;
+  border-radius:20px;
+  padding:30px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+
+.login-logo{
+  width:100px;
+  height:100px;
+  display:block;
+  margin:0 auto 15px;
+  object-fit:contain;
+  background:#edf7ed;
+  border-radius:18px;
+  padding:5px;
+}
+
+.login-card h2{
+  text-align:center;
+  color:var(--dark);
+  margin:5px 0;
+}
+
+.login-card p{
+  text-align:center;
+  color:#707970;
   font-size:13px;
 }
 
-.stat-value{
-  font-size:32px;
-  font-weight:850;
-  color:var(--green);
-  margin-top:6px;
+.login-form{
+  display:grid;
+  gap:12px;
+  margin-top:20px;
 }
 
-.order-row{
-  border-bottom:1px solid #eee;
-  padding:14px 0;
+.login-form input{
+  width:100%;
+  padding:13px;
+  border:1px solid #d6ded6;
+  border-radius:10px;
 }
 
-.order-row:last-child{
-  border-bottom:0;
+.login-error{
+  display:none;
+  background:#fdecec;
+  color:#a32222;
+  padding:10px;
+  border-radius:8px;
+  font-size:13px;
 }
 
-.order-header{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  flex-wrap:wrap;
+.login-error.show{
+  display:block;
 }
 
-.status-badge{
-  background:#eaf7ec;
-  color:#287034;
-  border-radius:20px;
-  padding:5px 10px;
+.sync-status{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
   font-size:12px;
-  font-weight:750;
+  color:#cdebd0;
 }
 
-.login-box{
-  max-width:450px;
-  margin:70px auto;
+.sync-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#67df75;
 }
 
-.login-box .admin-card{
-  padding:30px;
+.toast{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  z-index:300;
+  background:#17351d;
+  color:white;
+  padding:13px 17px;
+  border-radius:10px;
+  box-shadow:var(--shadow);
+  transform:translateY(100px);
+  opacity:0;
+  transition:.25s;
+  pointer-events:none;
+  max-width:350px;
+}
+
+.toast.show{
+  transform:translateY(0);
+  opacity:1;
 }
 
 .small{
-  font-size:13px;
-  color:#737c74;
+  font-size:12px;
+  color:#747d75;
 }
 
-/* =========================
-   MOBILE
-========================= */
-
-@media(max-width:850px){
-
+@media(max-width:900px){
   .hero-inner{
     grid-template-columns:1fr;
   }
 
   .hero h1{
-    font-size:38px;
+    font-size:42px;
   }
 
   .admin-grid{
     grid-template-columns:1fr;
   }
+}
 
-  .admin-product{
-    grid-template-columns:75px 1fr;
-  }
-
-  .admin-product .admin-actions{
-    grid-column:1/-1;
-  }
-
-  .stat-grid{
-    grid-template-columns:1fr;
-  }
-
+@media(max-width:650px){
   .header-inner{
     flex-wrap:wrap;
   }
-}
 
-@media(max-width:600px){
+  .header-actions{
+    width:100%;
+  }
+
+  .header-actions button{
+    flex:1;
+  }
 
   .logo{
     width:58px;
@@ -837,12 +883,25 @@ footer{
     font-size:19px;
   }
 
-  .header-actions{
-    width:100%;
+  .hero{
+    padding:42px 18px;
   }
 
-  .header-actions button{
-    flex:1;
+  .hero h1{
+    font-size:34px;
+  }
+
+  .hero p{
+    font-size:15px;
+  }
+
+  .hero-logo{
+    width:150px;
+    height:150px;
+  }
+
+  .container{
+    padding:28px 15px;
   }
 
   .products{
@@ -859,19 +918,46 @@ footer{
   }
 
   .product-name{
-    font-size:16px;
+    font-size:15px;
+  }
+
+  .product-description{
+    font-size:11px;
   }
 
   .product-price{
     font-size:18px;
   }
 
-  .product-description{
+  .pack-btn{
+    font-size:10px;
+    padding:5px 7px;
+  }
+
+  .add-btn{
     font-size:12px;
+    padding:10px 5px;
   }
 
   .cart-item{
     grid-template-columns:1fr;
+  }
+
+  .stat-grid{
+    grid-template-columns:1fr;
+  }
+
+  .admin-product{
+    grid-template-columns:75px 1fr;
+  }
+
+  .admin-product .admin-actions{
+    grid-column:1/-1;
+  }
+
+  .admin-product img{
+    width:75px;
+    height:65px;
   }
 
   .pack-edit{
@@ -881,13 +967,9 @@ footer{
   .pack-edit button{
     grid-column:1/-1;
   }
-
-  .hero-logo{
-    width:150px;
-    height:150px;
-  }
 }
 </style>
+
 </head>
 
 <body>
@@ -899,180 +981,112 @@ footer{
 <header>
   <div class="header-inner">
 
-    <div class="brand">
+```
+<div class="brand">
+  <img id="mainLogo" class="logo" alt="Jayvik Logo">
 
-      <img
-        id="mainLogo"
-        class="logo"
-        alt="Jayvik Logo"
-      >
+  <div>
+    <div class="brand-title" id="brandName">Jayvik</div>
+    <div class="brand-sub" id="brandTagline">The Complete Health Store</div>
+  </div>
+</div>
 
-      <div>
-        <div
-          class="brand-title"
-          id="brandName"
-        >
-          Jayvik
-        </div>
+<div class="header-actions">
+  <button class="btn btn-light" onclick="scrollToCart()">
+    🛒 Cart <span id="cartCount">0</span>
+  </button>
 
-        <div
-          class="brand-sub"
-          id="brandTagline"
-        >
-          The Complete Health Store
-        </div>
-      </div>
-
-    </div>
-
-    <div class="header-actions">
-
-      <button
-        class="btn btn-light"
-        onclick="scrollToCart()"
-      >
-        🛒 Cart <span id="cartCount">0</span>
-      </button>
-
-      <button
-        class="btn btn-dark"
-        onclick="openAdmin()"
-      >
-        ⚙️ Admin
-      </button>
-
-    </div>
+  <button class="btn btn-dark" onclick="openAdminLogin()">
+    ⚙️ Admin
+  </button>
+</div>
+```
 
   </div>
 </header>
-
-
-<!-- =========================
-     HERO
-========================= -->
 
 <section class="hero">
 
   <div class="hero-inner">
 
-    <div>
+```
+<div>
+  <h1 id="heroHeading">
+    Pure • Natural • <span>From the Farm</span>
+  </h1>
 
-      <h1 id="heroHeading">
-        Pure • Natural •
-        <span>From the Farm</span>
-      </h1>
+  <p id="heroText">
+    Healthy, natural and carefully selected products from Jayvik –
+    The Complete Health Store.
+  </p>
 
-      <p id="heroText">
-        Healthy, natural and carefully selected products from Jayvik –
-        The Complete Health Store.
-      </p>
+  <div class="hero-buttons">
+    <button class="btn btn-green" onclick="scrollToProducts()">
+      🛍️ Shop Products
+    </button>
 
-      <button
-        class="btn btn-green"
-        onclick="scrollToProducts()"
-      >
-        🛍️ Shop Products
-      </button>
+    <button class="btn btn-light" onclick="scrollToCart()">
+      🛒 View Cart
+    </button>
+  </div>
+</div>
 
-    </div>
+<div class="hero-card">
 
-    <div class="hero-card">
+  <img id="heroLogo" class="hero-logo" alt="Jayvik Logo">
 
-      <img
-        id="heroLogo"
-        class="hero-logo"
-        alt="Jayvik Logo"
-      >
+  <div class="store-address">
+    <strong id="addressStoreName">
+      Jayvik – The Complete Health Store
+    </strong><br>
+    Plot no 34, 35, Kohale Layout,<br>
+    Godhani Road, Zingabai Takali,<br>
+    Nagpur 440030<br><br>
 
-      <div class="store-address">
+    📞 <a href="tel:+919356959561">
+      +91 9356959561
+    </a>
+  </div>
 
-        <strong id="addressStoreName">
-          Jayvik – The Complete Health Store
-        </strong>
-
-        <br>
-
-        Plot no 34, 35, Kohale Layout,<br>
-        Godhani Road, Zingabai Takali,<br>
-        Nagpur 440030
-
-        <br><br>
-
-        📞
-        <a href="tel:+919356959561">
-          +91 9356959561
-        </a>
-
-      </div>
-
-    </div>
+</div>
+```
 
   </div>
 
 </section>
 
-
-<!-- =========================
-     PRODUCTS
-========================= -->
-
 <main>
 
-<section
-  class="container"
-  id="productsSection"
->
+<section class="container" id="productsSection">
 
   <div class="section-title">
     <h2>🛍️ Shop by Category</h2>
   </div>
 
-  <div
-    id="categories"
-    class="categories"
-  ></div>
+  <div id="categories" class="categories"></div>
 
-  <input
-    id="searchBox"
-    class="search"
-    placeholder="🔎 Search products..."
-    oninput="renderProducts()"
-  >
-
-  <div class="section-title">
-
-    <h2>Our Products</h2>
-
-    <span
-      id="productCount"
-      class="brand-sub"
+  <div class="search-wrap">
+    <span class="search-icon">🔎</span>
+    <input
+      id="searchBox"
+      class="search"
+      placeholder="Search products..."
+      oninput="renderProducts()"
     >
-      Loading...
-    </span>
-
   </div>
 
-  <div
-    id="products"
-    class="products"
-  >
-    <div class="loading">
-      <div class="spinner"></div>
-      Loading Jayvik products...
-    </div>
+  <div class="section-title">
+    <h2>Our Products</h2>
+    <span id="productCount" class="brand-sub"></span>
+  </div>
+
+  <div id="products" class="products">
+    <div class="loading">Loading products...</div>
   </div>
 
 </section>
 
-
-<!-- =========================
-     CART
-========================= -->
-
-<section
-  class="container"
-  id="cartSection"
->
+<section class="container" id="cartSection">
 
   <div class="section-title">
     <h2>🛒 Your Order</h2>
@@ -1080,43 +1094,40 @@ footer{
 
   <div class="cart-box">
 
-    <div id="cartItems"></div>
+```
+<div id="cartItems"></div>
 
-    <div class="total">
-      <span>Total</span>
-      <span>
-        ₹<span id="cartTotal">0</span>
-      </span>
-    </div>
+<div class="total">
+  <span>Total</span>
+  <span>₹<span id="cartTotal">0</span></span>
+</div>
 
-    <div class="customer-form">
+<div class="customer-form">
 
-      <h3>Customer Details</h3>
+  <h3>Customer Details</h3>
 
-      <input
-        id="customerName"
-        placeholder="Full Name"
-      >
+  <input
+    id="customerName"
+    placeholder="Full Name"
+  >
 
-      <input
-        id="customerPhone"
-        type="tel"
-        placeholder="Contact Number"
-      >
+  <input
+    id="customerPhone"
+    type="tel"
+    placeholder="Contact Number"
+  >
 
-      <textarea
-        id="customerAddress"
-        placeholder="Complete Delivery Address"
-      ></textarea>
+  <textarea
+    id="customerAddress"
+    placeholder="Complete Delivery Address"
+  ></textarea>
 
-      <button
-        class="whatsapp"
-        onclick="sendWhatsAppOrder()"
-      >
-        💬 Send Order on WhatsApp
-      </button>
+  <button class="whatsapp" onclick="sendWhatsAppOrder()">
+    💬 Send Order on WhatsApp
+  </button>
 
-    </div>
+</div>
+```
 
   </div>
 
@@ -1124,349 +1135,243 @@ footer{
 
 </main>
 
-
 <footer>
 
   <div class="footer-inner">
 
-    <div>
-      <strong id="footerName">
-        Jayvik – The Complete Health Store
-      </strong>
+```
+<div>
+  <div class="footer-title" id="footerBrandName">
+    Jayvik – The Complete Health Store
+  </div>
+  Natural • Healthy • Honest
+</div>
 
-      <br>
-
-      Natural • Healthy • Honest
-    </div>
-
-    <div>
-      📞 +91 9356959561
-      <br>
-      Nagpur, Maharashtra
-    </div>
+<div>
+  📞 +91 9356959561<br>
+  Nagpur, Maharashtra
+</div>
+```
 
   </div>
 
 </footer>
 
+<!-- ================= LOGIN ================= -->
 
-<!-- =====================================================
-     ADMIN LOGIN
-===================================================== -->
+<div id="loginOverlay" class="login-overlay">
 
-<div
-  id="loginOverlay"
-  class="admin-overlay"
->
+  <div class="login-card">
 
-  <div class="login-box">
+```
+<img id="loginLogo" class="login-logo">
 
-    <div class="admin-card">
+<h2>Admin Login</h2>
 
-      <div style="text-align:center">
+<p>Jayvik Store Management</p>
 
-        <img
-          id="loginLogo"
-          class="logo-preview"
-          style="width:110px;height:110px"
-        >
+<div id="loginError" class="login-error"></div>
 
-        <h2>
-          🔐 Jayvik Admin Login
-        </h2>
+<div class="login-form">
 
-        <p class="small">
-          Authorized administrator access only.
-        </p>
+  <input
+    id="loginEmail"
+    type="email"
+    placeholder="Admin Email"
+    autocomplete="username"
+  >
 
-      </div>
+  <input
+    id="loginPassword"
+    type="password"
+    placeholder="Password"
+    autocomplete="current-password"
+  >
 
-      <div class="admin-form">
+  <button
+    id="loginButton"
+    class="btn btn-green"
+    onclick="adminLogin()"
+  >
+    🔐 Login to Dashboard
+  </button>
 
-        <label>Email</label>
+  <button
+    class="btn btn-light"
+    onclick="closeAdminLogin()"
+  >
+    Cancel
+  </button>
 
-        <input
-          id="loginEmail"
-          type="email"
-          value="jayvik.india@gmail.com"
-          placeholder="Admin email"
-        >
-
-        <label>Password</label>
-
-        <input
-          id="loginPassword"
-          type="password"
-          placeholder="Password"
-        >
-
-        <button
-          class="btn btn-green"
-          onclick="loginAdmin()"
-        >
-          🔐 Login
-        </button>
-
-        <button
-          class="btn btn-light"
-          onclick="closeLogin()"
-        >
-          Cancel
-        </button>
-
-        <div
-          id="loginMessage"
-          class="small"
-          style="text-align:center"
-        ></div>
-
-      </div>
-
-    </div>
+</div>
+```
 
   </div>
 
 </div>
 
+<!-- ================= ADMIN DASHBOARD ================= -->
 
-<!-- =====================================================
-     ADMIN DASHBOARD
-===================================================== -->
-
-<div
-  id="adminOverlay"
-  class="admin-overlay"
->
+<div id="adminOverlay" class="admin-overlay">
 
 <div class="admin-panel">
 
   <div class="admin-header">
 
-    <div class="admin-header-inner">
+```
+<div class="admin-header-inner">
 
-      <div class="admin-brand">
+  <div class="admin-brand">
 
-        <img
-          id="adminLogo"
-          class="admin-logo"
-          alt="Jayvik"
-        >
+    <img id="adminLogo" class="admin-logo">
 
-        <div>
+    <div>
+      <strong style="font-size:20px">
+        Jayvik Admin Dashboard
+      </strong><br>
 
-          <strong style="font-size:20px">
-            Jayvik Admin Dashboard
-          </strong>
+      <small>Store Management System</small><br>
 
-          <br>
-
-          <small>
-            Store Management System
-          </small>
-
-        </div>
-
-      </div>
-
-      <div style="display:flex;gap:8px;align-items:center">
-
-        <span
-          id="adminEmailDisplay"
-          style="font-size:12px"
-        ></span>
-
-        <button
-          class="btn"
-          style="background:white;color:#17351d"
-          onclick="logoutAdmin()"
-        >
-          Logout
-        </button>
-
-        <button
-          class="btn"
-          style="background:white;color:#17351d"
-          onclick="closeAdmin()"
-        >
-          ✕ Close
-        </button>
-
-      </div>
-
+      <span class="sync-status">
+        <span class="sync-dot"></span>
+        Firebase Live Sync
+      </span>
     </div>
 
   </div>
 
+  <div style="display:flex;gap:8px;align-items:center">
+
+    <button
+      class="btn"
+      style="background:white;color:#17351d"
+      onclick="adminLogout()"
+    >
+      Logout
+    </button>
+
+    <button
+      class="btn"
+      style="background:white;color:#17351d"
+      onclick="closeAdmin()"
+    >
+      ✕ Close
+    </button>
+
+  </div>
+
+</div>
+```
+
+  </div>
 
   <div class="admin-container">
 
-    <div class="admin-tabs">
+```
+<div class="admin-tabs">
 
-      <button
-        class="admin-tab active"
-        onclick="showAdminTab('dashboard',this)"
-      >
-        📊 Dashboard
-      </button>
+  <button
+    class="admin-tab active"
+    onclick="showAdminTab('dashboard',this)"
+  >
+    📊 Dashboard
+  </button>
 
-      <button
-        class="admin-tab"
-        onclick="showAdminTab('productsAdmin',this)"
-      >
-        📦 Products
-      </button>
+  <button
+    class="admin-tab"
+    onclick="showAdminTab('productsAdmin',this)"
+  >
+    📦 Products
+  </button>
 
-      <button
-        class="admin-tab"
-        onclick="showAdminTab('categoriesAdmin',this)"
-      >
-        🗂️ Categories
-      </button>
+  <button
+    class="admin-tab"
+    onclick="showAdminTab('categoriesAdmin',this)"
+  >
+    🗂️ Categories
+  </button>
 
-      <button
-        class="admin-tab"
-        onclick="showAdminTab('websiteAdmin',this)"
-      >
-        ✏️ Website
-      </button>
+  <button
+    class="admin-tab"
+    onclick="showAdminTab('websiteAdmin',this)"
+  >
+    ✏️ Website
+  </button>
 
-      <button
-        class="admin-tab"
-        onclick="showAdminTab('logoAdmin',this)"
-      >
-        🖼️ Logo
-      </button>
+  <button
+    class="admin-tab"
+    onclick="showAdminTab('logoAdmin',this)"
+  >
+    🖼️ Logo
+  </button>
 
-      <button
-        class="admin-tab"
-        onclick="showAdminTab('ordersAdmin',this)"
-      >
-        🧾 Orders
-      </button>
-
-    </div>
+</div>
 
 
-    <!-- =========================
-         DASHBOARD
-    ========================= -->
+<!-- DASHBOARD -->
 
-    <div
-      id="dashboard"
-      class="admin-section active"
-    >
+<div id="dashboard" class="admin-section active">
 
-      <div class="admin-grid">
+  <div class="admin-grid">
 
-        <div>
+    <div>
 
-          <div class="admin-card">
+      <div class="admin-card">
 
-            <img
-              id="dashboardLogo"
-              class="logo-preview"
-            >
+        <img
+          id="dashboardLogo"
+          class="logo-preview"
+        >
 
-            <h3 style="text-align:center">
-              Jayvik
-            </h3>
+        <h3 style="text-align:center">
+          Jayvik Store
+        </h3>
 
-            <div class="success-box">
-              ✅ Firebase is connected.
-              <br>
-              Changes made here are synchronized
-              with the customer website.
-            </div>
-
-          </div>
-
-        </div>
-
-        <div>
-
-          <div class="admin-card">
-
-            <h3>Store Overview</h3>
-
-            <div class="stat-grid">
-
-              <div class="stat-card">
-                <div class="stat-label">
-                  Products
-                </div>
-                <div
-                  id="statProducts"
-                  class="stat-value"
-                >
-                  0
-                </div>
-              </div>
-
-              <div class="stat-card">
-                <div class="stat-label">
-                  Categories
-                </div>
-                <div
-                  id="statCategories"
-                  class="stat-value"
-                >
-                  0
-                </div>
-              </div>
-
-              <div class="stat-card">
-                <div class="stat-label">
-                  Orders
-                </div>
-                <div
-                  id="statOrders"
-                  class="stat-value"
-                >
-                  0
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
-          <div class="admin-card">
-
-            <h3>🔄 Live Synchronization</h3>
-
-            <p class="small">
-              Firebase Realtime Database is being used
-              for products, categories, website settings,
-              logo and orders.
-            </p>
-
-            <div class="success-box">
-              🟢 Real-time synchronization active
-            </div>
-
-          </div>
-
+        <div class="notice success-notice">
+          <strong>🟢 Live Synchronization Active</strong><br>
+          Changes saved here are stored in Firebase and
+          automatically reflected on the customer website.
         </div>
 
       </div>
 
     </div>
 
-
-    <!-- =========================
-         PRODUCTS ADMIN
-    ========================= -->
-
-    <div
-      id="productsAdmin"
-      class="admin-section"
-    >
+    <div>
 
       <div class="admin-card">
 
-        <div class="section-title">
+        <h3>Store Overview</h3>
 
-          <h3>📦 Product Management</h3>
+        <div class="stat-grid">
+
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div id="statProducts" class="stat-value">0</div>
+            <div class="stat-label">Products</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">🗂️</div>
+            <div id="statCategories" class="stat-value">0</div>
+            <div class="stat-label">Categories</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <div id="statCart" class="stat-value">0</div>
+            <div class="stat-label">Current Cart Items</div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="admin-card">
+
+        <h3>⚡ Quick Actions</h3>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
 
           <button
             class="btn btn-green"
@@ -1475,211 +1380,20 @@ footer{
             + Add Product
           </button>
 
-        </div>
-
-        <input
-          id="adminProductSearch"
-          class="search"
-          placeholder="🔎 Search products..."
-          oninput="renderAdminProducts()"
-        >
-
-        <div id="adminProductsList"></div>
-
-      </div>
-
-    </div>
-
-
-    <!-- =========================
-         CATEGORIES ADMIN
-    ========================= -->
-
-    <div
-      id="categoriesAdmin"
-      class="admin-section"
-    >
-
-      <div class="admin-card">
-
-        <h3>
-          🗂️ Category Management
-        </h3>
-
-        <div style="display:flex;gap:8px;margin-bottom:20px">
-
-          <input
-            id="newCategory"
-            placeholder="New category name"
-            class="search"
-            style="margin:0"
-          >
-
           <button
-            class="btn btn-green"
-            onclick="addCategory()"
+            class="btn btn-light"
+            onclick="showAdminTabByName('websiteAdmin')"
           >
-            Add
+            ✏️ Edit Website
           </button>
-
-        </div>
-
-        <div id="adminCategoriesList"></div>
-
-      </div>
-
-    </div>
-
-
-    <!-- =========================
-         WEBSITE ADMIN
-    ========================= -->
-
-    <div
-      id="websiteAdmin"
-      class="admin-section"
-    >
-
-      <div class="admin-card">
-
-        <h3>
-          ✏️ Edit Website
-        </h3>
-
-        <div class="notice">
-          Changes saved here are written to Firebase
-          and will automatically appear on the customer
-          website.
-        </div>
-
-        <br>
-
-        <div class="admin-form">
-
-          <label>Store Name</label>
-
-          <input
-            id="editBrandName"
-          >
-
-          <label>Tagline</label>
-
-          <input
-            id="editTagline"
-          >
-
-          <label>Hero Heading</label>
-
-          <input
-            id="editHeroHeading"
-          >
-
-          <label>Hero Description</label>
-
-          <textarea
-            id="editHeroText"
-          ></textarea>
-
-          <button
-            class="btn btn-green"
-            onclick="saveWebsite()"
-          >
-            💾 Save Website Changes
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <!-- =========================
-         LOGO ADMIN
-    ========================= -->
-
-    <div
-      id="logoAdmin"
-      class="admin-section"
-    >
-
-      <div class="admin-card">
-
-        <h3>
-          🖼️ Jayvik Logo
-        </h3>
-
-        <div class="notice">
-          Upload your Jayvik logo.
-          The logo is stored in Firebase and
-          synchronized with the customer website.
-        </div>
-
-        <img
-          id="logoPreviewAdmin"
-          class="logo-preview"
-        >
-
-        <input
-          id="logoFile"
-          type="file"
-          accept="image/*"
-          onchange="previewLogo(event)"
-        >
-
-        <div
-          style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap"
-        >
-
-          <button
-            class="btn btn-green"
-            onclick="saveLogo()"
-          >
-            💾 Save Logo
-          </button>
-
-          <button
-            class="btn btn-danger"
-            onclick="removeLogo()"
-          >
-            🗑️ Remove Logo
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <!-- =========================
-         ORDERS ADMIN
-    ========================= -->
-
-    <div
-      id="ordersAdmin"
-      class="admin-section"
-    >
-
-      <div class="admin-card">
-
-        <div class="section-title">
-
-          <h3>
-            🧾 Customer Orders
-          </h3>
 
           <button
             class="btn btn-light"
-            onclick="loadOrders()"
+            onclick="showAdminTabByName('logoAdmin')"
           >
-            🔄 Refresh
+            🖼️ Change Logo
           </button>
 
-        </div>
-
-        <div id="ordersList">
-          Loading orders...
         </div>
 
       </div>
@@ -1690,122 +1404,164 @@ footer{
 
 </div>
 
+
+<!-- PRODUCTS ADMIN -->
+
+<div id="productsAdmin" class="admin-section">
+
+  <div class="admin-card">
+
+    <div class="section-title">
+
+      <h3>📦 Product Management</h3>
+
+      <button
+        class="btn btn-green"
+        onclick="openAddProduct()"
+      >
+        + Add Product
+      </button>
+
+    </div>
+
+    <input
+      id="adminProductSearch"
+      class="search"
+      placeholder="🔎 Search products..."
+      oninput="renderAdminProducts()"
+    >
+
+    <div id="adminProductsList"></div>
+
+  </div>
+
 </div>
 
 
-<!-- =====================================================
-     PRODUCT EDITOR
-===================================================== -->
+<!-- CATEGORIES -->
 
-<div
-  id="productEditor"
-  class="admin-overlay"
->
+<div id="categoriesAdmin" class="admin-section">
 
-<div class="admin-panel">
+  <div class="admin-card">
 
-  <div class="admin-header">
+    <h3>🗂️ Category Management</h3>
 
-    <div class="admin-header-inner">
+    <div style="display:flex;gap:8px;margin-bottom:20px">
 
-      <strong id="editorTitle">
-        Add Product
-      </strong>
+      <input
+        id="newCategory"
+        placeholder="New category name"
+        class="search"
+        style="margin:0"
+      >
 
       <button
-        class="btn"
-        style="background:white;color:#17351d"
-        onclick="closeProductEditor()"
+        class="btn btn-green"
+        onclick="addCategory()"
       >
-        ✕ Close
+        Add
+      </button>
+
+    </div>
+
+    <div id="adminCategoriesList"></div>
+
+  </div>
+
+</div>
+
+
+<!-- WEBSITE -->
+
+<div id="websiteAdmin" class="admin-section">
+
+  <div class="admin-card">
+
+    <h3>✏️ Edit Website Content</h3>
+
+    <div class="notice">
+      Changes made here are saved directly to Firebase
+      and will appear on the customer website automatically.
+    </div>
+
+    <br>
+
+    <div class="admin-form">
+
+      <label>Store Name</label>
+      <input id="editBrandName">
+
+      <label>Tagline</label>
+      <input id="editTagline">
+
+      <label>Hero Heading</label>
+      <input id="editHeroHeading">
+
+      <label>Hero Description</label>
+      <textarea id="editHeroText"></textarea>
+
+      <button
+        class="btn btn-green"
+        onclick="saveWebsite()"
+      >
+        💾 Save Website Changes
       </button>
 
     </div>
 
   </div>
 
-  <div class="admin-container">
+</div>
 
-    <div class="admin-card">
 
-      <div class="admin-form">
+<!-- LOGO -->
 
-        <input
-          type="hidden"
-          id="editProductId"
-        >
+<div id="logoAdmin" class="admin-section">
 
-        <label>
-          Product Name
-        </label>
+  <div class="admin-card">
 
-        <input
-          id="editProductName"
-        >
+    <h3>🖼️ Replace Jayvik Logo</h3>
 
-        <label>
-          Category
-        </label>
+    <div class="notice">
+      Select your actual Jayvik logo image.
+      After saving, it is stored in Firebase and
+      synchronized to the customer website.
+    </div>
 
-        <select
-          id="editProductCategory"
-        ></select>
+    <img
+      id="logoPreviewAdmin"
+      class="logo-preview"
+    >
 
-        <label>
-          Product Photo
-        </label>
+    <input
+      id="logoFile"
+      type="file"
+      accept="image/*"
+      onchange="previewLogo(event)"
+    >
 
-        <img
-          id="productPhotoPreview"
-          class="logo-preview"
-          style="width:240px;height:170px"
-        >
+    <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap">
 
-        <input
-          type="file"
-          id="productPhotoFile"
-          accept="image/*"
-          onchange="previewProductPhoto(event)"
-        >
+      <button
+        class="btn btn-green"
+        onclick="saveLogo()"
+      >
+        💾 Save Logo
+      </button>
 
-        <button
-          class="btn btn-danger"
-          onclick="removeProductPhoto()"
-        >
-          🗑️ Remove Product Photo
-        </button>
-
-        <h3>
-          Pack Sizes & Prices
-        </h3>
-
-        <div id="packEditor"></div>
-
-        <button
-          class="btn btn-light"
-          onclick="addPackField()"
-        >
-          + Add Pack Size
-        </button>
-
-        <label>
-          Description
-        </label>
-
-        <textarea
-          id="editProductDescription"
-        ></textarea>
-
-        <button
-          class="btn btn-green"
-          onclick="saveProduct()"
-        >
-          💾 Save Product
-        </button>
-
-      </div>
+      <button
+        class="btn btn-danger"
+        onclick="removeLogo()"
+      >
+        🗑️ Remove Logo
+      </button>
 
     </div>
+
+  </div>
+
+</div>
+```
 
   </div>
 
@@ -1813,33 +1569,134 @@ footer{
 
 </div>
 
+<!-- ================= PRODUCT EDITOR ================= -->
 
-<!-- =====================================================
-     FIREBASE
-===================================================== -->
+<div id="productEditor" class="admin-overlay">
+
+<div class="admin-panel">
+
+  <div class="admin-header">
+
+```
+<div class="admin-header-inner">
+
+  <strong id="editorTitle">
+    Add Product
+  </strong>
+
+  <button
+    class="btn"
+    style="background:white;color:#17351d"
+    onclick="closeProductEditor()"
+  >
+    ✕ Close
+  </button>
+
+</div>
+```
+
+  </div>
+
+  <div class="admin-container">
+
+```
+<div class="admin-card">
+
+  <div class="admin-form">
+
+    <input type="hidden" id="editProductId">
+
+    <label>Product Name</label>
+    <input id="editProductName">
+
+    <label>Category</label>
+    <select id="editProductCategory"></select>
+
+    <label>Product Photo</label>
+
+    <img
+      id="productPhotoPreview"
+      class="logo-preview"
+      style="width:240px;height:170px"
+    >
+
+    <input
+      type="file"
+      id="productPhotoFile"
+      accept="image/*"
+      onchange="previewProductPhoto(event)"
+    >
+
+    <button
+      class="btn btn-danger"
+      onclick="removeProductPhoto()"
+    >
+      🗑️ Remove Product Photo
+    </button>
+
+    <h3>Pack Sizes & Prices</h3>
+
+    <div id="packEditor"></div>
+
+    <button
+      class="btn btn-light"
+      onclick="addPackField()"
+    >
+      + Add Pack Size
+    </button>
+
+    <label>Description</label>
+
+    <textarea
+      id="editProductDescription"
+      placeholder="Product description"
+    ></textarea>
+
+    <button
+      class="btn btn-green"
+      onclick="saveProduct()"
+    >
+      💾 Save Product
+    </button>
+
+  </div>
+
+</div>
+```
+
+  </div>
+
+</div>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- ================= FIREBASE ================= -->
 
 <script type="module">
 
-import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
 import {
   getDatabase,
   ref,
-  onValue,
   set,
   push,
   remove,
-  update
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+  onValue,
+  get
+}
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+}
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 
 /* =====================================================
@@ -1878,14 +1735,11 @@ const firebaseConfig = {
    INITIALIZE FIREBASE
 ===================================================== */
 
-const app =
-  initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
-const auth =
-  getAuth(app);
+const db = getDatabase(app);
 
-const db =
-  getDatabase(app);
+const auth = getAuth(app);
 
 
 /* =====================================================
@@ -1899,6 +1753,55 @@ const ADMIN_UID =
 /* =====================================================
    DEFAULT DATA
 ===================================================== */
+
+const defaultLogo =
+"data:image/svg+xml;charset=UTF-8,"+
+encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg"
+width="600" height="600">
+<rect width="100%" height="100%" rx="80"
+fill="#edf7ed"/>
+<circle cx="300" cy="260" r="130"
+fill="#267a35"/>
+<text x="300" y="310"
+text-anchor="middle"
+font-family="Arial"
+font-size="150"
+font-weight="bold"
+fill="white">J</text>
+<text x="300" y="465"
+text-anchor="middle"
+font-family="Arial"
+font-size="52"
+font-weight="bold"
+fill="#267a35">JAYVIK</text>
+</svg>
+`);
+
+
+function placeholder(name){
+
+  return "data:image/svg+xml;charset=UTF-8,"+
+    encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg"
+      width="700" height="500">
+      <rect width="100%" height="100%"
+      fill="#edf5ed"/>
+      <text x="50%" y="46%"
+      text-anchor="middle"
+      font-family="Arial"
+      font-size="38"
+      font-weight="bold"
+      fill="#267a35">Jayvik</text>
+      <text x="50%" y="58%"
+      text-anchor="middle"
+      font-family="Arial"
+      font-size="24"
+      fill="#666">${escapeXml(name)}</text>
+      </svg>
+    `);
+}
+
 
 const defaultCategories = [
 
@@ -1917,108 +1820,235 @@ const defaultCategories = [
 ];
 
 
-const defaultWebsite = {
+const defaultProducts = [
 
-  brandName:
-    "Jayvik",
+  {
+    id:"product_1",
+    name:"Groundnut Oil",
+    category:"Cold Pressed Oils",
+    image:placeholder("Groundnut Oil"),
+    packs:[
+      {size:"5 L",price:1500},
+      {size:"1 L",price:310},
+      {size:"500 ml",price:155}
+    ],
+    description:"Traditional cold pressed groundnut oil."
+  },
 
-  tagline:
-    "The Complete Health Store",
+  {
+    id:"product_2",
+    name:"Mustard Oil",
+    category:"Cold Pressed Oils",
+    image:placeholder("Mustard Oil"),
+    packs:[
+      {size:"1 L",price:360},
+      {size:"500 ml",price:190}
+    ],
+    description:"Natural mustard oil."
+  },
 
-  heroHeading:
-    "Pure • Natural • From the Farm",
+  {
+    id:"product_3",
+    name:"Flaxseed Oil",
+    category:"Cold Pressed Oils",
+    image:placeholder("Flaxseed Oil"),
+    packs:[
+      {size:"1 L",price:420},
+      {size:"500 ml",price:220}
+    ],
+    description:"Cold pressed flaxseed oil."
+  },
 
-  heroText:
-    "Healthy, natural and carefully selected products from Jayvik – The Complete Health Store."
+  {
+    id:"product_4",
+    name:"Sesame Oil (Til Tel)",
+    category:"Cold Pressed Oils",
+    image:placeholder("Sesame Oil"),
+    packs:[
+      {size:"1 L",price:540},
+      {size:"500 ml",price:280}
+    ],
+    description:"Traditional sesame oil."
+  },
 
-};
+  {
+    id:"product_5",
+    name:"Coconut Oil",
+    category:"Cold Pressed Oils",
+    image:placeholder("Coconut Oil"),
+    packs:[
+      {size:"1 L",price:600},
+      {size:"500 ml",price:310}
+    ],
+    description:"Natural coconut oil."
+  },
 
+  {
+    id:"product_6",
+    name:"Sunflower Oil",
+    category:"Cold Pressed Oils",
+    image:placeholder("Sunflower Oil"),
+    packs:[
+      {size:"1 L",price:370}
+    ],
+    description:"Natural sunflower oil."
+  },
 
-const defaultLogo =
-  "data:image/svg+xml;charset=UTF-8,"+
-  encodeURIComponent(`
-  <svg xmlns="http://www.w3.org/2000/svg"
-  width="600" height="600">
+  {
+    id:"product_7",
+    name:"Kardai Oil",
+    category:"Cold Pressed Oils",
+    image:placeholder("Kardai Oil"),
+    packs:[
+      {size:"1 L",price:370}
+    ],
+    description:"Traditional safflower oil."
+  },
 
-  <rect
-    width="100%"
-    height="100%"
-    rx="80"
-    fill="#edf7ed"/>
+  {
+    id:"product_8",
+    name:"Gir Cow Ghee",
+    category:"Ghee",
+    image:placeholder("Gir Cow Ghee"),
+    packs:[
+      {size:"1 L",price:1600},
+      {size:"500 ml",price:850}
+    ],
+    description:"Gir cow ghee made using traditional bilona method."
+  },
 
-  <circle
-    cx="300"
-    cy="260"
-    r="130"
-    fill="#267a35"/>
+  {
+    id:"product_9",
+    name:"Rajgira",
+    category:"Millet Corner",
+    image:placeholder("Rajgira"),
+    packs:[
+      {size:"1 kg",price:240},
+      {size:"500 g",price:130}
+    ],
+    description:"Naturally grown unpolished rajgira."
+  },
 
-  <text
-    x="300"
-    y="310"
-    text-anchor="middle"
-    font-family="Arial"
-    font-size="150"
-    font-weight="bold"
-    fill="white">
-    J
-  </text>
+  {
+    id:"product_10",
+    name:"Rajgira Flour",
+    category:"Millet Corner",
+    image:placeholder("Rajgira Flour"),
+    packs:[
+      {size:"1 kg",price:300},
+      {size:"500 g",price:160}
+    ],
+    description:"Fresh rajgira flour."
+  },
 
-  <text
-    x="300"
-    y="465"
-    text-anchor="middle"
-    font-family="Arial"
-    font-size="52"
-    font-weight="bold"
-    fill="#267a35">
-    JAYVIK
-  </text>
+  {
+    id:"product_11",
+    name:"Bhagar",
+    category:"Millet Corner",
+    image:placeholder("Bhagar"),
+    packs:[
+      {size:"1 kg",price:200},
+      {size:"500 g",price:110}
+    ],
+    description:"Naturally grown bhagar."
+  },
 
-  </svg>
-  `);
+  {
+    id:"product_12",
+    name:"Varai / Little Millet",
+    category:"Millet Corner",
+    image:placeholder("Varai"),
+    packs:[
+      {size:"1 kg",price:220},
+      {size:"500 g",price:120}
+    ],
+    description:"Naturally grown little millet."
+  },
 
+  {
+    id:"product_13",
+    name:"Jowar Flakes",
+    category:"Millet Corner",
+    image:placeholder("Jowar Flakes"),
+    packs:[
+      {size:"1 kg",price:160},
+      {size:"500 g",price:90}
+    ],
+    description:"Healthy jowar flakes."
+  },
 
-function placeholder(name){
+  {
+    id:"product_14",
+    name:"Ragi Flakes",
+    category:"Millet Corner",
+    image:placeholder("Ragi Flakes"),
+    packs:[
+      {size:"1 kg",price:200},
+      {size:"500 g",price:110}
+    ],
+    description:"Healthy ragi flakes."
+  },
 
-  return "data:image/svg+xml;charset=UTF-8,"+
-  encodeURIComponent(`
-  <svg xmlns="http://www.w3.org/2000/svg"
-  width="700" height="500">
+  {
+    id:"product_15",
+    name:"Jeera",
+    category:"Spices",
+    image:placeholder("Jeera"),
+    packs:[
+      {size:"100 g",price:60}
+    ],
+    description:"Natural cumin seeds."
+  },
 
-  <rect
-    width="100%"
-    height="100%"
-    fill="#edf5ed"/>
+  {
+    id:"product_16",
+    name:"Mishri",
+    category:"Jaggery",
+    image:placeholder("Mishri"),
+    packs:[
+      {size:"100 g",price:40}
+    ],
+    description:"Traditional rock sugar."
+  },
 
-  <text
-    x="50%"
-    y="46%"
-    text-anchor="middle"
-    font-family="Arial"
-    font-size="38"
-    font-weight="bold"
-    fill="#267a35">
-    Jayvik
-  </text>
+  {
+    id:"product_17",
+    name:"Himalayan Multiflora Forest Honey",
+    category:"Honey",
+    image:placeholder("Himalayan Honey"),
+    packs:[
+      {size:"500 g",price:1050}
+    ],
+    description:"Himalayan multiflora forest honey."
+  },
 
-  <text
-    x="50%"
-    y="58%"
-    text-anchor="middle"
-    font-family="Arial"
-    font-size="24"
-    fill="#666">
-    ${escapeHtml(name)}
-  </text>
+  {
+    id:"product_18",
+    name:"Badam Oil",
+    category:"Others",
+    image:placeholder("Badam Oil"),
+    packs:[
+      {size:"100 ml",price:270}
+    ],
+    description:"Natural almond oil."
+  },
 
-  </svg>
-  `);
+  {
+    id:"product_19",
+    name:"Castor Oil",
+    category:"Others",
+    image:placeholder("Castor Oil"),
+    packs:[
+      {size:"100 ml",price:60}
+    ],
+    description:"Natural castor oil."
+  }
 
-}
+];
 
 
 /* =====================================================
-   APPLICATION STATE
+   STATE
 ===================================================== */
 
 let products = [];
@@ -2026,117 +2056,173 @@ let products = [];
 let categories = [];
 
 let website = {
-  ...defaultWebsite
+
+  brandName:"Jayvik",
+
+  tagline:"The Complete Health Store",
+
+  heroHeading:"Pure • Natural • From the Farm",
+
+  heroText:
+    "Healthy, natural and carefully selected products from Jayvik – The Complete Health Store."
+
 };
 
 let logo = defaultLogo;
 
-let orders = [];
-
 let cart =
-  JSON.parse(
-    localStorage.getItem("jayvik_cart") || "[]"
-  );
+  JSON.parse(localStorage.getItem("jayvik_cart") || "[]");
 
 let selectedCategory = "All";
 
 let editingPhoto = null;
 
+let currentUser = null;
+
 
 /* =====================================================
-   FIREBASE REAL-TIME LISTENERS
+   FIREBASE INITIAL DATA
+===================================================== */
+
+async function initializeDatabaseIfNeeded(){
+
+  try{
+
+    const productsSnap =
+      await get(ref(db,"products"));
+
+    if(!productsSnap.exists()){
+
+      const data={};
+
+      defaultProducts.forEach(product=>{
+
+        data[product.id]=product;
+
+      });
+
+      await set(ref(db,"products"),data);
+
+    }
+
+
+    const categoriesSnap =
+      await get(ref(db,"categories"));
+
+    if(!categoriesSnap.exists()){
+
+      const data={};
+
+      defaultCategories.forEach((category,index)=>{
+
+        data["category_"+index]=category;
+
+      });
+
+      await set(ref(db,"categories"),data);
+
+    }
+
+
+    const websiteSnap =
+      await get(ref(db,"settings/website"));
+
+    if(!websiteSnap.exists()){
+
+      await set(
+        ref(db,"settings/website"),
+        website
+      );
+
+    }
+
+
+    const logoSnap =
+      await get(ref(db,"settings/logo"));
+
+    if(!logoSnap.exists()){
+
+      await set(
+        ref(db,"settings/logo"),
+        defaultLogo
+      );
+
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+    showToast(
+      "Firebase initialization error. Check database rules."
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   FIREBASE LIVE LISTENERS
 ===================================================== */
 
 function startFirebaseListeners(){
 
-  /* PRODUCTS */
-
   onValue(
     ref(db,"products"),
-    snapshot => {
+    snapshot=>{
 
-      const data =
-        snapshot.val();
+      const data=snapshot.val() || {};
 
-      if(data){
+      products=
+        Object.values(data);
 
-        products =
-          Object.entries(data)
-          .map(([key,value]) => ({
-            ...value,
-            id:key
-          }));
-
-      }else{
-
-        products=[];
-
-      }
-
-      renderCategories();
       renderProducts();
       renderAdminProducts();
       updateStats();
-
-    },
-    error => {
-
-      console.error(
-        "Products Firebase error:",
-        error
-      );
 
     }
   );
 
 
-  /* CATEGORIES */
-
   onValue(
     ref(db,"categories"),
-    snapshot => {
+    snapshot=>{
 
-      const data =
-        snapshot.val();
+      const data=snapshot.val() || {};
 
-      if(data){
+      categories=
+        Object.values(data);
 
-        categories =
-          Array.isArray(data)
-            ? data
-            : Object.values(data);
+      if(categories.length===0){
 
-      }else{
-
-        categories =
-          [...defaultCategories];
-
-        initializeCategories();
+        categories=[...defaultCategories];
 
       }
 
       renderCategories();
       renderAdminCategories();
-      fillCategorySelect();
       updateStats();
+      fillCategorySelect();
 
     }
   );
 
 
-  /* WEBSITE */
-
   onValue(
     ref(db,"settings/website"),
-    snapshot => {
+    snapshot=>{
 
-      const data =
-        snapshot.val();
+      const data=snapshot.val();
 
-      website =
-        data
-          ? {...defaultWebsite,...data}
-          : {...defaultWebsite};
+      if(data){
+
+        website={
+          ...website,
+          ...data
+        };
+
+      }
 
       applyWebsite();
       loadWebsiteEditor();
@@ -2145,254 +2231,149 @@ function startFirebaseListeners(){
   );
 
 
-  /* LOGO */
-
   onValue(
     ref(db,"settings/logo"),
-    snapshot => {
+    snapshot=>{
 
-      const data =
-        snapshot.val();
-
-      logo =
-        data || defaultLogo;
+      logo=
+        snapshot.val() || defaultLogo;
 
       applyLogo();
 
     }
   );
 
-
-  /* ORDERS */
-
-  onValue(
-    ref(db,"orders"),
-    snapshot => {
-
-      const data =
-        snapshot.val();
-
-      if(data){
-
-        orders =
-          Object.entries(data)
-          .map(([key,value]) => ({
-            ...value,
-            id:key
-          }))
-          .sort(
-            (a,b) =>
-              Number(b.createdAt || 0) -
-              Number(a.createdAt || 0)
-          );
-
-      }else{
-
-        orders=[];
-
-      }
-
-      renderOrders();
-      updateStats();
-
-    }
-  );
-
 }
 
 
 /* =====================================================
-   INITIALIZE DEFAULT CATEGORIES
+   LOGO
 ===================================================== */
 
-async function initializeCategories(){
+function applyLogo(){
+
+  const ids=[
+
+    "mainLogo",
+    "heroLogo",
+    "adminLogo",
+    "dashboardLogo",
+    "logoPreviewAdmin",
+    "loginLogo"
+
+  ];
+
+  ids.forEach(id=>{
+
+    const el=document.getElementById(id);
+
+    if(el){
+
+      el.src=logo;
+
+    }
+
+  });
+
+}
+
+
+function previewLogo(event){
+
+  const file=
+    event.target.files[0];
+
+  if(!file)return;
+
+  if(file.size>2*1024*1024){
+
+    alert(
+      "Please use a logo image smaller than 2 MB."
+    );
+
+    event.target.value="";
+
+    return;
+
+  }
+
+  const reader=
+    new FileReader();
+
+  reader.onload=function(e){
+
+    document.getElementById(
+      "logoPreviewAdmin"
+    ).src=e.target.result;
+
+  };
+
+  reader.readAsDataURL(file);
+
+}
+
+
+async function saveLogo(){
+
+  if(!isAdmin()){
+
+    alert("Please login as admin.");
+
+    return;
+
+  }
+
+  const src=
+    document.getElementById(
+      "logoPreviewAdmin"
+    ).src;
+
+  if(!src)return;
 
   try{
 
     await set(
-      ref(db,"categories"),
-      defaultCategories
+      ref(db,"settings/logo"),
+      src
+    );
+
+    showToast(
+      "Logo saved. Customer website updated."
     );
 
   }catch(error){
 
     console.error(error);
+
+    alert(
+      "Could not save logo. Please check Firebase rules."
+    );
 
   }
 
 }
 
 
-/* =====================================================
-   AUTHENTICATION
-===================================================== */
+async function removeLogo(){
 
-onAuthStateChanged(
-  auth,
-  user => {
+  if(!isAdmin())return;
 
-    if(user){
-
-      if(user.uid === ADMIN_UID){
-
-        document.getElementById(
-          "adminEmailDisplay"
-        ).textContent =
-          user.email || "";
-
-      }else{
-
-        signOut(auth);
-
-      }
-
-    }
-
-  }
-);
-
-
-window.loginAdmin =
-async function(){
-
-  const email =
-    document.getElementById(
-      "loginEmail"
-    ).value.trim();
-
-  const password =
-    document.getElementById(
-      "loginPassword"
-    ).value;
-
-  const message =
-    document.getElementById(
-      "loginMessage"
-    );
-
-  message.textContent =
-    "Signing in...";
+  if(!confirm("Remove current logo?"))return;
 
   try{
 
-    const credential =
-      await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+    await set(
+      ref(db,"settings/logo"),
+      defaultLogo
+    );
 
-    if(
-      credential.user.uid !==
-      ADMIN_UID
-    ){
-
-      await signOut(auth);
-
-      throw new Error(
-        "This account is not authorized as administrator."
-      );
-
-    }
-
-    message.textContent =
-      "";
-
-    closeLogin();
-
-    document.getElementById(
-      "adminOverlay"
-    ).style.display="block";
-
-    loadAdmin();
+    showToast("Logo reset successfully.");
 
   }catch(error){
 
     console.error(error);
 
-    message.textContent =
-      error.message ||
-      "Login failed.";
-
   }
-
-};
-
-
-window.logoutAdmin =
-async function(){
-
-  await signOut(auth);
-
-  closeAdmin();
-
-};
-
-
-/* =====================================================
-   OPEN ADMIN
-===================================================== */
-
-window.openAdmin =
-function(){
-
-  const user =
-    auth.currentUser;
-
-  if(
-    user &&
-    user.uid === ADMIN_UID
-  ){
-
-    document.getElementById(
-      "adminOverlay"
-    ).style.display="block";
-
-    loadAdmin();
-
-  }else{
-
-    document.getElementById(
-      "loginOverlay"
-    ).style.display="block";
-
-    document.getElementById(
-      "loginLogo"
-    ).src=logo;
-
-  }
-
-};
-
-
-window.closeLogin =
-function(){
-
-  document.getElementById(
-    "loginOverlay"
-  ).style.display="none";
-
-};
-
-
-window.closeAdmin =
-function(){
-
-  document.getElementById(
-    "adminOverlay"
-  ).style.display="none";
-
-};
-
-
-function loadAdmin(){
-
-  loadWebsiteEditor();
-  renderAdminProducts();
-  renderAdminCategories();
-  renderOrders();
-  updateStats();
-  applyLogo();
 
 }
 
@@ -2405,142 +2386,124 @@ function applyWebsite(){
 
   document.getElementById(
     "brandName"
-  ).textContent =
+  ).textContent=
     website.brandName;
 
   document.getElementById(
     "brandTagline"
-  ).textContent =
+  ).textContent=
     website.tagline;
 
   document.getElementById(
     "heroText"
-  ).textContent =
+  ).textContent=
     website.heroText;
 
   document.getElementById(
-    "heroHeading"
-  ).innerHTML =
-    formatHeroHeading(
-      website.heroHeading
-    );
+    "footerBrandName"
+  ).textContent=
+    website.brandName+" – "+website.tagline;
 
   document.getElementById(
     "addressStoreName"
-  ).textContent =
-    website.brandName;
-
-  document.getElementById(
-    "footerName"
-  ).textContent =
-    website.brandName;
-
-}
+  ).textContent=
+    website.brandName+" – "+website.tagline;
 
 
-function formatHeroHeading(text){
+  const heading=
+    document.getElementById("heroHeading");
 
-  const safe =
-    escapeHtml(text);
+  const text=
+    website.heroHeading || "";
 
-  const words =
-    safe.split(" ");
+  const parts=
+    text.split(" ");
 
-  if(words.length <= 2){
+  if(text.includes("•")){
 
-    return safe;
+    const lastPart=
+      parts.slice(-3).join(" ");
+
+    const firstPart=
+      parts.slice(0,-3).join(" ");
+
+    heading.innerHTML=
+      escapeHtml(firstPart)+
+      " <span>"+
+      escapeHtml(lastPart)+
+      "</span>";
+
+  }else{
+
+    heading.textContent=text;
 
   }
-
-  const first =
-    words.slice(
-      0,
-      Math.max(
-        1,
-        words.length-2
-      )
-    ).join(" ");
-
-  const last =
-    words.slice(
-      Math.max(
-        1,
-        words.length-2
-      )
-    ).join(" ");
-
-  return (
-    first +
-    " <span>" +
-    last +
-    "</span>"
-  );
 
 }
 
 
 function loadWebsiteEditor(){
 
-  if(!document.getElementById("editBrandName"))
-    return;
+  const a=
+    document.getElementById("editBrandName");
 
-  document.getElementById(
-    "editBrandName"
-  ).value =
-    website.brandName;
+  if(!a)return;
+
+  a.value=
+    website.brandName || "";
 
   document.getElementById(
     "editTagline"
-  ).value =
-    website.tagline;
+  ).value=
+    website.tagline || "";
 
   document.getElementById(
     "editHeroHeading"
-  ).value =
-    website.heroHeading;
+  ).value=
+    website.heroHeading || "";
 
   document.getElementById(
     "editHeroText"
-  ).value =
-    website.heroText;
+  ).value=
+    website.heroText || "";
 
 }
 
 
-window.saveWebsite =
-async function(){
+async function saveWebsite(){
 
-  if(!isAdmin())
+  if(!isAdmin()){
+
+    alert("Please login as admin.");
+
     return;
 
-  const newWebsite = {
+  }
+
+  const newWebsite={
 
     brandName:
       document.getElementById(
         "editBrandName"
-      ).value.trim()
-      ||
+      ).value.trim() ||
       "Jayvik",
 
     tagline:
       document.getElementById(
         "editTagline"
-      ).value.trim()
-      ||
+      ).value.trim() ||
       "The Complete Health Store",
 
     heroHeading:
       document.getElementById(
         "editHeroHeading"
-      ).value.trim()
-      ||
+      ).value.trim() ||
       "Pure • Natural • From the Farm",
 
     heroText:
       document.getElementById(
         "editHeroText"
-      ).value.trim()
-      ||
+      ).value.trim() ||
       "Healthy, natural and carefully selected products from Jayvik – The Complete Health Store."
 
   };
@@ -2552,8 +2515,8 @@ async function(){
       newWebsite
     );
 
-    alert(
-      "✅ Website changes saved to Firebase.\n\nThey will appear on the customer website automatically."
+    showToast(
+      "Website updated. Customer side synchronized."
     );
 
   }catch(error){
@@ -2561,185 +2524,37 @@ async function(){
     console.error(error);
 
     alert(
-      "Could not save website changes.\n\n"+
-      error.message
+      "Could not save website settings."
     );
 
   }
-
-};
-
-
-/* =====================================================
-   LOGO
-===================================================== */
-
-function applyLogo(){
-
-  const ids = [
-
-    "mainLogo",
-    "heroLogo",
-    "adminLogo",
-    "dashboardLogo",
-    "logoPreviewAdmin",
-    "loginLogo"
-
-  ];
-
-  ids.forEach(id => {
-
-    const el =
-      document.getElementById(id);
-
-    if(el)
-      el.src=logo;
-
-  });
 
 }
 
 
-window.previewLogo =
-function(event){
-
-  const file =
-    event.target.files[0];
-
-  if(!file)
-    return;
-
-  if(file.size > 2 * 1024 * 1024){
-
-    alert(
-      "Please use an image smaller than 2 MB."
-    );
-
-    event.target.value="";
-
-    return;
-
-  }
-
-  const reader =
-    new FileReader();
-
-  reader.onload =
-  function(e){
-
-    document.getElementById(
-      "logoPreviewAdmin"
-    ).src =
-      e.target.result;
-
-  };
-
-  reader.readAsDataURL(file);
-
-};
-
-
-window.saveLogo =
-async function(){
-
-  if(!isAdmin())
-    return;
-
-  const src =
-    document.getElementById(
-      "logoPreviewAdmin"
-    ).src;
-
-  if(!src)
-    return;
-
-  try{
-
-    await set(
-      ref(db,"settings/logo"),
-      src
-    );
-
-    alert(
-      "✅ Logo saved to Firebase.\n\nThe customer website will update automatically."
-    );
-
-  }catch(error){
-
-    console.error(error);
-
-    alert(
-      "Logo could not be saved.\n\n"+
-      error.message
-    );
-
-  }
-
-};
-
-
-window.removeLogo =
-async function(){
-
-  if(!isAdmin())
-    return;
-
-  if(
-    !confirm(
-      "Remove the current Jayvik logo?"
-    )
-  )
-    return;
-
-  try{
-
-    await set(
-      ref(db,"settings/logo"),
-      defaultLogo
-    );
-
-  }catch(error){
-
-    alert(
-      error.message
-    );
-
-  }
-
-};
-
-
 /* =====================================================
-   CATEGORIES CUSTOMER
+   CATEGORIES
 ===================================================== */
 
 function renderCategories(){
 
-  const box =
-    document.getElementById(
-      "categories"
-    );
+  const box=
+    document.getElementById("categories");
 
-  if(!box)
-    return;
+  if(!box)return;
 
   box.innerHTML="";
 
-  const all =
+  const all=
     document.createElement("button");
 
-  all.className =
+  all.className=
     "category-btn "+
-    (
-      selectedCategory === "All"
-        ? "active"
-        : ""
-    );
+    (selectedCategory==="All"?"active":"");
 
   all.textContent="All";
 
-  all.onclick =
-  function(){
+  all.onclick=()=>{
 
     selectedCategory="All";
 
@@ -2750,40 +2565,150 @@ function renderCategories(){
 
   box.appendChild(all);
 
-  categories.forEach(
-    category => {
 
-      const button =
-        document.createElement(
-          "button"
+  categories.forEach(category=>{
+
+    const button=
+      document.createElement("button");
+
+    button.className=
+      "category-btn "+
+      (selectedCategory===category?"active":"");
+
+    button.textContent=category;
+
+    button.onclick=()=>{
+
+      selectedCategory=category;
+
+      renderCategories();
+      renderProducts();
+
+    };
+
+    box.appendChild(button);
+
+  });
+
+}
+
+
+async function addCategory(){
+
+  if(!isAdmin()){
+
+    alert("Please login as admin.");
+
+    return;
+
+  }
+
+  const input=
+    document.getElementById(
+      "newCategory"
+    );
+
+  const name=
+    input.value.trim();
+
+  if(!name)return;
+
+  if(categories.includes(name)){
+
+    alert("Category already exists.");
+
+    return;
+
+  }
+
+  try{
+
+    const newRef=
+      push(ref(db,"categories"));
+
+    await set(
+      newRef,
+      name
+    );
+
+    input.value="";
+
+    showToast(
+      "Category added and synchronized."
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "Could not add category."
+    );
+
+  }
+
+}
+
+
+async function removeCategory(category){
+
+  if(!isAdmin())return;
+
+  const used=
+    products.some(
+      p=>p.category===category
+    );
+
+  if(used){
+
+    alert(
+      "This category is being used by a product. Change the product category first."
+    );
+
+    return;
+
+  }
+
+  if(!confirm(
+    "Remove category "+category+"?"
+  ))return;
+
+
+  try{
+
+    const snapshot=
+      await get(ref(db,"categories"));
+
+    const data=
+      snapshot.val() || {};
+
+    for(const key in data){
+
+      if(data[key]===category){
+
+        await remove(
+          ref(db,"categories/"+key)
         );
 
-      button.className =
-        "category-btn "+
-        (
-          selectedCategory === category
-            ? "active"
-            : ""
-        );
-
-      button.textContent =
-        category;
-
-      button.onclick =
-      function(){
-
-        selectedCategory =
-          category;
-
-        renderCategories();
-        renderProducts();
-
-      };
-
-      box.appendChild(button);
+      }
 
     }
-  );
+
+    if(selectedCategory===category){
+
+      selectedCategory="All";
+
+    }
+
+    showToast(
+      "Category removed."
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+  }
 
 }
 
@@ -2794,58 +2719,64 @@ function renderCategories(){
 
 function renderProducts(){
 
-  const box =
-    document.getElementById(
-      "products"
-    );
+  const box=
+    document.getElementById("products");
 
-  if(!box)
+  if(!box)return;
+
+  if(products.length===0){
+
+    box.innerHTML=
+      `<div class="empty">
+        No products available.
+      </div>`;
+
+    document.getElementById(
+      "productCount"
+    ).textContent="0 products";
+
     return;
 
-  const search =
+  }
+
+  const search=
     (
       document.getElementById(
         "searchBox"
-      ).value ||
-      ""
-    ).toLowerCase()
-     .trim();
+      )?.value || ""
+    ).toLowerCase();
+
 
   box.innerHTML="";
 
-  const filtered =
-    products.filter(
-      product => {
 
-        const categoryMatch =
-          selectedCategory === "All" ||
-          product.category ===
-          selectedCategory;
+  const filtered=
+    products.filter(product=>{
 
-        const searchMatch =
-          (
-            product.name ||
-            ""
-          ).toLowerCase()
-           .includes(search);
+      const categoryMatch=
+        selectedCategory==="All" ||
+        product.category===selectedCategory;
 
-        return (
-          categoryMatch &&
-          searchMatch
-        );
+      const searchMatch=
+        String(product.name || "")
+          .toLowerCase()
+          .includes(search);
 
-      }
-    );
+      return categoryMatch &&
+        searchMatch;
+
+    });
+
 
   document.getElementById(
     "productCount"
-  ).textContent =
-    filtered.length +
-    " products";
+  ).textContent=
+    filtered.length+" products";
 
-  if(filtered.length === 0){
 
-    box.innerHTML =
+  if(filtered.length===0){
+
+    box.innerHTML=
       `<div class="empty">
         No products found.
       </div>`;
@@ -2854,175 +2785,141 @@ function renderProducts(){
 
   }
 
-  filtered.forEach(
-    product => {
 
-      const card =
-        document.createElement(
-          "div"
-        );
+  filtered.forEach(product=>{
 
-      card.className =
-        "product-card";
+    let selectedPack=
+      product.packs &&
+      product.packs[0];
 
-      const image =
-        product.image ||
-        placeholder(product.name);
 
-      card.innerHTML = `
+    if(!selectedPack){
 
-        <img
-          class="product-image"
-          src="${image}"
-          alt="${escapeHtml(product.name)}"
-        >
-
-        <div class="product-body">
-
-          <div class="product-category">
-            ${escapeHtml(product.category || "Others")}
-          </div>
-
-          <h3 class="product-name">
-            ${escapeHtml(product.name)}
-          </h3>
-
-          <div class="product-description">
-            ${escapeHtml(product.description || "")}
-          </div>
-
-          <div
-            class="pack-row"
-            id="packs-${product.id}"
-          ></div>
-
-          <div
-            class="product-price"
-            id="price-${product.id}"
-          >
-            ₹0
-          </div>
-
-          <button
-            class="add-btn"
-            id="add-${product.id}"
-          >
-            🛒 Add to Cart
-          </button>
-
-        </div>
-
-      `;
-
-      box.appendChild(card);
-
-      const packBox =
-        card.querySelector(
-          "#packs-"+product.id
-        );
-
-      let selectedPack =
-        product.packs &&
-        product.packs.length
-          ? product.packs[0]
-          : {
-              size:"Standard",
-              price:0
-            };
-
-      if(
-        !product.packs ||
-        !product.packs.length
-      ){
-
-        product.packs = [
-          selectedPack
-        ];
-
-      }
-
-      product.packs.forEach(
-        (pack,index) => {
-
-          const button =
-            document.createElement(
-              "button"
-            );
-
-          button.className =
-            "pack-btn "+
-            (
-              index===0
-                ? "active"
-                : ""
-            );
-
-          button.textContent =
-            pack.size;
-
-          button.onclick =
-          function(){
-
-            selectedPack=pack;
-
-            packBox
-              .querySelectorAll(
-                ".pack-btn"
-              )
-              .forEach(
-                b =>
-                  b.classList.remove(
-                    "active"
-                  )
-              );
-
-            button.classList.add(
-              "active"
-            );
-
-            card.querySelector(
-              "#price-"+product.id
-            ).textContent =
-              "₹"+
-              Number(
-                pack.price || 0
-              ).toLocaleString(
-                "en-IN"
-              );
-
-          };
-
-          packBox.appendChild(
-            button
-          );
-
-        }
-      );
-
-      card.querySelector(
-        "#price-"+product.id
-      ).textContent =
-        "₹"+
-        Number(
-          selectedPack.price || 0
-        ).toLocaleString(
-          "en-IN"
-        );
-
-      card.querySelector(
-        "#add-"+product.id
-      ).onclick =
-      function(){
-
-        addToCart(
-          product.id,
-          selectedPack
-        );
-
+      selectedPack={
+        size:"1 unit",
+        price:0
       };
 
     }
-  );
+
+
+    const card=
+      document.createElement("div");
+
+    card.className="product-card";
+
+
+    card.innerHTML=`
+
+      <img
+        class="product-image"
+        src="${product.image || placeholder(product.name)}"
+        alt="${escapeHtml(product.name)}"
+      >
+
+      <div class="product-body">
+
+        <div class="product-category">
+          ${escapeHtml(product.category || "Others")}
+        </div>
+
+        <h3 class="product-name">
+          ${escapeHtml(product.name)}
+        </h3>
+
+        <div class="product-description">
+          ${escapeHtml(product.description || "")}
+        </div>
+
+        <div
+          class="pack-row"
+          id="packs-${escapeAttr(product.id)}"
+        ></div>
+
+        <div
+          class="product-price"
+          id="price-${escapeAttr(product.id)}"
+        >
+          ₹${Number(selectedPack.price || 0).toLocaleString("en-IN")}
+        </div>
+
+        <button
+          class="add-btn"
+          id="add-${escapeAttr(product.id)}"
+        >
+          🛒 Add to Cart
+        </button>
+
+      </div>
+    `;
+
+
+    box.appendChild(card);
+
+
+    const addButton=
+      card.querySelector(
+        "#add-"+CSS.escape(String(product.id))
+      );
+
+
+    addButton.onclick=()=>{
+
+      addToCart(
+        product.id,
+        selectedPack
+      );
+
+    };
+
+
+    const packBox=
+      card.querySelector(
+        "#packs-"+CSS.escape(String(product.id))
+      );
+
+
+    (product.packs || []).forEach(
+      (pack,index)=>{
+
+        const button=
+          document.createElement("button");
+
+        button.className=
+          "pack-btn "+
+          (index===0?"active":"");
+
+        button.textContent=
+          pack.size;
+
+        button.onclick=()=>{
+
+          selectedPack=pack;
+
+          packBox
+            .querySelectorAll(".pack-btn")
+            .forEach(
+              b=>b.classList.remove("active")
+            );
+
+          button.classList.add("active");
+
+          card.querySelector(
+            "#price-"+CSS.escape(String(product.id))
+          ).textContent=
+            "₹"+
+            Number(
+              pack.price || 0
+            ).toLocaleString("en-IN");
+
+        };
+
+        packBox.appendChild(button);
+
+      }
+    );
+
+  });
 
 }
 
@@ -3036,27 +2933,26 @@ function addToCart(
   selectedPack
 ){
 
-  const product =
+  const product=
     products.find(
-      p =>
-        String(p.id) ===
-        String(productId)
+      p=>String(p.id)===String(productId)
     );
 
-  if(!product)
-    return;
+  if(!product)return;
 
-  const pack =
+  const pack=
     selectedPack ||
-    product.packs[0];
+    product.packs?.[0];
 
-  const existing =
-    cart.find(
-      item =>
-        String(item.productId) ===
-        String(productId) &&
-        item.size === pack.size
+  if(!pack)return;
+
+
+  const existing=
+    cart.find(item=>
+      String(item.productId)===String(productId) &&
+      item.size===pack.size
     );
+
 
   if(existing){
 
@@ -3066,15 +2962,13 @@ function addToCart(
 
     cart.push({
 
-      productId,
-      name:
-        product.name,
+      productId:product.id,
 
-      size:
-        pack.size,
+      name:product.name,
 
-      price:
-        Number(pack.price),
+      size:pack.size,
+
+      price:Number(pack.price || 0),
 
       qty:1
 
@@ -3082,9 +2976,15 @@ function addToCart(
 
   }
 
+
   saveCart();
 
   renderCart();
+
+  showToast(
+    product.name+
+    " ("+pack.size+") added to cart."
+  );
 
 }
 
@@ -3101,16 +3001,19 @@ function saveCart(){
 
 function renderCart(){
 
-  const box =
+  const box=
     document.getElementById(
       "cartItems"
     );
 
+  if(!box)return;
+
   box.innerHTML="";
+
 
   if(cart.length===0){
 
-    box.innerHTML =
+    box.innerHTML=
       `<div class="empty">
         Your cart is empty.<br>
         Add products above to place your order.
@@ -3118,142 +3021,163 @@ function renderCart(){
 
   }
 
+
   let total=0;
+
   let count=0;
 
-  cart.forEach(
-    (item,index) => {
 
-      const subtotal =
-        Number(item.price) *
-        Number(item.qty);
+  cart.forEach((item,index)=>{
 
-      total += subtotal;
-      count += Number(item.qty);
+    const subtotal=
+      Number(item.price || 0) *
+      Number(item.qty || 0);
 
-      const div =
-        document.createElement(
-          "div"
-        );
+    total+=subtotal;
 
-      div.className =
-        "cart-item";
+    count+=Number(item.qty || 0);
 
-      div.innerHTML = `
 
-        <div>
+    const div=
+      document.createElement("div");
 
-          <strong>
-            ${escapeHtml(item.name)}
-          </strong>
+    div.className="cart-item";
 
-          <br>
 
-          <small>
-            ${escapeHtml(item.size)}
-            × ₹${Number(item.price).toLocaleString("en-IN")}
-          </small>
+    div.innerHTML=`
 
-        </div>
+      <div>
+        <strong>
+          ${escapeHtml(item.name)}
+        </strong><br>
 
-        <div class="qty">
+        <small>
+          ${escapeHtml(item.size)}
+          × ₹${Number(item.price).toLocaleString("en-IN")}
+        </small>
+      </div>
 
-          <button
-            onclick="changeQty(${index},-1)"
-          >
-            −
-          </button>
+      <div class="qty">
 
-          <strong>
-            ${item.qty}
-          </strong>
+        <button>
+          −
+        </button>
 
-          <button
-            onclick="changeQty(${index},1)"
-          >
-            +
-          </button>
+        <strong>
+          ${item.qty}
+        </strong>
 
-        </div>
+        <button>
+          +
+        </button>
 
-        <div>
+      </div>
 
-          <strong>
-            ₹${subtotal.toLocaleString("en-IN")}
-          </strong>
+      <div>
+        <strong>
+          ₹${subtotal.toLocaleString("en-IN")}
+        </strong>
 
-          <button
-            class="btn btn-danger"
-            style="padding:5px 8px;margin-left:8px"
-            onclick="removeCartItem(${index})"
-          >
-            ✕
-          </button>
+        <button
+          class="btn btn-danger"
+          style="padding:5px 8px;margin-left:8px"
+        >
+          ✕
+        </button>
 
-        </div>
+      </div>
+    `;
 
-      `;
 
-      box.appendChild(div);
+    const buttons=
+      div.querySelectorAll(".qty button");
 
-    }
-  );
+    buttons[0].onclick=()=>{
+
+      changeQty(index,-1);
+
+    };
+
+    buttons[1].onclick=()=>{
+
+      changeQty(index,1);
+
+    };
+
+
+    div.querySelector(
+      ".btn-danger"
+    ).onclick=()=>{
+
+      removeCartItem(index);
+
+    };
+
+
+    box.appendChild(div);
+
+  });
+
 
   document.getElementById(
     "cartTotal"
-  ).textContent =
-    total.toLocaleString(
-      "en-IN"
-    );
+  ).textContent=
+    total.toLocaleString("en-IN");
+
 
   document.getElementById(
     "cartCount"
-  ).textContent =
-    count;
+  ).textContent=count;
+
+
+  const statCart=
+    document.getElementById("statCart");
+
+  if(statCart){
+
+    statCart.textContent=count;
+
+  }
 
 }
 
 
-window.changeQty =
-function(index,change){
+function changeQty(index,change){
 
-  if(!cart[index])
-    return;
+  if(!cart[index])return;
 
-  cart[index].qty += change;
+  cart[index].qty=
+    Number(cart[index].qty)+change;
 
-  if(cart[index].qty <= 0){
+  if(cart[index].qty<=0){
 
     cart.splice(index,1);
 
   }
 
   saveCart();
+
   renderCart();
 
-};
+}
 
 
-window.removeCartItem =
-function(index){
+function removeCartItem(index){
 
-  cart.splice(
-    index,
-    1
-  );
+  cart.splice(index,1);
 
   saveCart();
+
   renderCart();
 
-};
+}
 
 
 /* =====================================================
    WHATSAPP ORDER
 ===================================================== */
 
-window.sendWhatsAppOrder =
-async function(){
+async function sendWhatsAppOrder(){
 
   if(cart.length===0){
 
@@ -3265,26 +3189,24 @@ async function(){
 
   }
 
-  const name =
+
+  const name=
     document.getElementById(
       "customerName"
     ).value.trim();
 
-  const phone =
+  const phone=
     document.getElementById(
       "customerPhone"
     ).value.trim();
 
-  const address =
+  const address=
     document.getElementById(
       "customerAddress"
     ).value.trim();
 
-  if(
-    !name ||
-    !phone ||
-    !address
-  ){
+
+  if(!name || !phone || !address){
 
     alert(
       "Please enter Name, Contact Number and Address."
@@ -3294,42 +3216,31 @@ async function(){
 
   }
 
-  let total=0;
 
-  let items=[];
-
-  let message =
+  let message=
 `Hello Jayvik, I would like to place an order:
 
 `;
 
-  cart.forEach(
-    (item,index) => {
 
-      const subtotal =
-        Number(item.price) *
-        Number(item.qty);
+  let total=0;
 
-      total += subtotal;
 
-      items.push({
+  cart.forEach((item,index)=>{
 
-        name:item.name,
-        size:item.size,
-        price:Number(item.price),
-        qty:Number(item.qty),
-        subtotal
+    const subtotal=
+      Number(item.price)*Number(item.qty);
 
-      });
+    total+=subtotal;
 
-      message +=
+    message+=
 `${index+1}. ${item.name} – ${item.size} × ${item.qty} = ₹${subtotal}
 `;
 
-    }
-  );
+  });
 
-  message +=
+
+  message+=
 `
 Total: ₹${total}
 
@@ -3338,100 +3249,367 @@ Address: ${address}
 Contact Number: ${phone}`;
 
 
-  /* SAVE ORDER TO FIREBASE */
+  /* Save order to Firebase */
 
   try{
 
-    await push(
-      ref(db,"orders"),
+    const orderRef=
+      push(ref(db,"orders"));
+
+    await set(
+      orderRef,
       {
 
-        customerName:
-          name,
+        customerName:name,
 
-        customerPhone:
-          phone,
+        customerPhone:phone,
 
-        customerAddress:
-          address,
+        customerAddress:address,
 
-        items,
+        items:cart,
 
-        total,
+        total:total,
 
-        status:
-          "New",
+        status:"New",
 
         createdAt:
-          Date.now()
+          new Date().toISOString()
 
       }
     );
 
   }catch(error){
 
-    console.error(
-      "Order save error:",
+    console.warn(
+      "Order Firebase save failed:",
       error
     );
 
   }
 
 
-  /* OPEN WHATSAPP */
-
-  const url =
+  const url=
     "https://wa.me/919356959561?text="+
     encodeURIComponent(message);
+
 
   window.open(
     url,
     "_blank"
   );
 
-};
+}
 
 
 /* =====================================================
-   ADMIN TABS
+   ADMIN AUTH
 ===================================================== */
 
-window.showAdminTab =
-function(id,button){
+function isAdmin(){
+
+  return currentUser &&
+    currentUser.uid===ADMIN_UID;
+
+}
+
+
+function openAdminLogin(){
+
+  if(isAdmin()){
+
+    openAdmin();
+
+    return;
+
+  }
 
   document
-    .querySelectorAll(
-      ".admin-section"
-    )
-    .forEach(
-      section =>
-        section.classList.remove(
-          "active"
-        )
-    );
+    .getElementById("loginOverlay")
+    .classList.add("open");
 
   document
-    .querySelectorAll(
-      ".admin-tab"
-    )
-    .forEach(
-      tab =>
-        tab.classList.remove(
-          "active"
-        )
+    .getElementById("loginLogo")
+    .src=logo;
+
+}
+
+
+function closeAdminLogin(){
+
+  document
+    .getElementById("loginOverlay")
+    .classList.remove("open");
+
+  document
+    .getElementById("loginError")
+    .classList.remove("show");
+
+}
+
+
+async function adminLogin(){
+
+  const email=
+    document.getElementById(
+      "loginEmail"
+    ).value.trim();
+
+  const password=
+    document.getElementById(
+      "loginPassword"
+    ).value;
+
+
+  const errorBox=
+    document.getElementById(
+      "loginError"
     );
+
+
+  errorBox.classList.remove("show");
+
+
+  if(!email || !password){
+
+    errorBox.textContent=
+      "Please enter email and password.";
+
+    errorBox.classList.add("show");
+
+    return;
+
+  }
+
+
+  const button=
+    document.getElementById(
+      "loginButton"
+    );
+
+  button.disabled=true;
+
+  button.textContent=
+    "Logging in...";
+
+
+  try{
+
+    const result=
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+
+    if(result.user.uid!==ADMIN_UID){
+
+      await signOut(auth);
+
+      throw new Error(
+        "This account is not authorized as Jayvik admin."
+      );
+
+    }
+
+
+    closeAdminLogin();
+
+    openAdmin();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    errorBox.textContent=
+      getLoginError(error);
+
+    errorBox.classList.add("show");
+
+  }finally{
+
+    button.disabled=false;
+
+    button.textContent=
+      "🔐 Login to Dashboard";
+
+  }
+
+}
+
+
+function getLoginError(error){
+
+  if(
+    error.code===
+    "auth/invalid-credential"
+  ){
+
+    return "Incorrect email or password.";
+
+  }
+
+  if(
+    error.code===
+    "auth/user-not-found"
+  ){
+
+    return "Admin account not found.";
+
+  }
+
+  if(
+    error.code===
+    "auth/wrong-password"
+  ){
+
+    return "Incorrect password.";
+
+  }
+
+  return error.message ||
+    "Login failed.";
+
+}
+
+
+async function adminLogout(){
+
+  try{
+
+    await signOut(auth);
+
+    closeAdmin();
+
+    showToast(
+      "Admin logged out."
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+
+onAuthStateChanged(
+  auth,
+  user=>{
+
+    currentUser=user;
+
+    if(user){
+
+      if(user.uid!==ADMIN_UID){
+
+        signOut(auth);
+
+      }
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   ADMIN DASHBOARD
+===================================================== */
+
+function openAdmin(){
+
+  if(!isAdmin()){
+
+    openAdminLogin();
+
+    return;
+
+  }
+
+
+  document
+    .getElementById("adminOverlay")
+    .classList.add("open");
+
+
+  loadWebsiteEditor();
+
+  renderAdminProducts();
+
+  renderAdminCategories();
+
+  updateStats();
+
+  applyLogo();
+
+}
+
+
+function closeAdmin(){
+
+  document
+    .getElementById("adminOverlay")
+    .classList.remove("open");
+
+}
+
+
+function showAdminTab(
+  id,
+  button
+){
+
+  document
+    .querySelectorAll(".admin-section")
+    .forEach(
+      section=>
+        section.classList.remove("active")
+    );
+
+
+  document
+    .querySelectorAll(".admin-tab")
+    .forEach(
+      tab=>
+        tab.classList.remove("active")
+    );
+
 
   document
     .getElementById(id)
-    .classList.add(
-      "active"
+    .classList.add("active");
+
+
+  button.classList.add("active");
+
+}
+
+
+function showAdminTabByName(id){
+
+  const button=
+    Array.from(
+      document.querySelectorAll(".admin-tab")
+    ).find(
+      b=>
+        b.getAttribute("onclick") &&
+        b.getAttribute("onclick")
+          .includes("'"+id+"'")
     );
 
-  button.classList.add(
-    "active"
-  );
+  if(button){
 
-};
+    showAdminTab(
+      id,
+      button
+    );
+
+  }
+
+}
 
 
 /* =====================================================
@@ -3440,38 +3618,36 @@ function(id,button){
 
 function renderAdminProducts(){
 
-  const box =
+  const box=
     document.getElementById(
       "adminProductsList"
     );
 
-  if(!box)
-    return;
-
-  const search =
-    (
-      document.getElementById(
-        "adminProductSearch"
-      )?.value ||
-      ""
-    ).toLowerCase()
-     .trim();
+  if(!box)return;
 
   box.innerHTML="";
 
-  const filtered =
+
+  const search=
+    (
+      document.getElementById(
+        "adminProductSearch"
+      )?.value || ""
+    ).toLowerCase();
+
+
+  const filtered=
     products.filter(
-      product =>
-        (
-          product.name ||
-          ""
-        ).toLowerCase()
-         .includes(search)
+      product=>
+        String(product.name || "")
+          .toLowerCase()
+          .includes(search)
     );
+
 
   if(filtered.length===0){
 
-    box.innerHTML =
+    box.innerHTML=
       `<div class="empty">
         No products found.
       </div>`;
@@ -3480,110 +3656,110 @@ function renderAdminProducts(){
 
   }
 
-  filtered.forEach(
-    product => {
 
-      const div =
-        document.createElement(
-          "div"
-        );
+  filtered.forEach(product=>{
 
-      div.className =
-        "admin-product";
+    const div=
+      document.createElement("div");
 
-      div.innerHTML = `
+    div.className="admin-product";
 
-        <img
-          src="${product.image || placeholder(product.name)}"
-          alt="${escapeHtml(product.name)}"
-        >
 
-        <div>
+    const packs=
+      (product.packs || [])
+        .map(pack=>
+          `<span style="
+            display:inline-block;
+            background:#edf5ed;
+            padding:4px 7px;
+            border-radius:6px;
+            margin:2px;
+            font-size:12px">
+            ${escapeHtml(pack.size)}
+            ₹${Number(pack.price).toLocaleString("en-IN")}
+          </span>`
+        )
+        .join("");
 
-          <strong>
-            ${escapeHtml(product.name)}
-          </strong>
 
-          <div class="small">
-            ${escapeHtml(product.category || "")}
-          </div>
+    div.innerHTML=`
 
-          <div style="margin-top:7px">
+      <img
+        src="${product.image || placeholder(product.name)}"
+        alt=""
+      >
 
-            ${
-              (product.packs || [])
-              .map(
-                p =>
-                `<span style="
-                  display:inline-block;
-                  background:#edf5ed;
-                  padding:4px 7px;
-                  border-radius:6px;
-                  margin:2px;
-                  font-size:12px">
+      <div>
 
-                  ${escapeHtml(p.size)}
-                  ₹${Number(p.price).toLocaleString("en-IN")}
+        <strong>
+          ${escapeHtml(product.name)}
+        </strong>
 
-                </span>`
-              )
-              .join("")
-            }
-
-          </div>
-
+        <div class="small">
+          ${escapeHtml(product.category || "")}
         </div>
 
-        <div class="admin-actions">
-
-          <button
-            class="btn btn-light"
-            onclick="editProduct('${escapeAttr(product.id)}')"
-          >
-            ✏️ Edit
-          </button>
-
-          <button
-            class="btn btn-danger"
-            onclick="deleteProduct('${escapeAttr(product.id)}')"
-          >
-            🗑️ Remove
-          </button>
-
+        <div style="margin-top:7px">
+          ${packs}
         </div>
 
-      `;
+      </div>
 
-      box.appendChild(div);
+      <div class="admin-actions">
 
-    }
-  );
+        <button class="btn btn-light">
+          ✏️ Edit
+        </button>
+
+        <button class="btn btn-danger">
+          🗑️ Remove
+        </button>
+
+      </div>
+    `;
+
+
+    div.querySelector(
+      ".btn-light"
+    ).onclick=()=>{
+
+      editProduct(product.id);
+
+    };
+
+
+    div.querySelector(
+      ".btn-danger"
+    ).onclick=()=>{
+
+      deleteProduct(product.id);
+
+    };
+
+
+    box.appendChild(div);
+
+  });
 
 }
 
 
-window.deleteProduct =
-async function(id){
+async function deleteProduct(id){
 
-  if(!isAdmin())
-    return;
+  if(!isAdmin())return;
 
-  const product =
+  const product=
     products.find(
-      p =>
-        String(p.id) ===
-        String(id)
+      p=>String(p.id)===String(id)
     );
 
-  if(!product)
-    return;
+  if(!product)return;
 
-  if(
-    !confirm(
-      "Remove "+product.name+"?"
-    )
-  )
-    return;
+
+  if(!confirm(
+    "Remove "+product.name+"?"
+  ))return;
+
 
   try{
 
@@ -3594,162 +3770,192 @@ async function(id){
       )
     );
 
-    cart =
+
+    cart=
       cart.filter(
-        item =>
-          String(item.productId) !==
+        item=>
+          String(item.productId)!==
           String(id)
       );
 
     saveCart();
+
     renderCart();
+
+    showToast(
+      "Product removed."
+    );
 
   }catch(error){
 
+    console.error(error);
+
     alert(
-      "Could not delete product.\n\n"+
-      error.message
+      "Could not remove product."
     );
 
   }
 
-};
+}
 
 
 /* =====================================================
    PRODUCT EDITOR
 ===================================================== */
 
-window.openAddProduct =
-function(){
+function openAddProduct(){
 
-  if(!isAdmin())
+  if(!isAdmin()){
+
+    openAdminLogin();
+
     return;
+
+  }
+
 
   editingPhoto=null;
 
+
   document.getElementById(
     "editorTitle"
-  ).textContent =
+  ).textContent=
     "Add Product";
+
 
   document.getElementById(
     "editProductId"
   ).value="";
 
+
   document.getElementById(
     "editProductName"
   ).value="";
+
 
   document.getElementById(
     "editProductDescription"
   ).value="";
 
-  fillCategorySelect();
-
-  document.getElementById(
-    "editProductCategory"
-  ).value =
-    categories[0] ||
-    "Others";
-
-  document.getElementById(
-    "productPhotoPreview"
-  ).src =
-    placeholder(
-      "New Product"
-    );
 
   document.getElementById(
     "productPhotoFile"
   ).value="";
+
+
+  fillCategorySelect();
+
+
+  document.getElementById(
+    "editProductCategory"
+  ).value=
+    categories[0] ||
+    "Others";
+
+
+  document.getElementById(
+    "productPhotoPreview"
+  ).src=
+    placeholder("New Product");
+
 
   document.getElementById(
     "packEditor"
   ).innerHTML="";
 
+
   addPackField();
 
-  document.getElementById(
-    "productEditor"
-  ).style.display="block";
 
-};
+  document
+    .getElementById("productEditor")
+    .classList.add("open");
+
+}
 
 
-window.editProduct =
-function(id){
+function editProduct(id){
 
-  if(!isAdmin())
-    return;
+  if(!isAdmin())return;
 
-  const product =
+
+  const product=
     products.find(
-      p =>
-        String(p.id) ===
-        String(id)
+      p=>String(p.id)===String(id)
     );
 
-  if(!product)
-    return;
 
-  editingPhoto =
+  if(!product)return;
+
+
+  editingPhoto=
     product.image || null;
+
 
   document.getElementById(
     "editorTitle"
-  ).textContent =
+  ).textContent=
     "Edit Product";
+
 
   document.getElementById(
     "editProductId"
-  ).value =
-    id;
+  ).value=
+    product.id;
+
 
   document.getElementById(
     "editProductName"
-  ).value =
-    product.name;
+  ).value=
+    product.name || "";
+
 
   document.getElementById(
     "editProductDescription"
-  ).value =
+  ).value=
     product.description || "";
 
-  fillCategorySelect();
-
-  document.getElementById(
-    "editProductCategory"
-  ).value =
-    product.category;
-
-  document.getElementById(
-    "productPhotoPreview"
-  ).src =
-    product.image ||
-    placeholder(product.name);
 
   document.getElementById(
     "productPhotoFile"
   ).value="";
 
-  const box =
+
+  fillCategorySelect();
+
+
+  document.getElementById(
+    "editProductCategory"
+  ).value=
+    product.category;
+
+
+  document.getElementById(
+    "productPhotoPreview"
+  ).src=
+    product.image ||
+    placeholder(product.name);
+
+
+  const box=
     document.getElementById(
       "packEditor"
     );
 
+
   box.innerHTML="";
 
-  (
-    product.packs ||
-    []
-  ).forEach(
-    pack =>
-      addPackField(
-        pack.size,
-        pack.price
-      )
-  );
+
+  (product.packs || [])
+    .forEach(
+      pack=>{
+        addPackField(
+          pack.size,
+          pack.price
+        );
+      }
+    );
+
 
   if(
     !product.packs ||
@@ -3760,76 +3966,92 @@ function(id){
 
   }
 
-  document.getElementById(
-    "productEditor"
-  ).style.display="block";
 
-};
-
-
-window.closeProductEditor =
-function(){
-
-  document.getElementById(
-    "productEditor"
-  ).style.display="none";
-
-};
-
-
-function fillCategorySelect(){
-
-  const select =
-    document.getElementById(
-      "editProductCategory"
-    );
-
-  if(!select)
-    return;
-
-  select.innerHTML="";
-
-  categories.forEach(
-    category => {
-
-      const option =
-        document.createElement(
-          "option"
-        );
-
-      option.value =
-        category;
-
-      option.textContent =
-        category;
-
-      select.appendChild(
-        option
-      );
-
-    }
-  );
+  document
+    .getElementById("productEditor")
+    .classList.add("open");
 
 }
 
 
-window.addPackField =
-function(size="",price=""){
+function closeProductEditor(){
 
-  const box =
+  document
+    .getElementById("productEditor")
+    .classList.remove("open");
+
+}
+
+
+function fillCategorySelect(){
+
+  const select=
+    document.getElementById(
+      "editProductCategory"
+    );
+
+  if(!select)return;
+
+  select.innerHTML="";
+
+
+  categories.forEach(
+    category=>{
+
+      const option=
+        document.createElement(
+          "option"
+        );
+
+      option.value=category;
+
+      option.textContent=category;
+
+      select.appendChild(option);
+
+    }
+  );
+
+
+  if(categories.length===0){
+
+    const option=
+      document.createElement(
+        "option"
+      );
+
+    option.value="Others";
+
+    option.textContent="Others";
+
+    select.appendChild(option);
+
+  }
+
+}
+
+
+function addPackField(
+  size="",
+  price=""
+){
+
+  const box=
     document.getElementById(
       "packEditor"
     );
 
-  const row =
+
+  const row=
     document.createElement(
       "div"
     );
 
-  row.className =
-    "pack-edit";
 
-  row.innerHTML = `
+  row.className="pack-edit";
+
+
+  row.innerHTML=`
 
     <input
       placeholder="Pack size e.g. 1 L"
@@ -3841,37 +4063,41 @@ function(size="",price=""){
       type="number"
       min="0"
       placeholder="Price"
-      value="${price}"
+      value="${escapeAttr(price)}"
       class="pack-price"
     >
 
     <button
       class="btn btn-danger"
-      onclick="this.parentElement.remove()"
     >
       Remove
     </button>
-
   `;
+
+
+  row.querySelector(
+    "button"
+  ).onclick=()=>{
+
+    row.remove();
+
+  };
+
 
   box.appendChild(row);
 
-};
+}
 
 
-window.previewProductPhoto =
-function(event){
+function previewProductPhoto(event){
 
-  const file =
+  const file=
     event.target.files[0];
 
-  if(!file)
-    return;
+  if(!file)return;
 
-  if(
-    file.size >
-    2 * 1024 * 1024
-  ){
+
+  if(file.size>2*1024*1024){
 
     alert(
       "Please use an image smaller than 2 MB."
@@ -3883,121 +4109,136 @@ function(event){
 
   }
 
-  const reader =
+
+  const reader=
     new FileReader();
 
-  reader.onload =
-  function(e){
 
-    editingPhoto =
+  reader.onload=function(e){
+
+    editingPhoto=
       e.target.result;
 
     document.getElementById(
       "productPhotoPreview"
-    ).src =
+    ).src=
       e.target.result;
 
   };
 
+
   reader.readAsDataURL(file);
 
-};
+}
 
 
-window.removeProductPhoto =
-function(){
+function removeProductPhoto(){
 
   editingPhoto=null;
 
-  const name =
+
+  const name=
     document.getElementById(
       "editProductName"
     ).value ||
     "Product";
 
+
   document.getElementById(
     "productPhotoPreview"
-  ).src =
+  ).src=
     placeholder(name);
 
-};
+}
 
 
-window.saveProduct =
-async function(){
+async function saveProduct(){
 
-  if(!isAdmin())
-    return;
+  if(!isAdmin()){
 
-  const id =
-    document.getElementById(
-      "editProductId"
-    ).value;
-
-  const name =
-    document.getElementById(
-      "editProductName"
-    ).value.trim();
-
-  const category =
-    document.getElementById(
-      "editProductCategory"
-    ).value;
-
-  const description =
-    document.getElementById(
-      "editProductDescription"
-    ).value.trim();
-
-  if(!name){
-
-    alert(
-      "Enter product name."
-    );
+    alert("Please login as admin.");
 
     return;
 
   }
 
-  const rows =
+
+  const id=
+    document.getElementById(
+      "editProductId"
+    ).value;
+
+
+  const name=
+    document.getElementById(
+      "editProductName"
+    ).value.trim();
+
+
+  const category=
+    document.getElementById(
+      "editProductCategory"
+    ).value;
+
+
+  const description=
+    document.getElementById(
+      "editProductDescription"
+    ).value.trim();
+
+
+  if(!name){
+
+    alert("Enter product name.");
+
+    return;
+
+  }
+
+
+  const rows=
     document.querySelectorAll(
       "#packEditor .pack-edit"
     );
 
+
   const packs=[];
 
-  rows.forEach(
-    row => {
 
-      const size =
+  rows.forEach(row=>{
+
+    const size=
+      row.querySelector(
+        ".pack-size"
+      ).value.trim();
+
+
+    const price=
+      Number(
         row.querySelector(
-          ".pack-size"
-        ).value.trim();
+          ".pack-price"
+        ).value
+      );
 
-      const price =
-        Number(
-          row.querySelector(
-            ".pack-price"
-          ).value
-        );
 
-      if(
-        size &&
-        Number.isFinite(price) &&
-        price >= 0
-      ){
+    if(
+      size &&
+      Number.isFinite(price) &&
+      price>=0
+    ){
 
-        packs.push({
+      packs.push({
 
-          size,
-          price
+        size:size,
 
-        });
+        price:price
 
-      }
+      });
 
     }
-  );
+
+  });
+
 
   if(packs.length===0){
 
@@ -4009,62 +4250,47 @@ async function(){
 
   }
 
-  const product = {
 
-    name,
+  const product={
 
-    category,
+    id:
+      id ||
+      "product_"+Date.now()+"_"+Math.random()
+        .toString(36)
+        .slice(2,8),
 
-    description,
+    name:name,
+
+    category:
+      category || "Others",
 
     image:
       editingPhoto ||
       placeholder(name),
 
-    packs,
+    packs:packs,
 
-    updatedAt:
-      Date.now()
+    description:description
 
   };
 
+
   try{
 
-    if(id){
+    await set(
+      ref(
+        db,
+        "products/"+product.id
+      ),
+      product
+    );
 
-      await update(
-        ref(
-          db,
-          "products/"+id
-        ),
-        product
-      );
-
-    }else{
-
-      const newRef =
-        push(
-          ref(db,"products")
-        );
-
-      await set(
-        newRef,
-        {
-
-          ...product,
-
-          createdAt:
-            Date.now()
-
-        }
-      );
-
-    }
 
     closeProductEditor();
 
-    alert(
-      "✅ Product saved to Firebase.\n\nThe customer website will update automatically."
+
+    showToast(
+      "Product saved. Customer website updated."
     );
 
   }catch(error){
@@ -4072,184 +4298,75 @@ async function(){
     console.error(error);
 
     alert(
-      "Could not save product.\n\n"+
-      error.message
+      "Could not save product. Check Firebase rules."
     );
 
   }
 
-};
+}
 
 
 /* =====================================================
    ADMIN CATEGORIES
 ===================================================== */
 
-window.addCategory =
-async function(){
-
-  if(!isAdmin())
-    return;
-
-  const input =
-    document.getElementById(
-      "newCategory"
-    );
-
-  const name =
-    input.value.trim();
-
-  if(!name)
-    return;
-
-  if(
-    categories
-      .some(
-        c =>
-          c.toLowerCase() ===
-          name.toLowerCase()
-      )
-  ){
-
-    alert(
-      "Category already exists."
-    );
-
-    return;
-
-  }
-
-  const newCategories =
-    [
-      ...categories,
-      name
-    ];
-
-  try{
-
-    await set(
-      ref(db,"categories"),
-      newCategories
-    );
-
-    input.value="";
-
-  }catch(error){
-
-    alert(
-      error.message
-    );
-
-  }
-
-};
-
-
-window.removeCategory =
-async function(category){
-
-  if(!isAdmin())
-    return;
-
-  const used =
-    products.some(
-      p =>
-        p.category ===
-        category
-    );
-
-  if(used){
-
-    alert(
-      "This category is being used by a product. Change the product category first."
-    );
-
-    return;
-
-  }
-
-  if(
-    !confirm(
-      "Remove category "+category+"?"
-    )
-  )
-    return;
-
-  const newCategories =
-    categories.filter(
-      c =>
-        c !== category
-    );
-
-  try{
-
-    await set(
-      ref(db,"categories"),
-      newCategories
-    );
-
-    if(
-      selectedCategory ===
-      category
-    ){
-
-      selectedCategory =
-        "All";
-
-    }
-
-  }catch(error){
-
-    alert(
-      error.message
-    );
-
-  }
-
-};
-
-
 function renderAdminCategories(){
 
-  const box =
+  const box=
     document.getElementById(
       "adminCategoriesList"
     );
 
-  if(!box)
-    return;
+  if(!box)return;
 
   box.innerHTML="";
 
-  categories.forEach(
-    category => {
 
-      const row =
+  if(categories.length===0){
+
+    box.innerHTML=
+      `<div class="empty">
+        No categories.
+      </div>`;
+
+    return;
+
+  }
+
+
+  categories.forEach(
+    category=>{
+
+      const row=
         document.createElement(
           "div"
         );
 
-      row.style.cssText =
-        "display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #eee";
+      row.className=
+        "category-admin-row";
 
-      row.innerHTML = `
 
-        <strong>
-          ${escapeHtml(category)}
-        </strong>
+      const name=
+        document.createElement(
+          "strong"
+        );
 
-        <button
-          class="btn btn-danger"
-        >
-          🗑️ Remove
-        </button>
+      name.textContent=category;
 
-      `;
 
-      row.querySelector(
-        "button"
-      ).onclick =
-      function(){
+      const button=
+        document.createElement(
+          "button"
+        );
+
+      button.className=
+        "btn btn-danger";
+
+      button.textContent=
+        "🗑️ Remove";
+
+
+      button.onclick=()=>{
 
         removeCategory(
           category
@@ -4257,117 +4374,10 @@ function renderAdminCategories(){
 
       };
 
-      box.appendChild(row);
 
-    }
-  );
+      row.appendChild(name);
 
-}
-
-
-/* =====================================================
-   ORDERS
-===================================================== */
-
-function renderOrders(){
-
-  const box =
-    document.getElementById(
-      "ordersList"
-    );
-
-  if(!box)
-    return;
-
-  if(!isAdmin()){
-
-    box.innerHTML =
-      `<div class="empty">
-        Login as administrator to view orders.
-      </div>`;
-
-    return;
-
-  }
-
-  if(orders.length===0){
-
-    box.innerHTML =
-      `<div class="empty">
-        No orders received yet.
-      </div>`;
-
-    return;
-
-  }
-
-  box.innerHTML="";
-
-  orders.forEach(
-    order => {
-
-      const row =
-        document.createElement(
-          "div"
-        );
-
-      row.className =
-        "order-row";
-
-      const date =
-        order.createdAt
-          ? new Date(
-              order.createdAt
-            ).toLocaleString(
-              "en-IN"
-            )
-          : "";
-
-      const itemText =
-        (
-          order.items || []
-        )
-        .map(
-          item =>
-            `${escapeHtml(item.name)} (${escapeHtml(item.size)}) × ${item.qty}`
-        )
-        .join("<br>");
-
-      row.innerHTML = `
-
-        <div class="order-header">
-
-          <strong>
-            ${escapeHtml(order.customerName || "Customer")}
-          </strong>
-
-          <span class="status-badge">
-            ${escapeHtml(order.status || "New")}
-          </span>
-
-        </div>
-
-        <div class="small">
-          📅 ${escapeHtml(date)}
-        </div>
-
-        <div style="margin-top:8px">
-          ${itemText}
-        </div>
-
-        <div style="margin-top:8px">
-          📞 ${escapeHtml(order.customerPhone || "")}
-        </div>
-
-        <div style="margin-top:5px">
-          📍 ${escapeHtml(order.customerAddress || "")}
-        </div>
-
-        <div style="margin-top:8px;font-weight:850;color:var(--green)">
-          Total: ₹${Number(order.total || 0).toLocaleString("en-IN")}
-        </div>
-
-      `;
+      row.appendChild(button);
 
       box.appendChild(row);
 
@@ -4375,14 +4385,6 @@ function renderOrders(){
   );
 
 }
-
-
-window.loadOrders =
-function(){
-
-  renderOrders();
-
-};
 
 
 /* =====================================================
@@ -4391,141 +4393,130 @@ function(){
 
 function updateStats(){
 
-  const productsEl =
+  const p=
     document.getElementById(
       "statProducts"
     );
 
-  const categoriesEl =
+  const c=
     document.getElementById(
       "statCategories"
     );
 
-  const ordersEl =
+  const cartStat=
     document.getElementById(
-      "statOrders"
+      "statCart"
     );
 
-  if(productsEl)
-    productsEl.textContent =
-      products.length;
 
-  if(categoriesEl)
-    categoriesEl.textContent =
-      categories.length;
-
-  if(ordersEl)
-    ordersEl.textContent =
-      orders.length;
-
-}
+  if(p)p.textContent=
+    products.length;
 
 
-/* =====================================================
-   AUTHORIZATION CHECK
-===================================================== */
+  if(c)c.textContent=
+    categories.length;
 
-function isAdmin(){
 
-  const user =
-    auth.currentUser;
+  if(cartStat){
 
-  if(
-    !user ||
-    user.uid !== ADMIN_UID
-  ){
-
-    alert(
-      "Administrator login required."
-    );
-
-    return false;
+    cartStat.textContent=
+      cart.reduce(
+        (sum,item)=>
+          sum+
+          Number(item.qty || 0),
+        0
+      );
 
   }
 
-  return true;
-
 }
-
-
-/* =====================================================
-   SCROLL
-===================================================== */
-
-window.scrollToProducts =
-function(){
-
-  document
-    .getElementById(
-      "productsSection"
-    )
-    .scrollIntoView({
-      behavior:"smooth"
-    });
-
-};
-
-
-window.scrollToCart =
-function(){
-
-  document
-    .getElementById(
-      "cartSection"
-    )
-    .scrollIntoView({
-      behavior:"smooth"
-    });
-
-};
 
 
 /* =====================================================
    HELPERS
 ===================================================== */
 
+function scrollToProducts(){
+
+  document
+    .getElementById("productsSection")
+    .scrollIntoView({
+      behavior:"smooth"
+    });
+
+}
+
+
+function scrollToCart(){
+
+  document
+    .getElementById("cartSection")
+    .scrollIntoView({
+      behavior:"smooth"
+    });
+
+}
+
+
 function escapeHtml(value){
 
-  return String(
-    value ?? ""
-  )
-  .replace(
-    /&/g,
-    "&amp;"
-  )
-  .replace(
-    /</g,
-    "&lt;"
-  )
-  .replace(
-    />/g,
-    "&gt;"
-  )
-  .replace(
-    /"/g,
-    "&quot;"
-  )
-  .replace(
-    /'/g,
-    "&#039;"
-  );
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
 }
 
 
 function escapeAttr(value){
 
-  return String(
-    value ?? ""
-  )
-  .replace(
-    /"/g,
-    "&quot;"
-  )
-  .replace(
-    /'/g,
-    "&#039;"
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/"/g,"&quot;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+
+}
+
+
+function escapeXml(value){
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&apos;");
+
+}
+
+
+function showToast(message){
+
+  const toast=
+    document.getElementById(
+      "toast"
+    );
+
+  if(!toast)return;
+
+  toast.textContent=message;
+
+  toast.classList.add("show");
+
+  clearTimeout(
+    window.__jayvikToast
   );
+
+  window.__jayvikToast=
+    setTimeout(
+      ()=>{
+        toast.classList.remove("show");
+      },
+      3000
+    );
 
 }
 
@@ -4534,14 +4525,24 @@ function escapeAttr(value){
    INITIALIZE
 ===================================================== */
 
-applyLogo();
-applyWebsite();
-renderCart();
+async function start(){
 
-startFirebaseListeners();
+  applyLogo();
+
+  applyWebsite();
+
+  renderCart();
+
+  await initializeDatabaseIfNeeded();
+
+  startFirebaseListeners();
+
+}
+
+
+start();
 
 </script>
 
 </body>
 </html>
-```
