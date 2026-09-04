@@ -2262,8 +2262,40 @@ function removeCategory(category){
 
 
 /* =====================================================
-   PRODUCTS CUSTOMER
+   PRODUCTS CUSTOMER - REAL TIME STOCK AVAILABILITY
 ===================================================== */
+
+function getPackStock(pack){
+  const n=Number(pack && pack.stock);
+  return Number.isFinite(n) && n>0 ? Math.floor(n) : 0;
+}
+
+function availabilityForPack(pack){
+  const stock=getPackStock(pack);
+  if(stock<=0) return {stock,className:"unavailable",text:"🔴 Not Available"};
+  if(stock<=5) return {stock,className:"limited",text:"🟠 Limited Stock — "+stock+" available"};
+  return {stock,className:"available",text:"🟢 Available"};
+}
+
+function updateProductAvailability(card,product,pack){
+  const info=availabilityForPack(pack);
+  const badge=card.querySelector(".availability");
+  const addBtn=card.querySelector(".add-btn");
+  if(badge){
+    badge.className="availability "+info.className;
+    badge.textContent=info.text;
+    badge.style.display="block";
+    badge.style.margin="8px 0";
+    badge.style.fontWeight="700";
+  }
+  if(addBtn){
+    addBtn.disabled=info.stock<=0;
+    addBtn.style.opacity=info.stock<=0 ? "0.55" : "1";
+    addBtn.style.cursor=info.stock<=0 ? "not-allowed" : "pointer";
+    addBtn.textContent=info.stock<=0 ? "🚫 Not Available" : "🛒 Add to Cart";
+    addBtn.title=info.stock<=0 ? "This pack is currently out of stock" : "Add this pack to cart";
+  }
+}
 
 function renderProducts(){
 
@@ -2338,6 +2370,8 @@ function renderProducts(){
           ₹${selectedPack.price.toLocaleString("en-IN")}
         </div>
 
+        <div class="availability" aria-live="polite"></div>
+
         <button class="add-btn"
           onclick="addToCart(${product.id})">
           🛒 Add to Cart
@@ -2347,6 +2381,7 @@ function renderProducts(){
     `;
 
     box.appendChild(card);
+    updateProductAvailability(card,product,selectedPack);
 
     const packBox=
       card.querySelector("#packs-"+product.id);
@@ -2378,6 +2413,8 @@ function renderProducts(){
         ).textContent=
           "₹"+pack.price.toLocaleString("en-IN");
 
+        updateProductAvailability(card,product,pack);
+
       };
 
       packBox.appendChild(button);
@@ -2395,41 +2432,36 @@ function renderProducts(){
 
 function addToCart(productId){
 
-  const product=
-    products.find(p=>p.id===productId);
-
+  const product=products.find(p=>p.id===productId);
   if(!product)return;
 
   const pack=selectedPacks[productId] || product.packs[0];
+  const stock=getPackStock(pack);
 
-  const existing=
-    cart.find(item=>
-      item.productId===productId &&
-      item.size===pack.size
-    );
+  if(stock<=0){
+    alert(product.name+" ("+pack.size+") is currently not available.");
+    renderProducts();
+    return;
+  }
+
+  const existing=cart.find(item=>
+    item.productId===productId && item.size===pack.size
+  );
 
   if(existing){
+    if(existing.qty>=stock){
+      alert("Only "+stock+" of "+product.name+" ("+pack.size+") is currently available.");
+      return;
+    }
     existing.qty++;
   }else{
-
-    cart.push({
-      productId,
-      name:product.name,
-      size:pack.size,
-      price:pack.price,
-      qty:1
-    });
-
+    cart.push({productId,name:product.name,size:pack.size,price:pack.price,qty:1});
   }
 
   saveAll();
   renderCart();
 
-  alert(
-    product.name+
-    " ("+pack.size+") added to cart."
-  );
-
+  alert(product.name+" ("+pack.size+") added to cart.");
 }
 
 function renderCart(){
@@ -2521,14 +2553,25 @@ function renderCart(){
 
 function changeQty(index,change){
 
+  if(!cart[index])return;
+
+  if(change>0){
+    const item=cart[index];
+    const product=products.find(p=>p.id===item.productId);
+    const pack=product?.packs?.find(p=>String(p.size)===String(item.size));
+    const stock=getPackStock(pack);
+    if(item.qty>=stock){
+      alert("Only "+stock+" of "+item.name+" ("+item.size+") is currently available.");
+      return;
+    }
+  }
+
   cart[index].qty+=change;
 
-  if(cart[index].qty<=0)
-    cart.splice(index,1);
+  if(cart[index].qty<=0)cart.splice(index,1);
 
   saveAll();
   renderCart();
-
 }
 
 function removeCartItem(index){
