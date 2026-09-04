@@ -1,7 +1,3 @@
-<!doctype html>
-
-<html lang="en">
-
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -294,11 +290,6 @@ header{
   margin-bottom:12px;
 }
 
-.stock-label{
-  font-size:12px;
-  margin:-5px 0 10px;
-}
-
 .add-btn{
   width:100%;
   border:0;
@@ -307,11 +298,6 @@ header{
   padding:11px;
   border-radius:9px;
   font-weight:800;
-}
-
-.add-btn:disabled{
-  background:#aaa;
-  cursor:not-allowed;
 }
 
 .cart-box{
@@ -403,8 +389,8 @@ footer{
   flex-wrap:wrap;
 }
 
-/* ADMIN LOGIN */
 
+/* ADMIN LOGIN */
 .admin-login-overlay{
   display:none;
   position:fixed;
@@ -415,7 +401,6 @@ footer{
   justify-content:center;
   padding:20px;
 }
-
 .admin-login-box{
   width:min(420px,100%);
   background:#fff;
@@ -423,32 +408,13 @@ footer{
   padding:28px;
   box-shadow:0 20px 60px rgba(0,0,0,.25);
 }
-
-.admin-login-box h2{
-  margin:0 0 8px;
-  color:var(--dark);
-}
-
-.admin-login-box p{
-  color:var(--muted);
-  margin:0 0 20px;
-}
-
+.admin-login-box h2{margin:0 0 8px;color:var(--dark)}
+.admin-login-box p{color:var(--muted);margin:0 0 20px}
 .admin-login-box input{
-  width:100%;
-  padding:13px 14px;
-  border:1px solid #d7dfd7;
-  border-radius:10px;
-  margin-bottom:12px;
-  font-size:16px;
+  width:100%;padding:13px 14px;border:1px solid #d7dfd7;
+  border-radius:10px;margin-bottom:12px;font-size:16px;
 }
-
-.admin-login-actions{
-  display:flex;
-  gap:10px;
-  justify-content:flex-end;
-  flex-wrap:wrap;
-}
+.admin-login-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
 
 /* ADMIN */
 
@@ -588,7 +554,7 @@ footer{
 
 .pack-edit{
   display:grid;
-  grid-template-columns:1fr 130px 100px auto;
+  grid-template-columns:1fr 130px auto;
   gap:8px;
   margin-bottom:8px;
 }
@@ -618,181 +584,27 @@ footer{
   color:#715b14;
 }
 
-/* ORDERS */
-
-.order-summary-grid{
-  display:grid;
-  grid-template-columns:repeat(6,minmax(130px,1fr));
-  gap:10px;
-  margin-bottom:20px;
-}
-
-.order-stat{
-  background:white;
-  border:1px solid #e4ebe4;
-  border-radius:12px;
-  padding:14px;
-  box-shadow:0 3px 12px rgba(0,0,0,.04);
-}
-
-.order-stat strong{
-  display:block;
-  font-size:12px;
-  color:var(--muted);
-}
-
-.order-stat b{
-  display:block;
-  font-size:25px;
-  margin-top:5px;
-  color:var(--dark);
-}
-
-.order-columns{
-  display:grid;
-  grid-template-columns:repeat(4,minmax(260px,1fr));
-  gap:15px;
-  overflow-x:auto;
-  padding-bottom:10px;
-}
-
-.order-column{
-  background:#eef3ee;
-  border-radius:14px;
-  padding:12px;
-  min-height:180px;
-}
-
-.order-column h4{
-  margin:0 0 10px;
-  color:var(--dark);
-}
-
-.order-card{
-  background:white;
-  border:1px solid #e1e8e1;
-  border-radius:12px;
-  padding:13px;
-  margin-bottom:10px;
-  box-shadow:0 3px 10px rgba(0,0,0,.04);
-}
-
-.order-card.pending{
-  border-left:5px solid var(--danger);
-}
-
-.order-card.ready{
-  border-left:5px solid var(--green);
-}
-
-.order-card.packed{
-  border-left:5px solid var(--gold);
-}
-
-.order-card.dispatched{
-  border-left:5px solid #2563eb;
-}
-
-.order-items{
-  font-size:13px;
-  line-height:1.55;
-  margin:9px 0;
-}
-
-.stock-ok{
-  color:var(--green);
-  font-weight:800;
-}
-
-.stock-missing{
-  color:var(--danger);
-  font-weight:800;
-}
-
-.order-actions{
-  display:flex;
-  gap:7px;
-  flex-wrap:wrap;
-  margin-top:10px;
-}
-
-.order-filter{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-bottom:15px;
-}
-
-.order-filter .active{
-  background:var(--green);
-  color:white;
-}
-
-.inventory-row{
-  display:grid;
-  grid-template-columns:1fr 120px 100px;
-  gap:8px;
-  align-items:center;
-  padding:10px 0;
-  border-bottom:1px solid #eee;
-}
-
-.inventory-low{
-  background:#fff4f4;
-}
-
-.inventory-ok{
-  background:#f4fbf4;
-}
-
-.stock-number{
-  font-weight:800;
-  font-size:15px;
-}
-
-.status-badge{
-  display:inline-block;
-  padding:4px 8px;
-  border-radius:20px;
-  font-size:11px;
-  font-weight:800;
-  margin-top:5px;
-}
-
-.status-pending{
-  background:#fdecec;
-  color:var(--danger);
-}
-
-.status-ready{
-  background:#e8f5e8;
-  color:var(--green);
-}
-
-.status-packed{
-  background:#fff7df;
-  color:#8a6400;
-}
-
-.status-dispatched{
-  background:#e8f0ff;
-  color:#2563eb;
-}
-
-@media(max-width:1100px){
-
-  .order-columns{
-    grid-template-columns:repeat(4,260px);
-  }
-
-  .order-summary-grid{
-    grid-template-columns:repeat(3,1fr);
-  }
-
-}
+.order-summary-grid{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.order-stat{background:white;border:1px solid #e4ebe4;border-radius:12px;padding:14px;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+.order-stat strong{display:block;font-size:12px;color:var(--muted)}
+.order-stat b{display:block;font-size:25px;margin-top:5px;color:var(--dark)}
+.order-columns{display:grid;grid-template-columns:repeat(5,minmax(260px,1fr));gap:15px;overflow-x:auto;padding-bottom:10px}
+.order-column{background:#eef3ee;border-radius:14px;padding:12px;min-height:180px}
+.order-column h4{margin:0 0 10px;color:var(--dark)}
+.order-card{background:white;border:1px solid #e1e8e1;border-radius:12px;padding:13px;margin-bottom:10px;box-shadow:0 3px 10px rgba(0,0,0,.04)}
+.order-card.pending{border-left:5px solid var(--danger)}
+.order-card.ready{border-left:5px solid var(--green)}
+.order-card.packed{border-left:5px solid var(--gold)}
+.order-card.dispatched{border-left:5px solid #2563eb}
+.order-items{font-size:13px;line-height:1.55;margin:9px 0}
+.stock-ok{color:var(--green);font-weight:800}.stock-missing{color:var(--danger);font-weight:800}
+.order-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.order-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
+.inventory-row{display:grid;grid-template-columns:1fr 100px 100px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
+@media(max-width:1100px){.order-columns{grid-template-columns:repeat(5,260px)}.order-summary-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.order-summary-grid{grid-template-columns:repeat(2,1fr)}}
 
 @media(max-width:850px){
-
   .hero-inner{
     grid-template-columns:1fr;
   }
@@ -821,11 +633,9 @@ footer{
     width:150px;
     height:150px;
   }
-
 }
 
 @media(max-width:600px){
-
   .logo{
     width:60px;
     height:60px;
@@ -875,18 +685,14 @@ footer{
   .pack-edit button{
     grid-column:1/-1;
   }
-
-  .order-summary-grid{
-    grid-template-columns:repeat(2,1fr);
-  }
-
-  .inventory-row{
-    grid-template-columns:1fr;
-  }
-
 }
-</style>
 
+.password-wrap{position:relative;margin-bottom:12px}.password-wrap input{margin-bottom:0!important;padding-right:55px!important}.show-pass{position:absolute;right:8px;top:7px;border:0;background:#edf6ed;color:var(--green);border-radius:8px;padding:7px 10px;font-weight:700}.credentials-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.credential-note{margin-top:12px}.auth-user{font-size:13px;color:#d9eadb}
+@media(max-width:600px){.credentials-grid{grid-template-columns:1fr}}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 </head>
 
 <body>
@@ -898,30 +704,27 @@ footer{
 <header>
   <div class="header-inner">
 
-```
-<div class="brand">
-  <img id="mainLogo" class="logo" alt="Jayvik Logo">
+    <div class="brand">
+      <img id="mainLogo" class="logo" alt="Jayvik Logo">
 
-  <div>
-    <div class="brand-title" id="brandName">Jayvik</div>
-    <div class="brand-sub" id="brandTagline">
-      The Complete Health Store
+      <div>
+        <div class="brand-title" id="brandName">Jayvik</div>
+        <div class="brand-sub" id="brandTagline">
+          The Complete Health Store
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<div class="header-actions">
+    <div class="header-actions">
+      <button class="btn btn-light" onclick="scrollToCart()">
+        🛒 Cart <span id="cartCount">0</span>
+      </button>
 
-  <button class="btn btn-light" onclick="scrollToCart()">
-    🛒 Cart <span id="cartCount">0</span>
-  </button>
+      <button class="btn btn-dark" onclick="openAdminLogin()">
+        🔐 Admin Login
+      </button>
+    </div>
 
-  <button class="btn btn-dark" onclick="openAdminLogin()">
-    🔐 Admin Login
-  </button>
-
-</div>
-```
 
   </div>
 </header>
@@ -930,43 +733,37 @@ footer{
 
   <div class="hero-inner">
 
-```
-<div>
+    <div>
+      <h1>
+        Pure • Natural •
+        <span>From the Farm</span>
+      </h1>
 
-  <h1 id="heroHeading">
-    Pure • Natural • <span>From the Farm</span>
-  </h1>
+      <p id="heroText">
+        Healthy, natural and carefully selected products from Jayvik –
+        The Complete Health Store.
+      </p>
 
-  <p id="heroText">
-    Healthy, natural and carefully selected products from Jayvik –
-    The Complete Health Store.
-  </p>
+      <button class="btn btn-green" onclick="scrollToProducts()">
+        🛍️ Shop Products
+      </button>
+    </div>
 
-  <button class="btn btn-green" onclick="scrollToProducts()">
-    🛍️ Shop Products
-  </button>
+    <div class="hero-card">
 
-</div>
+      <img id="heroLogo" class="hero-logo" alt="Jayvik Logo">
 
-<div class="hero-card">
+      <div class="store-address">
+        <strong>Jayvik – The Complete Health Store</strong><br>
+        Plot no 34, 35, Kohale Layout,<br>
+        Godhani Road, Zingabai Takali,<br>
+        Nagpur 440030<br><br>
+        📞 <a href="tel:+919356959561">
+        +91 9356959561
+        </a>
+      </div>
 
-  <img id="heroLogo" class="hero-logo" alt="Jayvik Logo">
-
-  <div class="store-address">
-
-    <strong>Jayvik – The Complete Health Store</strong><br>
-    Plot no 34, 35, Kohale Layout,<br>
-    Godhani Road, Zingabai Takali,<br>
-    Nagpur 440030<br><br>
-
-    📞 <a href="tel:+919356959561">
-    +91 9356959561
-    </a>
-
-  </div>
-
-</div>
-```
+    </div>
 
   </div>
 
@@ -982,22 +779,16 @@ footer{
 
   <div id="categories" class="categories"></div>
 
-<input
-id="searchBox"
-class="search"
-placeholder="🔎 Search products..."
-oninput="renderProducts()"
-
->
+  <input
+    id="searchBox"
+    class="search"
+    placeholder="🔎 Search products..."
+    oninput="renderProducts()"
+  >
 
   <div class="section-title">
-
-```
-<h2>Our Products</h2>
-
-<span id="productCount" class="brand-sub"></span>
-```
-
+    <h2>Our Products</h2>
+    <span id="productCount" class="brand-sub"></span>
   </div>
 
   <div id="products" class="products"></div>
@@ -1012,40 +803,38 @@ oninput="renderProducts()"
 
   <div class="cart-box">
 
-```
-<div id="cartItems"></div>
+    <div id="cartItems"></div>
 
-<div class="total">
-  <span>Total</span>
-  <span>₹<span id="cartTotal">0</span></span>
-</div>
+    <div class="total">
+      <span>Total</span>
+      <span>₹<span id="cartTotal">0</span></span>
+    </div>
 
-<div class="customer-form">
+    <div class="customer-form">
 
-  <h3>Customer Details</h3>
+      <h3>Customer Details</h3>
 
-  <input
-    id="customerName"
-    placeholder="Full Name"
-  >
+      <input
+        id="customerName"
+        placeholder="Full Name"
+      >
 
-  <input
-    id="customerPhone"
-    type="tel"
-    placeholder="Contact Number"
-  >
+      <input
+        id="customerPhone"
+        type="tel"
+        placeholder="Contact Number"
+      >
 
-  <textarea
-    id="customerAddress"
-    placeholder="Complete Delivery Address"
-  ></textarea>
+      <textarea
+        id="customerAddress"
+        placeholder="Complete Delivery Address"
+      ></textarea>
 
-  <button class="whatsapp" onclick="sendWhatsAppOrder()">
-    💬 Send Order on WhatsApp
-  </button>
+      <button class="whatsapp" onclick="sendWhatsAppOrder()">
+        💬 Send Order on WhatsApp
+      </button>
 
-</div>
-```
+    </div>
 
   </div>
 
@@ -1057,86 +846,49 @@ oninput="renderProducts()"
 
   <div class="footer-inner">
 
-```
-<div>
-  <strong>Jayvik – The Complete Health Store</strong><br>
-  Natural • Healthy • Honest
-</div>
+    <div>
+      <strong>Jayvik – The Complete Health Store</strong><br>
+      Natural • Healthy • Honest
+    </div>
 
-<div>
-  📞 +91 9356959561<br>
-  Nagpur, Maharashtra
-</div>
-```
+    <div>
+      📞 +91 9356959561<br>
+      Nagpur, Maharashtra
+    </div>
 
   </div>
 
 </footer>
 
+
 <!-- ================= ADMIN LOGIN ================= -->
-
 <div id="adminLoginOverlay" class="admin-login-overlay">
-
   <div class="admin-login-box">
-
-```
-<h2>🔐 Jayvik Admin Login</h2>
-
-<p>
-  Enter your administrator credentials to open
-  the store management panel.
-</p>
-
-<input
-  id="adminUsername"
-  autocomplete="username"
-  placeholder="Username"
-  value="admin"
->
-
-<input
-  id="adminPassword"
-  type="password"
-  autocomplete="current-password"
-  placeholder="Password"
-  onkeydown="if(event.key==='Enter')adminLogin()"
->
-
-<div
-  id="adminLoginError"
-  style="display:none;color:var(--danger);font-weight:700;margin-bottom:12px">
-</div>
-
-<div class="admin-login-actions">
-
-  <button
-    class="btn btn-light"
-    onclick="closeAdminLogin()">
-    Cancel
-  </button>
-
-  <button
-    class="btn btn-green"
-    onclick="adminLogin()">
-    🔓 Login
-  </button>
-
-</div>
-
-<div class="notice" style="margin-top:16px">
-
-  Default login:
-  <strong>admin</strong> /
-  <strong>admin123</strong>.
-
-  Change these credentials in the code before publishing
-  if this site is publicly accessible.
-
-</div>
-```
-
+    <h2>🔐 Jayvik Admin Login</h2>
+    <p>Enter your administrator credentials to open the store management panel.</p>
+    <input id="adminUsername" type="email" autocomplete="username" placeholder="Admin Email" value="jayvik.india@gmail.com" onkeydown="if(event.key==='Enter')adminLogin()">
+    <div class="password-wrap">
+      <input id="adminPassword" type="password" autocomplete="current-password" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()">
+      <button type="button" class="show-pass" onclick="togglePassword('adminPassword',this)">👁️ Show</button>
+    </div>
+    <div id="adminLoginError" style="display:none;color:var(--danger);font-weight:700;margin-bottom:12px"></div>
+    <div class="admin-login-actions">
+      <button class="btn btn-light" onclick="closeAdminLogin()">Cancel</button>
+      <button class="btn btn-green" onclick="adminLogin()">🔓 Login</button>
+    </div>
+    <button type="button" style="border:0;background:none;color:var(--green);font-weight:800;padding:10px 0;" onclick="openForgotPassword()">🔑 Forgot Password?</button>
+    <div id="forgotPasswordPanel" style="display:none;margin-top:10px;padding-top:15px;border-top:1px solid #eee">
+      <h3 style="margin:0 0 8px">Reset Admin Password</h3>
+      <p style="margin:0 0 12px;color:var(--muted);font-size:14px">Enter the Firebase Authentication email and we will send a password reset email.</p>
+      <input id="resetEmail" type="email" autocomplete="email" placeholder="Admin Email" value="jayvik.india@gmail.com">
+      <div id="resetMessage" style="display:none;font-weight:700;margin:4px 0 12px"></div>
+      <div class="admin-login-actions">
+        <button class="btn btn-light" onclick="backToLogin()">← Back to Login</button>
+        <button class="btn btn-green" onclick="sendPasswordReset()">📧 Send Reset Email</button>
+      </div>
+    </div>
+    <div class="notice" style="margin-top:16px">Use the Firebase Authentication account <strong>jayvik.india@gmail.com</strong>. The password is never stored in this HTML file.</div>
   </div>
-
 </div>
 
 <!-- ================= ADMIN DASHBOARD ================= -->
@@ -1147,163 +899,157 @@ oninput="renderProducts()"
 
   <div class="admin-header">
 
-```
-<div class="admin-header-inner">
+    <div class="admin-header-inner">
 
-  <div class="admin-brand">
+      <div class="admin-brand">
 
-    <img id="adminLogo" class="admin-logo">
+        <img id="adminLogo" class="admin-logo">
 
-    <div>
+        <div>
+          <strong style="font-size:20px">
+            Jayvik Admin Dashboard
+          </strong><br>
+          <small>Store Management System</small>
+        </div>
 
-      <strong style="font-size:20px">
-        Jayvik Admin Dashboard
-      </strong>
+      </div>
 
-      <br>
-
-      <small>Store Management System</small>
-
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button
+        class="btn"
+        style="background:white;color:#17351d"
+        onclick="adminLogout()"
+      >
+        🔒 Logout
+      </button>
+      <button
+        class="btn"
+        style="background:white;color:#17351d"
+        onclick="closeAdmin()"
+      >
+        ✕ Close
+      </button>
     </div>
 
-  </div>
-
-  <div style="display:flex;gap:8px;flex-wrap:wrap">
-
-    <button
-      class="btn"
-      style="background:white;color:#17351d"
-      onclick="adminLogout()">
-      🔒 Logout
-    </button>
-
-    <button
-      class="btn"
-      style="background:white;color:#17351d"
-      onclick="closeAdmin()">
-      ✕ Close
-    </button>
-
-  </div>
-
-</div>
-```
+    </div>
 
   </div>
 
   <div class="admin-container">
 
-```
-<div class="admin-tabs">
+    <div class="admin-tabs">
 
-  <button
-    class="admin-tab active"
-    onclick="showAdminTab('dashboard',this)">
-    📊 Dashboard
-  </button>
+      <button
+        class="admin-tab active"
+        onclick="showAdminTab('dashboard',this)"
+      >
+        📊 Dashboard
+      </button>
 
-  <button
-    class="admin-tab"
-    onclick="showAdminTab('productsAdmin',this)">
-    📦 Products
-  </button>
+      <button
+        class="admin-tab"
+        onclick="showAdminTab('productsAdmin',this)"
+      >
+        📦 Products
+      </button>
 
-  <button
-    class="admin-tab"
-    onclick="showAdminTab('categoriesAdmin',this)">
-    🗂️ Categories
-  </button>
+      <button
+        class="admin-tab"
+        onclick="showAdminTab('categoriesAdmin',this)"
+      >
+        🗂️ Categories
+      </button>
 
-  <button
-    class="admin-tab"
-    onclick="showAdminTab('websiteAdmin',this)">
-    ✏️ Website
-  </button>
+      <button
+        class="admin-tab"
+        onclick="showAdminTab('websiteAdmin',this)"
+      >
+        ✏️ Website
+      </button>
 
-  <button
-    class="admin-tab"
-    onclick="showAdminTab('logoAdmin',this)">
-    🖼️ Logo
-  </button>
+      <button
+        class="admin-tab"
+        onclick="showAdminTab('logoAdmin',this)"
+      >
+        🖼️ Logo
+      </button>
 
-  <button
-    class="admin-tab"
-    onclick="showAdminTab('ordersAdmin',this);renderOrders()">
-    🧾 Orders
-  </button>
+      <button
+        class="admin-tab"
+        onclick="showAdminTab('ordersAdmin',this);renderOrders()"
+      >
+        🧾 Orders
+      </button>
 
-</div>
-
-
-<!-- DASHBOARD -->
-
-<div id="dashboard" class="admin-section active">
-
-  <div class="admin-grid">
-
-    <div>
-
-      <div class="admin-card">
-
-        <img
-          id="dashboardLogo"
-          class="logo-preview"
-        >
-
-        <h3 style="text-align:center">
-          Jayvik
-        </h3>
-
-        <p class="notice">
-          Your store dashboard is ready.
-          Use the tabs above to manage products,
-          categories, logo, website content and orders.
-        </p>
-
-      </div>
+      <button
+        class="admin-tab"
+        onclick="showAdminTab('credentialsAdmin',this);loadCredentials()"
+      >
+        🔐 Login Credentials
+      </button>
 
     </div>
 
-    <div>
 
-      <div class="admin-card">
+    <!-- DASHBOARD -->
 
-        <h3>Store Overview</h3>
+    <div id="dashboard" class="admin-section active">
 
-        <div class="products">
+      <div class="admin-grid">
 
-          <div class="hero-card">
+        <div>
 
-            <strong>Products</strong>
+          <div class="admin-card">
 
-            <div
-              id="statProducts"
-              style="font-size:32px;color:var(--green);font-weight:800">
-              0
-            </div>
+            <img id="dashboardLogo"
+                 class="logo-preview">
 
-          </div>
+            <h3 style="text-align:center">
+              Jayvik
+            </h3>
 
-          <div class="hero-card">
-
-            <strong>Categories</strong>
-
-            <div
-              id="statCategories"
-              style="font-size:32px;color:var(--green);font-weight:800">
-              0
-            </div>
+            <p class="notice">
+              Your store dashboard is ready.
+              Use the tabs above to manage products,
+              categories, logo and website content.
+            </p>
 
           </div>
 
-          <div class="hero-card">
+        </div>
 
-            <strong>Cart Items</strong>
+        <div>
 
-            <div
-              id="statCart"
-              style="font-size:32px;color:var(--green);font-weight:800">
-              0
+          <div class="admin-card">
+
+            <h3>Store Overview</h3>
+
+            <div class="products">
+
+              <div class="hero-card">
+                <strong>Products</strong>
+                <div id="statProducts"
+                     style="font-size:32px;color:var(--green);font-weight:800">
+                  0
+                </div>
+              </div>
+
+              <div class="hero-card">
+                <strong>Categories</strong>
+                <div id="statCategories"
+                     style="font-size:32px;color:var(--green);font-weight:800">
+                  0
+                </div>
+              </div>
+
+              <div class="hero-card">
+                <strong>Cart Items</strong>
+                <div id="statCart"
+                     style="font-size:32px;color:var(--green);font-weight:800">
+                  0
+                </div>
+              </div>
+
             </div>
 
           </div>
@@ -1314,282 +1060,213 @@ oninput="renderProducts()"
 
     </div>
 
-  </div>
 
-</div>
+    <!-- PRODUCTS ADMIN -->
 
+    <div id="productsAdmin" class="admin-section">
 
-<!-- PRODUCTS ADMIN -->
+      <div class="admin-card">
 
-<div id="productsAdmin" class="admin-section">
+        <div class="section-title">
 
-  <div class="admin-card">
+          <h3>📦 Product Management</h3>
 
-    <div class="section-title">
+          <button class="btn btn-green"
+                  onclick="openAddProduct()">
+            + Add Product
+          </button>
 
-      <h3>📦 Product Management</h3>
+        </div>
 
-      <button
-        class="btn btn-green"
-        onclick="openAddProduct()">
-        + Add Product
-      </button>
+        <div id="adminProductsList"></div>
 
-    </div>
-
-    <div id="adminProductsList"></div>
-
-  </div>
-
-</div>
-
-
-<!-- CATEGORIES -->
-
-<div id="categoriesAdmin" class="admin-section">
-
-  <div class="admin-card">
-
-    <h3>🗂️ Category Management</h3>
-
-    <div style="display:flex;gap:8px;margin-bottom:20px">
-
-      <input
-        id="newCategory"
-        placeholder="New category name"
-        class="search"
-        style="margin:0"
-      >
-
-      <button
-        class="btn btn-green"
-        onclick="addCategory()">
-        Add
-      </button>
+      </div>
 
     </div>
 
-    <div id="adminCategoriesList"></div>
 
-  </div>
+    <!-- CATEGORIES -->
 
-</div>
+    <div id="categoriesAdmin" class="admin-section">
 
+      <div class="admin-card">
 
-<!-- WEBSITE -->
+        <h3>🗂️ Category Management</h3>
 
-<div id="websiteAdmin" class="admin-section">
+        <div style="display:flex;gap:8px;margin-bottom:20px">
 
-  <div class="admin-card">
+          <input
+            id="newCategory"
+            placeholder="New category name"
+            class="search"
+            style="margin:0"
+          >
 
-    <h3>✏️ Edit Website Words</h3>
+          <button
+            class="btn btn-green"
+            onclick="addCategory()"
+          >
+            Add
+          </button>
 
-    <div class="admin-form">
+        </div>
 
-      <label>Store Name</label>
+        <div id="adminCategoriesList"></div>
 
-      <input id="editBrandName">
-
-      <label>Tagline</label>
-
-      <input id="editTagline">
-
-      <label>Hero Heading</label>
-
-      <input id="editHeroHeading">
-
-      <label>Hero Description</label>
-
-      <textarea id="editHeroText"></textarea>
-
-      <button
-        class="btn btn-green"
-        onclick="saveWebsite()">
-        💾 Save Website Changes
-      </button>
+      </div>
 
     </div>
 
-  </div>
 
-</div>
+    <!-- WEBSITE -->
 
+    <div id="websiteAdmin" class="admin-section">
 
-<!-- LOGO -->
+      <div class="admin-card">
 
-<div id="logoAdmin" class="admin-section">
+        <h3>✏️ Edit Website Words</h3>
 
-  <div class="admin-card">
+        <div class="admin-form">
 
-    <h3>🖼️ Replace Jayvik Logo</h3>
+          <label>Store Name</label>
+          <input id="editBrandName">
 
-    <p class="notice">
+          <label>Tagline</label>
+          <input id="editTagline">
 
-      Upload your actual Jayvik logo here.
-      The logo will appear on the customer website
-      and Admin Dashboard.
+          <label>Hero Heading</label>
+          <input id="editHeroHeading">
 
-    </p>
+          <label>Hero Description</label>
+          <textarea id="editHeroText"></textarea>
 
-    <img
-      id="logoPreviewAdmin"
-      class="logo-preview"
-    >
+          <button
+            class="btn btn-green"
+            onclick="saveWebsite()"
+          >
+            💾 Save Website Changes
+          </button>
 
-    <input
-      id="logoFile"
-      type="file"
-      accept="image/*"
-      onchange="previewLogo(event)"
-    >
+        </div>
 
-    <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap">
-
-      <button
-        class="btn btn-green"
-        onclick="saveLogo()">
-        💾 Save Logo
-      </button>
-
-      <button
-        class="btn btn-danger"
-        onclick="removeLogo()">
-        🗑️ Remove Logo
-      </button>
+      </div>
 
     </div>
 
-  </div>
 
-</div>
+    <!-- LOGO -->
 
+    <div id="logoAdmin" class="admin-section">
 
-<!-- ================= ORDERS ================= -->
+      <div class="admin-card">
 
-<div id="ordersAdmin" class="admin-section">
+        <h3>🖼️ Replace Jayvik Logo</h3>
 
-  <div class="order-summary-grid">
+        <p class="notice">
+          Upload your actual Jayvik logo here.
+          The logo will appear on the customer website
+          and Admin Dashboard.
+        </p>
 
-    <div class="order-stat">
-      <strong>Total Orders</strong>
-      <b id="orderStatTotal">0</b>
-    </div>
+        <img
+          id="logoPreviewAdmin"
+          class="logo-preview"
+        >
 
-    <div class="order-stat">
-      <strong>Pending for Dispatch</strong>
-      <b id="orderStatPending">0</b>
-    </div>
+        <input
+          id="logoFile"
+          type="file"
+          accept="image/*"
+          onchange="previewLogo(event)"
+        >
 
-    <div class="order-stat">
-      <strong>Ready for Packing</strong>
-      <b id="orderStatReady">0</b>
-    </div>
+        <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap">
 
-    <div class="order-stat">
-      <strong>Packed</strong>
-      <b id="orderStatPacked">0</b>
-    </div>
+          <button
+            class="btn btn-green"
+            onclick="saveLogo()"
+          >
+            💾 Save Logo
+          </button>
 
-    <div class="order-stat">
-      <strong>Dispatched</strong>
-      <b id="orderStatDispatched">0</b>
-    </div>
+          <button
+            class="btn btn-danger"
+            onclick="removeLogo()"
+          >
+            🗑️ Remove Logo
+          </button>
 
-    <div class="order-stat">
-      <strong>Stock Items</strong>
-      <b id="orderStatStock">0</b>
-    </div>
+        </div>
 
-  </div>
-
-
-  <div class="admin-card">
-
-    <div class="section-title">
-
-      <h3>🧾 Order Management</h3>
-
-      <button
-        class="btn btn-light"
-        onclick="renderOrders()">
-        ↻ Refresh
-      </button>
+      </div>
 
     </div>
 
-    <div class="notice" style="margin-bottom:15px">
 
-      <strong>Workflow:</strong>
-      New order → Inventory Check →
-      Pending for Dispatch if stock is missing →
-      Ready for Packing → Packed → Dispatched.
+    <!-- LOGIN CREDENTIALS -->
+    <div id="credentialsAdmin" class="admin-section">
+      <div class="admin-card">
+        <h3>🔐 Login Credentials</h3>
+        <p class="notice">Change the Admin email or password at any time. Firebase Authentication securely manages the credentials; this website does not save passwords in localStorage or the database.</p>
+        <p id="authCurrentUser" class="auth-user" style="background:#17351d;padding:10px;border-radius:9px">Not signed in</p>
+        <div class="admin-form">
+          <label>Current Admin Email</label>
+          <input id="currentAdminEmail" type="email" readonly>
 
-      Inventory is checked separately for every pack size.
+          <label>New Admin Email</label>
+          <input id="newAdminEmail" type="email" placeholder="New email address">
 
+          <label>New Password</label>
+          <div class="password-wrap">
+            <input id="newAdminPassword" type="password" autocomplete="new-password" placeholder="Leave blank if not changing password">
+            <button type="button" class="show-pass" onclick="togglePassword('newAdminPassword',this)">👁️ Show</button>
+          </div>
+
+          <label>Confirm New Password</label>
+          <div class="password-wrap">
+            <input id="confirmAdminPassword" type="password" autocomplete="new-password" placeholder="Confirm new password">
+            <button type="button" class="show-pass" onclick="togglePassword('confirmAdminPassword',this)">👁️ Show</button>
+          </div>
+
+          <button class="btn btn-green" onclick="changeAdminCredentials()">💾 Save Login Credentials</button>
+        </div>
+        <div class="notice credential-note">For security, changing credentials may require Firebase to ask you to sign in again. If Firebase reports that recent login is required, log out and log back in, then retry the change.</div>
+      </div>
     </div>
 
-    <div class="order-filter">
+    <!-- ORDERS -->
+    <div id="ordersAdmin" class="admin-section">
+      <div class="order-summary-grid">
+        <div class="order-stat"><strong>Total Orders</strong><b id="orderStatTotal">0</b></div>
+        <div class="order-stat"><strong>Pending for Dispatch</strong><b id="orderStatPending">0</b></div>
+        <div class="order-stat"><strong>Ready for Packing</strong><b id="orderStatReady">0</b></div>
+        <div class="order-stat"><strong>Packed</strong><b id="orderStatPacked">0</b></div>
+        <div class="order-stat"><strong>Dispatched</strong><b id="orderStatDispatched">0</b></div>
+        <div class="order-stat"><strong>Stock Items</strong><b id="orderStatStock">0</b></div>
+      </div>
 
-      <button
-        class="btn btn-light active"
-        onclick="filterOrders('all',this)">
-        All
-      </button>
+      <div class="admin-card">
+        <div class="section-title">
+          <h3>🧾 Order Management</h3>
+          <button class="btn btn-light" onclick="renderOrders()">↻ Refresh</button>
+        </div>
+        <div class="order-filter">
+          <button class="btn btn-light active" onclick="filterOrders('all',this)">All</button>
+          <button class="btn btn-light" onclick="filterOrders('pending',this)">🔴 Pending</button>
+          <button class="btn btn-light" onclick="filterOrders('ready',this)">🟢 Ready</button>
+          <button class="btn btn-light" onclick="filterOrders('packed',this)">📦 Packed</button>
+          <button class="btn btn-light" onclick="filterOrders('dispatched',this)">🚚 Dispatched</button>
+        </div>
+        <div id="ordersBoard" class="order-columns"></div>
+      </div>
 
-      <button
-        class="btn btn-light"
-        onclick="filterOrders('pending',this)">
-        🔴 Pending
-      </button>
-
-      <button
-        class="btn btn-light"
-        onclick="filterOrders('ready',this)">
-        🟢 Ready
-      </button>
-
-      <button
-        class="btn btn-light"
-        onclick="filterOrders('packed',this)">
-        📦 Packed
-      </button>
-
-      <button
-        class="btn btn-light"
-        onclick="filterOrders('dispatched',this)">
-        🚚 Dispatched
-      </button>
-
+      <div class="admin-card">
+        <h3>📊 Pack-wise Inventory</h3>
+        <p class="notice">Inventory is maintained separately for every pack size. Example: 500 g and 1 kg are different stock items.</p>
+        <div id="inventoryList"></div>
+      </div>
     </div>
 
-    <div id="ordersBoard" class="order-columns"></div>
-
-  </div>
-
-
-  <!-- INVENTORY -->
-
-  <div class="admin-card">
-
-    <h3>📊 Pack-wise Inventory</h3>
-
-    <p class="notice">
-
-      Inventory is maintained separately for every pack size.
-      Example: 500 g and 1 kg are different stock items.
-
-      When an order requires more stock than available,
-      that order automatically remains under
-      <strong>Pending for Dispatch</strong>.
-
-    </p>
-
-    <div id="inventoryList"></div>
-
-  </div>
-
-</div>
-```
 
   </div>
 
@@ -1597,7 +1274,8 @@ oninput="renderProducts()"
 
 </div>
 
-<!-- ================= PRODUCT EDITOR ================= -->
+
+<!-- PRODUCT EDITOR -->
 
 <div id="productEditor" class="admin-overlay">
 
@@ -1605,100 +1283,249 @@ oninput="renderProducts()"
 
   <div class="admin-header">
 
-```
-<div class="admin-header-inner">
+    <div class="admin-header-inner">
 
-  <strong id="editorTitle">
-    Add Product
-  </strong>
+      <strong id="editorTitle">
+        Add Product
+      </strong>
 
-  <button
-    class="btn"
-    style="background:white;color:#17351d"
-    onclick="closeProductEditor()">
-    ✕ Close
-  </button>
+      <button
+        class="btn"
+        style="background:white;color:#17351d"
+        onclick="closeProductEditor()"
+      >
+        ✕ Close
+      </button>
 
-</div>
-```
+    </div>
 
   </div>
 
   <div class="admin-container">
 
-```
-<div class="admin-card">
+    <div class="admin-card">
 
-  <div class="admin-form">
+      <div class="admin-form">
 
-    <input
-      type="hidden"
-      id="editProductId"
-    >
+        <input type="hidden" id="editProductId">
 
-    <label>Product Name</label>
+        <label>Product Name</label>
+        <input id="editProductName">
 
-    <input id="editProductName">
+        <label>Category</label>
+        <select id="editProductCategory"></select>
 
-    <label>Category</label>
+        <label>Product Photo</label>
 
-    <select id="editProductCategory"></select>
+        <img
+          id="productPhotoPreview"
+          class="logo-preview"
+          style="width:240px;height:170px"
+        >
 
-    <label>Product Photo</label>
+        <input
+          type="file"
+          id="productPhotoFile"
+          accept="image/*"
+          onchange="previewProductPhoto(event)"
+        >
 
-    <img
-      id="productPhotoPreview"
-      class="logo-preview"
-      style="width:240px;height:170px"
-    >
+        <button
+          class="btn btn-danger"
+          onclick="removeProductPhoto()"
+        >
+          🗑️ Remove Product Photo
+        </button>
 
-    <input
-      type="file"
-      id="productPhotoFile"
-      accept="image/*"
-      onchange="previewProductPhoto(event)"
-    >
+        <h3>Pack Sizes & Prices</h3>
 
-    <button
-      class="btn btn-danger"
-      onclick="removeProductPhoto()">
-      🗑️ Remove Product Photo
-    </button>
+        <div id="packEditor"></div>
 
-    <h3>Pack Sizes, Prices & Inventory</h3>
+        <button
+          class="btn btn-light"
+          onclick="addPackField()"
+        >
+          + Add Pack Size
+        </button>
 
-    <div id="packEditor"></div>
+        <br><br>
 
-    <button
-      class="btn btn-light"
-      onclick="addPackField()">
-      + Add Pack Size
-    </button>
+        <label>Description</label>
+        <textarea id="editProductDescription"></textarea>
 
-    <br><br>
+        <button
+          class="btn btn-green"
+          onclick="saveProduct()"
+        >
+          💾 Save Product
+        </button>
 
-    <label>Description</label>
+      </div>
 
-    <textarea id="editProductDescription"></textarea>
-
-    <button
-      class="btn btn-green"
-      onclick="saveProduct()">
-      💾 Save Product
-    </button>
-
-  </div>
-
-</div>
-```
+    </div>
 
   </div>
 
 </div>
 
 </div>
+
 
 <script>
+
+/* =====================================================
+   FIREBASE AUTHENTICATION
+===================================================== */
+
+/*
+  IMPORTANT: Replace the values below with the Firebase Web App
+  configuration from your Firebase project. Never put your Gmail
+  password here. The initial admin user must be created in Firebase
+  Authentication with email/password sign-in enabled.
+*/
+const firebaseConfig = {
+  apiKey: "AIzaSyDSZ_VAoKkjPgVpHVvwrVwycpIn0ECVzg0",
+  authDomain: "jayvik-61ae3.firebaseapp.com",
+  databaseURL: "https://jayvik-61ae3-default-rtdb.firebaseio.com",
+  projectId: "jayvik-61ae3",
+  storageBucket: "jayvik-61ae3.firebasestorage.app",
+  messagingSenderId: "874230203475",
+  appId: "1:874230203475:web:b19609a228ddddffeab2a6",
+  measurementId: "G-D7CLK5NS8L"
+};
+
+let firebaseReady=false;
+let auth=null;
+let db=null;
+let firebaseDataLoaded=false;
+try{
+  const configured=Object.values(firebaseConfig).every(v=>v && !String(v).startsWith("PASTE_YOUR_"));
+  if(configured && window.firebase){
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    auth=firebase.auth();
+    db=firebase.database();
+    firebaseReady=true;
+    auth.onAuthStateChanged(user=>{
+      const el=document.getElementById("authCurrentUser");
+      if(el) el.textContent=user ? "Signed in as: "+user.email : "Not signed in";
+    });
+  }
+}catch(err){
+  console.error("Firebase Authentication initialization failed",err);
+}
+
+loadFirebaseStore();
+
+function togglePassword(id,button){
+  const input=document.getElementById(id);
+  if(!input)return;
+  const visible=input.type==="text";
+  input.type=visible?"password":"text";
+  button.textContent=visible?"👁️ Show":"🙈 Hide";
+}
+
+async function adminLogin(){
+  const email=(document.getElementById("adminUsername")?.value||"").trim();
+  const password=document.getElementById("adminPassword")?.value||"";
+  const error=document.getElementById("adminLoginError");
+  if(!firebaseReady){
+    if(error){error.textContent="Firebase Authentication is not configured in this index.html yet.";error.style.display="block";}
+    return;
+  }
+  if(!email || !password){
+    if(error){error.textContent="Enter your admin email and password.";error.style.display="block";}
+    return;
+  }
+  try{
+    await auth.signInWithEmailAndPassword(email,password);
+    sessionStorage.setItem("jayvik_admin_logged_in","1");
+    closeAdminLogin();
+    openAdmin();
+  }catch(err){
+    console.error(err);
+    if(error){error.textContent=authErrorMessage(err);error.style.display="block";}
+  }
+}
+
+function authErrorMessage(err){
+  const code=err?.code||"";
+  if(code.includes("invalid-credential")||code.includes("wrong-password")||code.includes("user-not-found")) return "Incorrect admin email or password.";
+  if(code.includes("too-many-requests")) return "Too many failed attempts. Please wait and try again.";
+  if(code.includes("invalid-email")) return "Please enter a valid email address.";
+  return err?.message || "Authentication failed.";
+}
+
+function openForgotPassword(){
+  document.getElementById("forgotPasswordPanel").style.display="block";
+  document.getElementById("adminPassword").style.display="none";
+  document.querySelectorAll(".show-pass").forEach(b=>b.style.display="none");
+  const e=document.getElementById("adminUsername");
+  const r=document.getElementById("resetEmail");
+  if(r && e && e.value.trim()) r.value=e.value.trim();
+  document.getElementById("resetMessage").style.display="none";
+}
+function backToLogin(){
+  document.getElementById("forgotPasswordPanel").style.display="none";
+  document.getElementById("adminPassword").style.display="block";
+  document.querySelectorAll(".show-pass").forEach(b=>b.style.display="block");
+  const err=document.getElementById("adminLoginError");
+  if(err){err.style.display="none";err.textContent="";}
+}
+async function sendPasswordReset(){
+  const email=(document.getElementById("resetEmail")?.value||"").trim();
+  const msg=document.getElementById("resetMessage");
+  if(!firebaseReady || !auth){msg.textContent="Firebase Authentication is not configured.";msg.style.display="block";msg.style.color="var(--danger)";return;}
+  if(!email){msg.textContent="Enter your admin email.";msg.style.display="block";msg.style.color="var(--danger)";return;}
+  try{
+    await auth.sendPasswordResetEmail(email);
+    msg.textContent="Password reset email sent. Check your inbox and follow the Firebase reset link.";
+    msg.style.display="block"; msg.style.color="var(--green)";
+  }catch(err){
+    console.error(err);
+    msg.textContent=err?.code==="auth/invalid-email"?"Please enter a valid email address.":"Unable to send the reset email. Please verify the email and Firebase Authentication settings.";
+    msg.style.display="block"; msg.style.color="var(--danger)";
+  }
+}
+
+async function changeAdminCredentials(){
+  if(!firebaseReady || !auth){alert("Firebase Authentication is not configured.");return;}
+  const user=auth.currentUser;
+  if(!user){alert("Please log in first.");return;}
+  const newEmail=(document.getElementById("newAdminEmail")?.value||"").trim();
+  const newPassword=document.getElementById("newAdminPassword")?.value||"";
+  const confirmPassword=document.getElementById("confirmAdminPassword")?.value||"";
+  if(!newEmail && !newPassword){alert("Enter a new email, a new password, or both.");return;}
+  if(newPassword && newPassword.length<6){alert("Firebase passwords must contain at least 6 characters.");return;}
+  if(newPassword!==confirmPassword){alert("New password and confirmation do not match.");return;}
+  try{
+    if(newEmail && newEmail!==user.email){await user.updateEmail(newEmail);}
+    if(newPassword){await user.updatePassword(newPassword);}
+    await user.reload();
+    const updated=auth.currentUser;
+    document.getElementById("currentAdminEmail").value=updated?.email||"";
+    document.getElementById("newAdminEmail").value="";
+    document.getElementById("newAdminPassword").value="";
+    document.getElementById("confirmAdminPassword").value="";
+    alert("Admin login credentials updated successfully.");
+  }catch(err){
+    console.error(err);
+    if(err?.code==="auth/requires-recent-login"){
+      alert("For security, Firebase requires a recent login before changing credentials. Please log out, log back in, then try again.");
+    }else if(err?.code==="auth/email-already-in-use"){
+      alert("That email address is already used by another Firebase account.");
+    }else{
+      alert(authErrorMessage(err));
+    }
+  }
+}
+
+function loadCredentials(){
+  const user=auth?.currentUser;
+  const current=document.getElementById("currentAdminEmail");
+  const badge=document.getElementById("authCurrentUser");
+  if(current) current.value=user?.email||"";
+  if(badge) badge.textContent=user?"Signed in as: "+user.email:"Not signed in";
+}
 
 /* =====================================================
    DEFAULT DATA
@@ -1709,27 +1536,22 @@ const defaultLogo =
 encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg"
 width="600" height="600">
-
 <rect width="100%" height="100%" rx="80"
 fill="#edf7ed"/>
-
 <circle cx="300" cy="260" r="130"
 fill="#267a35"/>
-
 <text x="300" y="310"
 text-anchor="middle"
 font-family="Arial"
 font-size="150"
 font-weight="bold"
 fill="white">J</text>
-
 <text x="300" y="465"
 text-anchor="middle"
 font-family="Arial"
 font-size="52"
 font-weight="bold"
 fill="#267a35">JAYVIK</text>
-
 </svg>
 `);
 
@@ -1738,22 +1560,18 @@ const placeholder = name =>
 encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg"
 width="700" height="500">
-
 <rect width="100%" height="100%" fill="#edf5ed"/>
-
 <text x="50%" y="46%"
 text-anchor="middle"
 font-family="Arial"
 font-size="38"
 font-weight="bold"
 fill="#267a35">Jayvik</text>
-
 <text x="50%" y="58%"
 text-anchor="middle"
 font-family="Arial"
 font-size="24"
-fill="#666">${String(name).replace(/[<>&'"]/g,"")}</text>
-
+fill="#666">${name}</text>
 </svg>
 `);
 
@@ -1792,9 +1610,9 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Cold Pressed Oils",
     image:placeholder("Groundnut Oil"),
     packs:[
-      {size:"5 L",price:1500,stock:0},
-      {size:"1 L",price:310,stock:0},
-      {size:"500 ml",price:155,stock:0}
+      {size:"5 L",price:1500},
+      {size:"1 L",price:310},
+      {size:"500 ml",price:155}
     ],
     description:"Traditional cold pressed groundnut oil."
   },
@@ -1805,8 +1623,8 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Cold Pressed Oils",
     image:placeholder("Mustard Oil"),
     packs:[
-      {size:"1 L",price:360,stock:0},
-      {size:"500 ml",price:190,stock:0}
+      {size:"1 L",price:360},
+      {size:"500 ml",price:190}
     ],
     description:"Natural mustard oil."
   },
@@ -1817,8 +1635,8 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Cold Pressed Oils",
     image:placeholder("Flaxseed Oil"),
     packs:[
-      {size:"1 L",price:420,stock:0},
-      {size:"500 ml",price:220,stock:0}
+      {size:"1 L",price:420},
+      {size:"500 ml",price:220}
     ],
     description:"Cold pressed flaxseed oil."
   },
@@ -1829,8 +1647,8 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Cold Pressed Oils",
     image:placeholder("Sesame Oil"),
     packs:[
-      {size:"1 L",price:540,stock:0},
-      {size:"500 ml",price:280,stock:0}
+      {size:"1 L",price:540},
+      {size:"500 ml",price:280}
     ],
     description:"Traditional sesame oil."
   },
@@ -1841,8 +1659,8 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Cold Pressed Oils",
     image:placeholder("Coconut Oil"),
     packs:[
-      {size:"1 L",price:600,stock:0},
-      {size:"500 ml",price:310,stock:0}
+      {size:"1 L",price:600},
+      {size:"500 ml",price:310}
     ],
     description:"Natural coconut oil."
   },
@@ -1853,7 +1671,7 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Cold Pressed Oils",
     image:placeholder("Sunflower Oil"),
     packs:[
-      {size:"1 L",price:370,stock:0}
+      {size:"1 L",price:370}
     ],
     description:"Natural sunflower oil."
   },
@@ -1864,7 +1682,7 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Cold Pressed Oils",
     image:placeholder("Kardai Oil"),
     packs:[
-      {size:"1 L",price:370,stock:0}
+      {size:"1 L",price:370}
     ],
     description:"Traditional safflower oil."
   },
@@ -1875,8 +1693,8 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Ghee",
     image:placeholder("Gir Cow Ghee"),
     packs:[
-      {size:"1 L",price:1600,stock:0},
-      {size:"500 ml",price:850,stock:0}
+      {size:"1 L",price:1600},
+      {size:"500 ml",price:850}
     ],
     description:"Gir cow ghee made using traditional bilona method."
   },
@@ -1887,8 +1705,8 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Millet Corner",
     image:placeholder("Rajgira"),
     packs:[
-      {size:"1 kg",price:240,stock:0},
-      {size:"500 g",price:130,stock:0}
+      {size:"1 kg",price:240},
+      {size:"500 g",price:130}
     ],
     description:"Naturally grown unpolished rajgira."
   },
@@ -1899,8 +1717,8 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Millet Corner",
     image:placeholder("Rajgira Flour"),
     packs:[
-      {size:"1 kg",price:300,stock:0},
-      {size:"500 g",price:160,stock:0}
+      {size:"1 kg",price:300},
+      {size:"500 g",price:160}
     ],
     description:"Fresh rajgira flour."
   },
@@ -1911,8 +1729,8 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Millet Corner",
     image:placeholder("Bhagar"),
     packs:[
-      {size:"1 kg",price:200,stock:0},
-      {size:"500 g",price:110,stock:0}
+      {size:"1 kg",price:200},
+      {size:"500 g",price:110}
     ],
     description:"Naturally grown bhagar."
   },
@@ -1923,8 +1741,8 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Millet Corner",
     image:placeholder("Varai"),
     packs:[
-      {size:"1 kg",price:220,stock:0},
-      {size:"500 g",price:120,stock:0}
+      {size:"1 kg",price:220},
+      {size:"500 g",price:120}
     ],
     description:"Naturally grown little millet."
   },
@@ -1935,8 +1753,8 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Millet Corner",
     image:placeholder("Jowar Flakes"),
     packs:[
-      {size:"1 kg",price:160,stock:0},
-      {size:"500 g",price:90,stock:0}
+      {size:"1 kg",price:160},
+      {size:"500 g",price:90}
     ],
     description:"Healthy jowar flakes."
   },
@@ -1947,8 +1765,8 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Millet Corner",
     image:placeholder("Ragi Flakes"),
     packs:[
-      {size:"1 kg",price:200,stock:0},
-      {size:"500 g",price:110,stock:0}
+      {size:"1 kg",price:200},
+      {size:"500 g",price:110}
     ],
     description:"Healthy ragi flakes."
   },
@@ -1959,7 +1777,7 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Spices",
     image:placeholder("Jeera"),
     packs:[
-      {size:"100 g",price:60,stock:0}
+      {size:"100 g",price:60}
     ],
     description:"Natural cumin seeds."
   },
@@ -1970,7 +1788,7 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Jaggery",
     image:placeholder("Mishri"),
     packs:[
-      {size:"100 g",price:40,stock:0}
+      {size:"100 g",price:40}
     ],
     description:"Traditional rock sugar."
   },
@@ -1981,7 +1799,7 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Honey",
     image:placeholder("Himalayan Honey"),
     packs:[
-      {size:"500 g",price:1050,stock:0}
+      {size:"500 g",price:1050}
     ],
     description:"Himalayan multiflora forest honey."
   },
@@ -1992,7 +1810,7 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Others",
     image:placeholder("Badam Oil"),
     packs:[
-      {size:"100 ml",price:270,stock:0}
+      {size:"100 ml",price:270}
     ],
     description:"Natural almond oil."
   },
@@ -2003,7 +1821,7 @@ JSON.parse(localStorage.getItem("jayvik_products")) ||
     category:"Others",
     image:placeholder("Castor Oil"),
     packs:[
-      {size:"100 ml",price:60,stock:0}
+      {size:"100 ml",price:60}
     ],
     description:"Natural castor oil."
   }
@@ -2024,63 +1842,22 @@ localStorage.getItem("jayvik_logo") || defaultLogo;
 
 let website =
 JSON.parse(localStorage.getItem("jayvik_website")) || {
-
   brandName:"Jayvik",
-
   tagline:"The Complete Health Store",
-
   heroHeading:"Pure • Natural • From the Farm",
-
-  heroText:
-    "Healthy, natural and carefully selected products from Jayvik – The Complete Health Store."
-
+  heroText:"Healthy, natural and carefully selected products from Jayvik – The Complete Health Store."
 };
 
 let selectedPacks = {};
-
-let orders =
-JSON.parse(localStorage.getItem("jayvik_orders")) || [];
-
+let orders = JSON.parse(localStorage.getItem("jayvik_orders")) || [];
 let orderFilter = "all";
 
-
-/* =====================================================
-   NORMALIZE OLD DATA
-===================================================== */
-
 products.forEach(product=>{
-
-  if(!Array.isArray(product.packs))
-    product.packs=[];
-
-  product.packs=product.packs.map(pack=>({
-
+  product.packs=(product.packs||[]).map(pack=>({
     ...pack,
-
-    price:Number(pack.price||0),
-
-    stock:Number.isFinite(Number(pack.stock))
-      ? Number(pack.stock)
-      : 0
-
+    stock:Number.isFinite(Number(pack.stock)) ? Number(pack.stock) : 0
   }));
-
 });
-
-orders=orders.map(order=>({
-
-  ...order,
-
-  items:Array.isArray(order.items)
-    ? order.items
-    : [],
-
-  status:order.status || "pending",
-
-  stockDeducted:
-    order.stockDeducted===true
-
-}));
 
 
 /* =====================================================
@@ -2088,28 +1865,47 @@ orders=orders.map(order=>({
 ===================================================== */
 
 function saveAll(){
+  localStorage.setItem("jayvik_products",JSON.stringify(products));
+  localStorage.setItem("jayvik_categories",JSON.stringify(categories));
+  localStorage.setItem("jayvik_cart",JSON.stringify(cart));
+  localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+  localStorage.setItem("jayvik_logo",logo);
+  localStorage.setItem("jayvik_website",JSON.stringify(website));
 
-  localStorage.setItem(
-    "jayvik_products",
-    JSON.stringify(products)
-  );
-
-  localStorage.setItem(
-    "jayvik_categories",
-    JSON.stringify(categories)
-  );
-
-  localStorage.setItem(
-    "jayvik_cart",
-    JSON.stringify(cart)
-  );
-
-  localStorage.setItem(
-    "jayvik_orders",
-    JSON.stringify(orders)
-  );
-
+  if(firebaseReady && db){
+    const payload={products,categories,logo,website,orders};
+    db.ref("store").set(payload).catch(err=>console.error("Firebase save failed:",err));
+  }
 }
+
+async function loadFirebaseStore(){
+  if(!firebaseReady || !db || firebaseDataLoaded)return;
+  try{
+    const snap=await db.ref("store").once("value");
+    const data=snap.val();
+    if(data){
+      if(Array.isArray(data.products)){products=data.products;}
+      if(Array.isArray(data.categories)){categories=data.categories;}
+      if(Array.isArray(data.orders)){orders=data.orders;}
+      if(typeof data.logo==="string" && data.logo)logo=data.logo;
+      if(data.website && typeof data.website==="object")website=data.website;
+      products.forEach(product=>{product.packs=(product.packs||[]).map(pack=>({...pack,stock:Number.isFinite(Number(pack.stock))?Number(pack.stock):0}));});
+      localStorage.setItem("jayvik_products",JSON.stringify(products));
+      localStorage.setItem("jayvik_categories",JSON.stringify(categories));
+      localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+      localStorage.setItem("jayvik_logo",logo);
+      localStorage.setItem("jayvik_website",JSON.stringify(website));
+      renderCategories();renderProducts();renderCart();applyLogo();applyWebsite();updateStats();
+    }else{
+      await db.ref("store").set({products,categories,logo,website,orders});
+    }
+    firebaseDataLoaded=true;
+  }catch(err){
+    console.error("Firebase store load failed:",err);
+    firebaseDataLoaded=true;
+  }
+}
+
 
 
 /* =====================================================
@@ -2118,22 +1914,11 @@ function saveAll(){
 
 function applyLogo(){
 
-  const ids=[
-    "mainLogo",
-    "heroLogo",
-    "adminLogo",
-    "dashboardLogo",
-    "logoPreviewAdmin"
-  ];
-
-  ids.forEach(id=>{
-
-    const el=document.getElementById(id);
-
-    if(el)
-      el.src=logo;
-
-  });
+  document.getElementById("mainLogo").src=logo;
+  document.getElementById("heroLogo").src=logo;
+  document.getElementById("adminLogo").src=logo;
+  document.getElementById("dashboardLogo").src=logo;
+  document.getElementById("logoPreviewAdmin").src=logo;
 
 }
 
@@ -2146,13 +1931,7 @@ function previewLogo(event){
   const reader=new FileReader();
 
   reader.onload=function(e){
-
-    const preview=
-      document.getElementById("logoPreviewAdmin");
-
-    if(preview)
-      preview.src=e.target.result;
-
+    document.getElementById("logoPreviewAdmin").src=e.target.result;
   };
 
   reader.readAsDataURL(file);
@@ -2161,13 +1940,12 @@ function previewLogo(event){
 
 function saveLogo(){
 
-  const preview=
-    document.getElementById("logoPreviewAdmin");
+  const src=
+    document.getElementById("logoPreviewAdmin").src;
 
-  if(!preview || !preview.src)
-    return;
+  if(!src)return;
 
-  logo=preview.src;
+  logo=src;
 
   localStorage.setItem(
     "jayvik_logo",
@@ -2176,16 +1954,13 @@ function saveLogo(){
 
   applyLogo();
 
-  alert(
-    "Jayvik logo updated successfully."
-  );
+  alert("Jayvik logo updated successfully.");
 
 }
 
 function removeLogo(){
 
-  if(!confirm("Remove current logo?"))
-    return;
+  if(!confirm("Remove current logo?"))return;
 
   logo=defaultLogo;
 
@@ -2214,7 +1989,7 @@ function applyWebsite(){
   document.getElementById("heroText").textContent=
     website.heroText;
 
-  document.getElementById("heroHeading").textContent=
+  document.querySelector(".hero h1").innerHTML=
     website.heroHeading;
 
 }
@@ -2238,23 +2013,19 @@ function loadWebsiteEditor(){
 function saveWebsite(){
 
   website.brandName=
-    document.getElementById("editBrandName")
-      .value.trim()
-    || "Jayvik";
+    document.getElementById("editBrandName").value.trim() ||
+    "Jayvik";
 
   website.tagline=
-    document.getElementById("editTagline")
-      .value.trim()
-    || "The Complete Health Store";
+    document.getElementById("editTagline").value.trim() ||
+    "The Complete Health Store";
 
   website.heroHeading=
-    document.getElementById("editHeroHeading")
-      .value.trim()
-    || "Pure • Natural • From the Farm";
+    document.getElementById("editHeroHeading").value.trim() ||
+    "Pure • Natural • From the Farm";
 
   website.heroText=
-    document.getElementById("editHeroText")
-      .value.trim();
+    document.getElementById("editHeroText").value.trim();
 
   localStorage.setItem(
     "jayvik_website",
@@ -2263,9 +2034,7 @@ function saveWebsite(){
 
   applyWebsite();
 
-  alert(
-    "Website content updated."
-  );
+  alert("Website content updated.");
 
 }
 
@@ -2279,12 +2048,9 @@ function renderCategories(){
   const box=
     document.getElementById("categories");
 
-  if(!box)return;
-
   box.innerHTML="";
 
-  const all=
-    document.createElement("button");
+  const all=document.createElement("button");
 
   all.className=
     "category-btn "+
@@ -2293,12 +2059,9 @@ function renderCategories(){
   all.textContent="All";
 
   all.onclick=()=>{
-
     selectedCategory="All";
-
     renderCategories();
     renderProducts();
-
   };
 
   box.appendChild(all);
@@ -2315,12 +2078,9 @@ function renderCategories(){
     button.textContent=cat;
 
     button.onclick=()=>{
-
       selectedCategory=cat;
-
       renderCategories();
       renderProducts();
-
     };
 
     box.appendChild(button);
@@ -2334,25 +2094,13 @@ function addCategory(){
   const input=
     document.getElementById("newCategory");
 
-  const name=
-    input.value.trim();
+  const name=input.value.trim();
 
-  if(!name)
+  if(!name)return;
+
+  if(categories.includes(name)){
+    alert("Category already exists.");
     return;
-
-  const exists=
-    categories.some(
-      c=>c.toLowerCase()===name.toLowerCase()
-    );
-
-  if(exists){
-
-    alert(
-      "Category already exists."
-    );
-
-    return;
-
   }
 
   categories.push(name);
@@ -2363,7 +2111,6 @@ function addCategory(){
 
   renderCategories();
   renderAdminCategories();
-  fillCategorySelect();
   updateStats();
 
 }
@@ -2371,30 +2118,20 @@ function addCategory(){
 function removeCategory(category){
 
   const used=
-    products.some(
-      p=>p.category===category
-    );
+    products.some(p=>p.category===category);
 
   if(used){
-
     alert(
       "This category is being used by a product. "+
       "Change the product category first."
     );
-
     return;
-
   }
 
-  if(!confirm(
-    "Remove category "+category+"?"
-  ))
-    return;
+  if(!confirm("Remove category "+category+"?"))return;
 
   categories=
-    categories.filter(
-      c=>c!==category
-    );
+    categories.filter(c=>c!==category);
 
   if(selectedCategory===category)
     selectedCategory="All";
@@ -2403,14 +2140,13 @@ function removeCategory(category){
 
   renderCategories();
   renderAdminCategories();
-  fillCategorySelect();
   updateStats();
 
 }
 
 
 /* =====================================================
-   CUSTOMER PRODUCTS
+   PRODUCTS CUSTOMER
 ===================================================== */
 
 function renderProducts(){
@@ -2418,46 +2154,28 @@ function renderProducts(){
   const box=
     document.getElementById("products");
 
-  const searchBox=
-    document.getElementById("searchBox");
-
-  if(!box || !searchBox)
-    return;
-
   const search=
-    searchBox.value
-      .trim()
-      .toLowerCase();
+    document.getElementById("searchBox")
+      .value.toLowerCase();
 
   box.innerHTML="";
 
   const filtered=
-    products.filter(product=>{
+    products.filter(p=>{
 
       const categoryMatch=
         selectedCategory==="All" ||
-        product.category===selectedCategory;
+        p.category===selectedCategory;
 
       const searchMatch=
-        !search ||
-        product.name
-          .toLowerCase()
-          .includes(search) ||
-        String(product.category||"")
-          .toLowerCase()
-          .includes(search);
+        p.name.toLowerCase().includes(search);
 
-      return categoryMatch &&
-             searchMatch;
+      return categoryMatch && searchMatch;
 
     });
 
-  document.getElementById("productCount")
-    .textContent=
-      filtered.length+
-      (filtered.length===1
-        ?" product"
-        :" products");
+  document.getElementById("productCount").textContent=
+    filtered.length+" products";
 
   if(filtered.length===0){
 
@@ -2467,49 +2185,24 @@ function renderProducts(){
       </div>`;
 
     return;
-
   }
 
   filtered.forEach(product=>{
 
-    if(!product.packs.length)
-      return;
-
-    let selectedIndex=
-      Number.isInteger(
-        selectedPacks[product.id]
-      )
-      ? selectedPacks[product.id]
-      : 0;
-
-    if(
-      selectedIndex<0 ||
-      selectedIndex>=product.packs.length
-    ){
-      selectedIndex=0;
-    }
-
-    const selectedPack=
-      product.packs[selectedIndex];
-
-    const stock=
-      Number(selectedPack.stock||0);
+    let selectedPack=
+      selectedPacks[product.id] || product.packs[0];
 
     const card=
       document.createElement("div");
 
-    card.className=
-      "product-card";
+    card.className="product-card";
 
     card.innerHTML=`
 
       <img
         class="product-image"
-        src="${escapeAttr(
-          product.image ||
-          placeholder(product.name)
-        )}"
-        alt="${escapeAttr(product.name)}"
+        src="${product.image || placeholder(product.name)}"
+        alt="${escapeHtml(product.name)}"
       >
 
       <div class="product-body">
@@ -2522,45 +2215,16 @@ function renderProducts(){
           ${escapeHtml(product.name)}
         </h3>
 
-        <div
-          class="pack-row"
-          id="packs-${product.id}">
+        <div class="pack-row" id="packs-${product.id}"></div>
+
+        <div class="product-price"
+             id="price-${product.id}">
+          ₹${selectedPack.price.toLocaleString("en-IN")}
         </div>
 
-        <div
-          class="product-price"
-          id="price-${product.id}">
-          ₹${Number(
-            selectedPack.price||0
-          ).toLocaleString("en-IN")}
-        </div>
-
-        <div
-          class="stock-label"
-          id="stock-${product.id}">
-          ${
-            stock>0
-            ? `<span class="stock-ok">
-                ✓ ${stock} available
-              </span>`
-            : `<span class="stock-missing">
-                Currently unavailable
-              </span>`
-          }
-        </div>
-
-        <button
-          class="add-btn"
-          id="add-${product.id}"
-          ${stock<=0?"disabled":""}
+        <button class="add-btn"
           onclick="addToCart(${product.id})">
-
-          ${
-            stock>0
-            ? "🛒 Add to Cart"
-            : "Out of Stock"
-          }
-
+          🛒 Add to Cart
         </button>
 
       </div>
@@ -2569,85 +2233,40 @@ function renderProducts(){
     box.appendChild(card);
 
     const packBox=
-      card.querySelector(
-        "#packs-"+product.id
-      );
+      card.querySelector("#packs-"+product.id);
 
-    product.packs.forEach(
-      (pack,index)=>{
+    product.packs.forEach((pack,index)=>{
 
-        const button=
-          document.createElement("button");
+      const button=
+        document.createElement("button");
 
-        button.className=
-          "pack-btn "+
-          (
-            index===selectedIndex
-            ?"active"
-            :""
-          );
+      button.className=
+        "pack-btn "+
+        (index===0?"active":"");
 
-        button.textContent=
-          pack.size;
+      button.textContent=pack.size;
 
-        button.onclick=()=>{
+      button.onclick=()=>{
 
-          selectedPacks[product.id]=index;
+        selectedPack=pack;
+        selectedPacks[product.id]=pack;
 
-          packBox
-            .querySelectorAll(".pack-btn")
-            .forEach(
-              b=>b.classList.remove("active")
-            );
+        packBox
+          .querySelectorAll(".pack-btn")
+          .forEach(b=>b.classList.remove("active"));
 
-          button.classList.add("active");
+        button.classList.add("active");
 
-          const price=
-            card.querySelector(
-              "#price-"+product.id
-            );
+        card.querySelector(
+          "#price-"+product.id
+        ).textContent=
+          "₹"+pack.price.toLocaleString("en-IN");
 
-          const stockLabel=
-            card.querySelector(
-              "#stock-"+product.id
-            );
+      };
 
-          const addButton=
-            card.querySelector(
-              "#add-"+product.id
-            );
+      packBox.appendChild(button);
 
-          const newStock=
-            Number(pack.stock||0);
-
-          price.textContent=
-            "₹"+
-            Number(pack.price||0)
-              .toLocaleString("en-IN");
-
-          stockLabel.innerHTML=
-            newStock>0
-            ? `<span class="stock-ok">
-                 ✓ ${newStock} available
-               </span>`
-            : `<span class="stock-missing">
-                 Currently unavailable
-               </span>`;
-
-          addButton.disabled=
-            newStock<=0;
-
-          addButton.textContent=
-            newStock>0
-            ? "🛒 Add to Cart"
-            : "Out of Stock";
-
-        };
-
-        packBox.appendChild(button);
-
-      }
-    );
+    });
 
   });
 
@@ -2661,98 +2280,38 @@ function renderProducts(){
 function addToCart(productId){
 
   const product=
-    products.find(
-      p=>p.id===productId
-    );
+    products.find(p=>p.id===productId);
 
-  if(!product)
-    return;
+  if(!product)return;
 
-  let packIndex=
-    Number.isInteger(
-      selectedPacks[productId]
-    )
-    ? selectedPacks[productId]
-    : 0;
-
-  if(
-    packIndex<0 ||
-    packIndex>=product.packs.length
-  ){
-    packIndex=0;
-  }
-
-  const pack=
-    product.packs[packIndex];
-
-  if(!pack)
-    return;
-
-  const available=
-    Number(pack.stock||0);
+  const pack=selectedPacks[productId] || product.packs[0];
 
   const existing=
-    cart.find(
-      item=>
-        item.productId===productId &&
-        item.size===pack.size
+    cart.find(item=>
+      item.productId===productId &&
+      item.size===pack.size
     );
-
-  const currentQty=
-    existing
-    ? Number(existing.qty||0)
-    : 0;
-
-  if(
-    available<=0 ||
-    currentQty>=available
-  ){
-
-    alert(
-      "Only "+
-      available+
-      " unit(s) of "+
-      product.name+
-      " ("+
-      pack.size+
-      ") are available."
-    );
-
-    return;
-
-  }
 
   if(existing){
-
     existing.qty++;
-
   }else{
 
     cart.push({
-
       productId,
-
       name:product.name,
-
       size:pack.size,
-
-      price:Number(pack.price||0),
-
+      price:pack.price,
       qty:1
-
     });
 
   }
 
   saveAll();
-
   renderCart();
 
   alert(
     product.name+
-    " ("+
-    pack.size+
-    ") added to cart."
+    " ("+pack.size+") added to cart."
   );
 
 }
@@ -2761,9 +2320,6 @@ function renderCart(){
 
   const box=
     document.getElementById("cartItems");
-
-  if(!box)
-    return;
 
   box.innerHTML="";
 
@@ -2780,134 +2336,78 @@ function renderCart(){
   let total=0;
   let count=0;
 
-  cart.forEach(
-    (item,index)=>{
+  cart.forEach((item,index)=>{
 
-      const subtotal=
-        Number(item.price||0)*
-        Number(item.qty||0);
+    const subtotal=
+      item.price*item.qty;
 
-      total+=subtotal;
+    total+=subtotal;
+    count+=item.qty;
 
-      count+=Number(item.qty||0);
+    const div=
+      document.createElement("div");
 
-      const div=
-        document.createElement("div");
+    div.className="cart-item";
 
-      div.className="cart-item";
+    div.innerHTML=`
 
-      div.innerHTML=`
+      <div>
+        <strong>${escapeHtml(item.name)}</strong><br>
+        <small>${escapeHtml(item.size)}
+          × ₹${item.price.toLocaleString("en-IN")}
+        </small>
+      </div>
 
-        <div>
+      <div class="qty">
 
-          <strong>
-            ${escapeHtml(item.name)}
-          </strong>
+        <button onclick="changeQty(${index},-1)">
+          −
+        </button>
 
-          <br>
+        <strong>${item.qty}</strong>
 
-          <small>
-            ${escapeHtml(item.size)}
-            × ₹${Number(item.price||0)
-              .toLocaleString("en-IN")}
-          </small>
+        <button onclick="changeQty(${index},1)">
+          +
+        </button>
 
-        </div>
+      </div>
 
-        <div class="qty">
+      <div>
+        <strong>
+          ₹${subtotal.toLocaleString("en-IN")}
+        </strong>
 
-          <button
-            onclick="changeQty(${index},-1)">
-            −
-          </button>
+        <button
+          class="btn btn-danger"
+          style="padding:5px 8px;margin-left:8px"
+          onclick="removeCartItem(${index})"
+        >
+          ✕
+        </button>
+      </div>
 
-          <strong>
-            ${item.qty}
-          </strong>
+    `;
 
-          <button
-            onclick="changeQty(${index},1)">
-            +
-          </button>
+    box.appendChild(div);
 
-        </div>
+  });
 
-        <div>
+  document.getElementById("cartTotal").textContent=
+    total.toLocaleString("en-IN");
 
-          <strong>
-            ₹${subtotal.toLocaleString("en-IN")}
-          </strong>
+  document.getElementById("cartCount").textContent=
+    count;
 
-          <button
-            class="btn btn-danger"
-            style="padding:5px 8px;margin-left:8px"
-            onclick="removeCartItem(${index})">
-            ✕
-          </button>
-
-        </div>
-
-      `;
-
-      box.appendChild(div);
-
-    }
-  );
-
-  document.getElementById("cartTotal")
-    .textContent=
-      total.toLocaleString("en-IN");
-
-  document.getElementById("cartCount")
-    .textContent=count;
-
-  document.getElementById("statCart")
-    .textContent=count;
+  document.getElementById("statCart").textContent=
+    count;
 
 }
 
 function changeQty(index,change){
 
-  const item=cart[index];
+  cart[index].qty+=change;
 
-  if(!item)
-    return;
-
-  if(change>0){
-
-    const pack=
-      findPack(
-        item.productId,
-        item.size
-      );
-
-    const available=
-      pack
-      ? Number(pack.stock||0)
-      : 0;
-
-    if(
-      Number(item.qty||0)>=available
-    ){
-
-      alert(
-        "No more stock is available for "+
-        item.name+
-        " ("+
-        item.size+
-        ")."
-      );
-
-      return;
-
-    }
-
-  }
-
-  item.qty=
-    Number(item.qty||0)+change;
-
-  if(item.qty<=0)
+  if(cart[index].qty<=0)
     cart.splice(index,1);
 
   saveAll();
@@ -2920,42 +2420,30 @@ function removeCartItem(index){
   cart.splice(index,1);
 
   saveAll();
-
   renderCart();
 
 }
-
-
-/* =====================================================
-   WHATSAPP ORDER
-===================================================== */
 
 function sendWhatsAppOrder(){
 
   if(cart.length===0){
 
-    alert(
-      "Please add products to cart first."
-    );
-
+    alert("Please add products to cart first.");
     return;
 
   }
 
   const name=
-    document.getElementById(
-      "customerName"
-    ).value.trim();
+    document.getElementById("customerName")
+      .value.trim();
 
   const phone=
-    document.getElementById(
-      "customerPhone"
-    ).value.trim();
+    document.getElementById("customerPhone")
+      .value.trim();
 
   const address=
-    document.getElementById(
-      "customerAddress"
-    ).value.trim();
+    document.getElementById("customerAddress")
+      .value.trim();
 
   if(!name || !phone || !address){
 
@@ -2967,37 +2455,6 @@ function sendWhatsAppOrder(){
 
   }
 
-  /*
-    Final stock check before accepting order.
-    This prevents an order from being saved as ready
-    when the required inventory is not available.
-  */
-
-  const temporaryOrder={
-
-    items:cart.map(
-      item=>({
-
-        productId:item.productId,
-
-        name:item.name,
-
-        size:item.size,
-
-        price:item.price,
-
-        qty:item.qty
-
-      })
-    )
-
-  };
-
-  const missing=
-    getOrderMissingItems(
-      temporaryOrder
-    );
-
   let message=
 `Hello Jayvik, I would like to place an order:
 
@@ -3005,21 +2462,18 @@ function sendWhatsAppOrder(){
 
   let total=0;
 
-  cart.forEach(
-    (item,index)=>{
+  cart.forEach((item,index)=>{
 
-      const subtotal=
-        Number(item.price||0)*
-        Number(item.qty||0);
+    const subtotal=
+      item.price*item.qty;
 
-      total+=subtotal;
+    total+=subtotal;
 
-      message+=
+    message+=
 `${index+1}. ${item.name} – ${item.size} × ${item.qty} = ₹${subtotal}
 `;
 
-    }
-  );
+  });
 
   message+=
 `
@@ -3033,1155 +2487,232 @@ Contact Number: ${phone}`;
     "https://wa.me/919356959561?text="+
     encodeURIComponent(message);
 
-  /*
-    Save order locally for Admin → Orders.
-    No automatic WhatsApp reply is sent.
-  */
-
+  window.open(url,"_blank");
   const order={
-
     id:"JY"+Date.now(),
-
-    createdAt:
-      new Date().toISOString(),
-
-    customer:{
-      name,
-      phone,
-      address
-    },
-
-    items:cart.map(
-      item=>({
-
-        productId:item.productId,
-
-        name:item.name,
-
-        size:item.size,
-
-        price:Number(item.price||0),
-
-        qty:Number(item.qty||0)
-
-      })
-    ),
-
+    createdAt:new Date().toISOString(),
+    customer:{name,phone,address},
+    items:cart.map(item=>({productId:item.productId,name:item.name,size:item.size,price:item.price,qty:item.qty})),
     total,
-
-    status:
-      missing.length===0
-      ?"ready"
-      :"pending",
-
+    status:"pending",
     stockDeducted:false
-
   };
-
+  order.status=orderHasStock(order) ? "ready" : "pending";
   orders.unshift(order);
-
-  saveAll();
-
-  /*
-    Open WhatsApp.
-  */
-
-  window.open(
-    url,
-    "_blank"
-  );
-
-  /*
-    Clear cart after order creation.
-  */
-
   cart=[];
-
   saveAll();
-
   renderCart();
-
-  alert(
-    missing.length===0
-
-    ? "Order "+
-      order.id+
-      " saved and marked Ready for Packing."
-
-    : "Order "+
-      order.id+
-      " saved under Pending for Dispatch because inventory is insufficient."
-  );
+  alert("Order "+order.id+" saved. Open Admin → Orders to manage packing and dispatch.");
 
 }
 
 
 /* =====================================================
-   ORDER MANAGEMENT
+   ADMIN
 ===================================================== */
 
 function findPack(productId,size){
-
-  const product=
-    products.find(
-      p=>String(p.id)===String(productId)
-    );
-
-  if(!product)
-    return null;
-
-  return product.packs.find(
-    p=>String(p.size)===String(size)
-  ) || null;
-
+  const product=products.find(p=>String(p.id)===String(productId));
+  if(!product)return null;
+  return product.packs.find(p=>String(p.size)===String(size)) || null;
 }
 
 function getOrderMissingItems(order){
-
-  if(!order ||
-     !Array.isArray(order.items))
-    return [];
-
-  return order.items.filter(
-    item=>{
-
-      const pack=
-        findPack(
-          item.productId,
-          item.size
-        );
-
-      if(!pack)
-        return true;
-
-      return Number(pack.stock||0) <
-             Number(item.qty||0);
-
-    }
-  );
-
+  return order.items.filter(item=>{
+    const pack=findPack(item.productId,item.size);
+    return !pack || Number(pack.stock||0)<Number(item.qty||0);
+  });
 }
 
 function orderHasStock(order){
-
-  return getOrderMissingItems(order)
-    .length===0;
-
+  return getOrderMissingItems(order).length===0;
 }
 
-
-/*
-  Only pending orders automatically move to Ready
-  when the required stock becomes available.
-
-  Packed and Dispatched orders are never automatically
-  moved backwards.
-*/
-
 function refreshOrderStatuses(){
-
   let changed=false;
-
-  orders.forEach(
-    order=>{
-
-      if(
-        order.status==="pending" &&
-        orderHasStock(order)
-      ){
-
-        order.status="ready";
-
-        changed=true;
-
-      }
-
+  orders.forEach(order=>{
+    if(order.status==="pending" && orderHasStock(order)){
+      order.status="ready";
+      changed=true;
     }
-  );
-
-  if(changed)
-    saveAll();
-
+  });
+  if(changed)saveAll();
 }
 
 function renderOrders(){
-
   refreshOrderStatuses();
-
-  const board=
-    document.getElementById(
-      "ordersBoard"
-    );
-
-  if(!board)
-    return;
-
+  const board=document.getElementById("ordersBoard");
+  if(!board)return;
   const columns=[
-
-    {
-      key:"pending",
-      title:"🔴 Pending for Dispatch"
-    },
-
-    {
-      key:"ready",
-      title:"🟢 Ready for Packing"
-    },
-
-    {
-      key:"packed",
-      title:"📦 Packed"
-    },
-
-    {
-      key:"dispatched",
-      title:"🚚 Dispatched"
-    }
-
+    {key:"pending",title:"🔴 Pending for Dispatch"},
+    {key:"ready",title:"🟢 Ready for Packing"},
+    {key:"packed",title:"📦 Packed"},
+    {key:"dispatched",title:"🚚 Dispatched"}
   ];
-
   board.innerHTML="";
-
-  columns.forEach(
-    columnData=>{
-
-      const column=
-        document.createElement("div");
-
-      column.className=
-        "order-column";
-
-      const list=
-        orders.filter(
-          order=>
-            order.status===
-              columnData.key &&
-            (
-              orderFilter==="all" ||
-              orderFilter===
-                columnData.key
-            )
-        );
-
-      column.innerHTML=
-        `<h4>
-          ${columnData.title}
-          <span class="brand-sub">
-            (${list.length})
-          </span>
-        </h4>`;
-
-      if(list.length===0){
-
-        column.innerHTML+=
-          `<div
-            class="empty"
-            style="padding:20px">
-            No orders
-          </div>`;
-
-      }
-
-      list.forEach(
-        order=>{
-
-          column.appendChild(
-            buildOrderCard(order)
-          );
-
-        }
-      );
-
-      board.appendChild(column);
-
-    }
-  );
-
+  columns.forEach(col=>{
+    const column=document.createElement("div");
+    column.className="order-column";
+    const list=orders.filter(o=>o.status===col.key && (orderFilter==="all" || orderFilter===col.key));
+    column.innerHTML=`<h4>${col.title} <span class="brand-sub">(${list.length})</span></h4>`;
+    if(list.length===0)column.innerHTML+=`<div class="empty" style="padding:20px">No orders</div>`;
+    list.forEach(order=>column.appendChild(buildOrderCard(order)));
+    board.appendChild(column);
+  });
   renderInventory();
-
   updateOrderStats();
-
 }
 
 function buildOrderCard(order){
-
-  const card=
-    document.createElement("div");
-
-  card.className=
-    "order-card "+
-    order.status;
-
-  const missing=
-    getOrderMissingItems(order);
-
-  const itemHtml=
-    order.items.map(
-      item=>{
-
-        const pack=
-          findPack(
-            item.productId,
-            item.size
-          );
-
-        const available=
-          pack
-          ? Number(pack.stock||0)
-          : 0;
-
-        const required=
-          Number(item.qty||0);
-
-        const enough=
-          available>=required;
-
-        return `
-          <div>
-
-            ${escapeHtml(item.name)}
-            —
-            <strong>
-              ${escapeHtml(item.size)}
-            </strong>
-            × ${required}
-
-            <span class="${
-              enough
-              ?"stock-ok"
-              :"stock-missing"
-            }">
-
-              (${
-                pack
-                ? available+
-                  " in stock"
-                : "Pack not found"
-              })
-
-            </span>
-
-          </div>
-        `;
-
-      }
-    ).join("");
-
+  const card=document.createElement("div");
+  card.className="order-card "+order.status;
+  const missing=getOrderMissingItems(order);
+  const itemHtml=order.items.map(item=>{
+    const pack=findPack(item.productId,item.size);
+    const available=pack ? Number(pack.stock||0) : 0;
+    const enough=available>=Number(item.qty||0);
+    return `<div>${escapeHtml(item.name)} — <strong>${escapeHtml(item.size)}</strong> × ${item.qty} <span class="${enough?"stock-ok":"stock-missing"}">(${available} in stock)</span></div>`;
+  }).join("");
   let actions="";
-
-  if(order.status==="pending"){
-
-    if(missing.length){
-
-      actions=`
-
-        <button
-          class="btn btn-light"
-          onclick="focusInventory()">
-
-          📊 Check Inventory
-
-        </button>
-
-      `;
-
-    }else{
-
-      actions=`
-
-        <button
-          class="btn btn-green"
-          onclick="moveOrder(
-            '${escapeAttr(order.id)}',
-            'ready'
-          )">
-
-          ✓ Mark Ready
-
-        </button>
-
-      `;
-
-    }
-
-  }
-
-  if(order.status==="ready"){
-
-    actions=`
-
-      <button
-        class="btn btn-green"
-        onclick="moveOrder(
-          '${escapeAttr(order.id)}',
-          'packed'
-        )">
-
-        📦 Mark Packed
-
-      </button>
-
-    `;
-
-  }
-
-  if(order.status==="packed"){
-
-    actions=`
-
-      <button
-        class="btn btn-dark"
-        onclick="moveOrder(
-          '${escapeAttr(order.id)}',
-          'dispatched'
-        )">
-
-        🚚 Mark Dispatched
-
-      </button>
-
-    `;
-
-  }
-
-  if(order.status==="dispatched"){
-
-    actions=`
-
-      <span
-        class="status-badge status-dispatched">
-
-        ✓ DISPATCHED
-
-      </span>
-
-    `;
-
-  }
-
-  const statusText={
-    pending:"Pending for Dispatch",
-    ready:"Ready for Packing",
-    packed:"Packed",
-    dispatched:"Dispatched"
-  };
-
+  if(order.status==="pending")actions=missing.length
+    ? `<button class="btn btn-light" onclick="renderInventory();alert('Please add the missing pack stock shown below.');">Check Inventory</button>`
+    : `<button class="btn btn-green" onclick="moveOrder('${order.id}','ready')">Mark Ready</button>`;
+  if(order.status==="ready")actions=`<button class="btn btn-green" onclick="moveOrder('${order.id}','packed')">📦 Mark Packed</button>`;
+  if(order.status==="packed")actions=`<button class="btn btn-dark" onclick="moveOrder('${order.id}','dispatched')">🚚 Mark Dispatched</button>`;
   card.innerHTML=`
-
-    <strong>
-      ${escapeHtml(order.id)}
-    </strong>
-
-    <div class="brand-sub">
-
-      ${
-        order.createdAt
-        ? new Date(
-            order.createdAt
-          ).toLocaleString("en-IN")
-        : ""
-      }
-
-    </div>
-
-    <span
-      class="status-badge status-${
-        escapeAttr(order.status)
-      }">
-
-      ${
-        statusText[order.status] ||
-        order.status
-      }
-
-    </span>
-
-    <hr>
-
-    <div>
-
-      <strong>
-        ${escapeHtml(
-          order.customer?.name || ""
-        )}
-      </strong>
-
-    </div>
-
-    <div class="brand-sub">
-
-      📞 ${
-        escapeHtml(
-          order.customer?.phone || ""
-        )
-      }
-
-    </div>
-
-    <div class="brand-sub">
-
-      📍 ${
-        escapeHtml(
-          order.customer?.address || ""
-        )
-      }
-
-    </div>
-
-    <div class="order-items">
-
-      ${itemHtml}
-
-    </div>
-
-    <strong>
-      Total:
-      ₹${Number(
-        order.total||0
-      ).toLocaleString("en-IN")}
-    </strong>
-
-    ${
-      missing.length
-      ? `
-        <div
-          class="stock-missing"
-          style="margin-top:8px">
-
-          ⚠ Missing
-          ${missing.length}
-          pack item(s)
-
-          — Pending for Dispatch
-
-        </div>
-      `
-      : ""
-    }
-
-    <div class="order-actions">
-
-      ${actions}
-
-    </div>
-
-  `;
-
+    <strong>${escapeHtml(order.id)}</strong>
+    <div class="brand-sub">${new Date(order.createdAt).toLocaleString("en-IN")}</div><hr>
+    <div><strong>${escapeHtml(order.customer.name)}</strong></div>
+    <div class="brand-sub">📞 ${escapeHtml(order.customer.phone)}</div>
+    <div class="brand-sub">📍 ${escapeHtml(order.customer.address)}</div>
+    <div class="order-items">${itemHtml}</div>
+    <strong>Total: ₹${Number(order.total||0).toLocaleString("en-IN")}</strong>
+    ${missing.length ? `<div class="stock-missing" style="margin-top:8px">⚠ Missing ${missing.length} pack item(s) — Pending for Dispatch</div>` : ""}
+    <div class="order-actions">${actions}</div>`;
   return card;
-
 }
 
-function moveOrder(
-  orderId,
-  nextStatus
-){
-
-  const order=
-    orders.find(
-      o=>String(o.id)===String(orderId)
-    );
-
-  if(!order)
-    return;
-
-
-  /* READY */
-
+function moveOrder(orderId,nextStatus){
+  const order=orders.find(o=>o.id===orderId);
+  if(!order)return;
   if(nextStatus==="ready"){
-
-    if(!orderHasStock(order)){
-
-      order.status="pending";
-
-      saveAll();
-
-      renderOrders();
-
-      alert(
-        "Order cannot be marked Ready. "+
-        "One or more pack sizes do not have enough inventory."
-      );
-
-      return;
-
-    }
-
+    if(!orderHasStock(order)){order.status="pending";saveAll();renderOrders();alert("Order cannot be marked Ready. One or more pack sizes do not have enough inventory.");return;}
     order.status="ready";
-
   }
-
-
-  /* PACKED */
-
   if(nextStatus==="packed"){
-
-    if(!orderHasStock(order)){
-
-      order.status="pending";
-
-      saveAll();
-
-      renderOrders();
-
-      alert(
-        "Packing blocked because inventory is insufficient."
-      );
-
-      return;
-
-    }
-
-    /*
-      Deduct stock exactly once when the order
-      is moved from Ready to Packed.
-    */
-
+    if(!orderHasStock(order)){order.status="pending";saveAll();renderOrders();alert("Packing blocked because inventory is insufficient.");return;}
     if(!order.stockDeducted){
-
-      order.items.forEach(
-        item=>{
-
-          const pack=
-            findPack(
-              item.productId,
-              item.size
-            );
-
-          if(pack){
-
-            pack.stock=
-              Math.max(
-                0,
-                Number(pack.stock||0)-
-                Number(item.qty||0)
-              );
-
-          }
-
-        }
-      );
-
+      order.items.forEach(item=>{const pack=findPack(item.productId,item.size);if(pack)pack.stock=Math.max(0,Number(pack.stock||0)-Number(item.qty||0));});
       order.stockDeducted=true;
-
     }
-
     order.status="packed";
-
   }
-
-
-  /* DISPATCHED */
-
-  if(nextStatus==="dispatched"){
-
-    if(order.status!=="packed"){
-
-      alert(
-        "Only packed orders can be dispatched."
-      );
-
-      return;
-
-    }
-
-    order.status="dispatched";
-
-    order.dispatchedAt=
-      new Date().toISOString();
-
-  }
-
-  saveAll();
-
-  renderOrders();
-
-  renderAdminProducts();
-
-  renderProducts();
-
-  updateStats();
-
+  if(nextStatus==="dispatched")order.status="dispatched";
+  saveAll();renderOrders();renderAdminProducts();
 }
 
-function filterOrders(
-  filter,
-  button
-){
-
+function filterOrders(filter,button){
   orderFilter=filter;
-
-  document
-    .querySelectorAll(
-      ".order-filter button"
-    )
-    .forEach(
-      b=>b.classList.remove("active")
-    );
-
-  if(button)
-    button.classList.add("active");
-
+  document.querySelectorAll(".order-filter button").forEach(b=>b.classList.remove("active"));
+  if(button)button.classList.add("active");
   renderOrders();
-
 }
 
 function updateOrderStats(){
-
-  const count=
-    status=>
-      orders.filter(
-        o=>o.status===status
-      ).length;
-
-  const totalStock=
-    products.reduce(
-      (sum,product)=>
-        sum+
-        product.packs.reduce(
-          (packSum,pack)=>
-            packSum+
-            Number(pack.stock||0),
-          0
-        ),
-      0
-    );
-
-  const set=
-    (id,value)=>{
-
-      const el=
-        document.getElementById(id);
-
-      if(el)
-        el.textContent=value;
-
-    };
-
-  set(
-    "orderStatTotal",
-    orders.length
-  );
-
-  set(
-    "orderStatPending",
-    count("pending")
-  );
-
-  set(
-    "orderStatReady",
-    count("ready")
-  );
-
-  set(
-    "orderStatPacked",
-    count("packed")
-  );
-
-  set(
-    "orderStatDispatched",
-    count("dispatched")
-  );
-
-  set(
-    "orderStatStock",
-    totalStock
-  );
-
+  const count=s=>orders.filter(o=>o.status===s).length;
+  const totalStock=products.reduce((sum,p)=>sum+p.packs.reduce((s,pack)=>s+Number(pack.stock||0),0),0);
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  set("orderStatTotal",orders.length);set("orderStatPending",count("pending"));set("orderStatReady",count("ready"));set("orderStatPacked",count("packed"));set("orderStatDispatched",count("dispatched"));set("orderStatStock",totalStock);
 }
-
-function focusInventory(){
-
-  const inventory=
-    document.getElementById(
-      "inventoryList"
-    );
-
-  if(inventory){
-
-    inventory.scrollIntoView({
-      behavior:"smooth",
-      block:"start"
-    });
-
-  }
-
-}
-
-
-/* =====================================================
-   INVENTORY
-===================================================== */
 
 function renderInventory(){
-
-  const box=
-    document.getElementById(
-      "inventoryList"
-    );
-
-  if(!box)
-    return;
-
+  const box=document.getElementById("inventoryList");
+  if(!box)return;
   box.innerHTML="";
-
-  if(products.length===0){
-
-    box.innerHTML=
-      `<div class="empty">
-        No products available.
-      </div>`;
-
-    return;
-
-  }
-
-  products.forEach(
-    product=>{
-
-      product.packs.forEach(
-        (pack,packIndex)=>{
-
-          const stock=
-            Number(pack.stock||0);
-
-          const row=
-            document.createElement("div");
-
-          row.className=
-            "inventory-row "+
-            (
-              stock>0
-              ?"inventory-ok"
-              :"inventory-low"
-            );
-
-          row.innerHTML=`
-
-            <div>
-
-              <strong>
-                ${escapeHtml(
-                  product.name
-                )}
-              </strong>
-
-              <br>
-
-              <small>
-                Pack:
-                ${escapeHtml(
-                  pack.size
-                )}
-              </small>
-
-              <br>
-
-              <span
-                class="${
-                  stock>0
-                  ?"stock-ok"
-                  :"stock-missing"
-                }">
-
-                ${
-                  stock>0
-                  ? "✓ In Stock"
-                  : "⚠ Out of Stock"
-                }
-
-              </span>
-
-            </div>
-
-            <input
-              id="stock-${product.id}-${packIndex}"
-              type="number"
-              min="0"
-              step="1"
-              value="${stock}"
-            >
-
-            <button
-              class="btn btn-green"
-              onclick="savePackStock(
-                ${product.id},
-                ${packIndex}
-              )">
-
-              Save
-
-            </button>
-
-          `;
-
-          box.appendChild(row);
-
-        }
-      );
-
-    }
-  );
-
+  products.forEach(product=>product.packs.forEach((pack,packIndex)=>{
+    const row=document.createElement("div");row.className="inventory-row";
+    row.innerHTML=`<div><strong>${escapeHtml(product.name)}</strong><br><small>${escapeHtml(pack.size)}</small></div><input id="stock-${product.id}-${packIndex}" type="number" min="0" value="${Number(pack.stock||0)}"><button class="btn btn-green" onclick="savePackStock(${product.id},${packIndex})">Save</button>`;
+    box.appendChild(row);
+  }));
 }
 
-function savePackStock(
-  productId,
-  packIndex
-){
-
-  const product=
-    products.find(
-      p=>p.id===productId
-    );
-
-  if(
-    !product ||
-    !product.packs[packIndex]
-  )
-    return;
-
-  const input=
-    document.getElementById(
-      `stock-${productId}-${packIndex}`
-    );
-
-  if(!input)
-    return;
-
-  const value=
-    Math.max(
-      0,
-      Math.floor(
-        Number(input.value||0)
-      )
-    );
-
-  product.packs[packIndex].stock=
-    value;
-
-  saveAll();
-
-  refreshOrderStatuses();
-
-  renderOrders();
-
-  renderProducts();
-
-  renderAdminProducts();
-
-  updateStats();
-
-  alert(
-    "Pack inventory updated."
-  );
-
+function savePackStock(productId,packIndex){
+  const product=products.find(p=>p.id===productId);
+  if(!product || !product.packs[packIndex])return;
+  const input=document.getElementById(`stock-${productId}-${packIndex}`);
+  product.packs[packIndex].stock=Math.max(0,Number(input.value||0));
+  saveAll();refreshOrderStatuses();renderOrders();renderAdminProducts();
+  alert("Pack inventory updated.");
 }
-
-
-/* =====================================================
-   ADMIN LOGIN
-===================================================== */
 
 function openAdminLogin(){
-
-  const login=
-    document.getElementById(
-      "adminLoginOverlay"
-    );
-
-  if(
-    sessionStorage.getItem(
-      "jayvik_admin_logged_in"
-    )==="1"
-  ){
-
+  const login=document.getElementById("adminLoginOverlay");
+  const panel=document.getElementById("adminOverlay");
+  if(firebaseReady && auth?.currentUser){
     openAdmin();
-
     return;
-
   }
-
   if(login){
-
     login.style.display="flex";
-
-    const error=
-      document.getElementById(
-        "adminLoginError"
-      );
-
-    if(error){
-
-      error.style.display="none";
-      error.textContent="";
-
-    }
-
-    setTimeout(
-      ()=>{
-        document
-          .getElementById(
-            "adminPassword"
-          )
-          ?.focus();
-      },
-      50
-    );
-
+    const error=document.getElementById("adminLoginError");
+    if(error){error.style.display="none";error.textContent="";}
+    backToLogin();
+    setTimeout(()=>document.getElementById("adminPassword")?.focus(),50);
   }
-
 }
 
 function closeAdminLogin(){
-
-  const login=
-    document.getElementById(
-      "adminLoginOverlay"
-    );
-
-  if(login)
-    login.style.display="none";
-
+  const login=document.getElementById("adminLoginOverlay");
+  if(login)login.style.display="none";
 }
 
-function adminLogin(){
-
-  const username=
-    (
-      document.getElementById(
-        "adminUsername"
-      )?.value || ""
-    ).trim();
-
-  const password=
-    document.getElementById(
-      "adminPassword"
-    )?.value || "";
-
-  const error=
-    document.getElementById(
-      "adminLoginError"
-    );
-
-  if(
-    username==="admin" &&
-    password==="admin123"
-  ){
-
-    sessionStorage.setItem(
-      "jayvik_admin_logged_in",
-      "1"
-    );
-
-    closeAdminLogin();
-
-    openAdmin();
-
-    return;
-
-  }
-
-  if(error){
-
-    error.textContent=
-      "Incorrect username or password.";
-
-    error.style.display="block";
-
-  }
-
+function adminLoginLegacyRemoved(){
+  return adminLogin();
 }
 
-function adminLogout(){
-
-  sessionStorage.removeItem(
-    "jayvik_admin_logged_in"
-  );
-
+async function adminLogout(){
+  try{if(auth) await auth.signOut();}catch(err){console.error(err);}
+  sessionStorage.removeItem("jayvik_admin_logged_in");
   closeAdmin();
-
-  alert(
-    "Admin logged out."
-  );
-
+  alert("Admin logged out.");
 }
 
 function openAdmin(){
-
-  if(
-    sessionStorage.getItem(
-      "jayvik_admin_logged_in"
-    )!=="1"
-  ){
-
+  if(!firebaseReady || !auth?.currentUser){
     openAdminLogin();
-
     return;
-
   }
-
-  document.getElementById(
-    "adminOverlay"
-  ).style.display="block";
-
+  document.getElementById("adminOverlay").style.display="block";
   loadWebsiteEditor();
-
   renderAdminProducts();
-
   renderAdminCategories();
-
   updateStats();
-
   applyLogo();
-
 }
 
 function closeAdmin(){
 
-  const overlay=
-    document.getElementById(
-      "adminOverlay"
-    );
-
-  if(overlay)
-    overlay.style.display="none";
+  document.getElementById(
+    "adminOverlay"
+  ).style.display="none";
 
 }
 
-function showAdminTab(
-  id,
-  button
-){
+function showAdminTab(id,button){
 
   document
-    .querySelectorAll(
-      ".admin-section"
-    )
-    .forEach(
-      section=>
-        section.classList.remove("active")
-    );
+    .querySelectorAll(".admin-section")
+    .forEach(s=>s.classList.remove("active"));
 
   document
-    .querySelectorAll(
-      ".admin-tab"
-    )
-    .forEach(
-      tab=>
-        tab.classList.remove("active")
-    );
+    .querySelectorAll(".admin-tab")
+    .forEach(b=>b.classList.remove("active"));
 
-  const target=
-    document.getElementById(id);
+  document
+    .getElementById(id)
+    .classList.add("active");
 
-  if(target)
-    target.classList.add("active");
-
-  if(button)
-    button.classList.add("active");
-
-  if(id==="ordersAdmin")
-    renderOrders();
+  button.classList.add("active");
 
 }
 
@@ -4193,159 +2724,99 @@ function showAdminTab(
 function renderAdminProducts(){
 
   const box=
-    document.getElementById(
-      "adminProductsList"
-    );
-
-  if(!box)
-    return;
+    document.getElementById("adminProductsList");
 
   box.innerHTML="";
 
-  if(products.length===0){
+  products.forEach(product=>{
 
-    box.innerHTML=
-      `<div class="empty">
-        No products available.
-      </div>`;
+    const div=
+      document.createElement("div");
 
-    return;
+    div.className="admin-product";
 
-  }
+    div.innerHTML=`
 
-  products.forEach(
-    product=>{
+      <img
+        src="${product.image || placeholder(product.name)}"
+      >
 
-      const div=
-        document.createElement("div");
+      <div>
 
-      div.className="admin-product";
+        <strong>
+          ${escapeHtml(product.name)}
+        </strong>
 
-      const packs=
-        product.packs.map(
-          p=>{
+        <div class="small">
+          ${escapeHtml(product.category)}
+        </div>
 
-            const stock=
-              Number(p.stock||0);
+        <div style="margin-top:7px">
 
-            return `
-              <span
-                style="
-                  display:inline-block;
-                  background:${
-                    stock>0
-                    ?"#edf5ed"
-                    :"#fdecec"
-                  };
-                  color:${
-                    stock>0
-                    ?"var(--green)"
-                    :"var(--danger)"
-                  };
-                  padding:4px 7px;
-                  border-radius:6px;
-                  margin:2px;
-                  font-size:12px">
+          ${product.packs.map(p=>
+            `<span style="
+              display:inline-block;
+              background:#edf5ed;
+              padding:4px 7px;
+              border-radius:6px;
+              margin:2px;
+              font-size:12px">
+              ${escapeHtml(p.size)}
+              ₹${p.price}
+            </span>`
+          ).join("")}
 
-                ${escapeHtml(p.size)}
-                ₹${Number(
-                  p.price||0
-                ).toLocaleString("en-IN")}
+        </div>
 
-                • Stock: ${stock}
+      </div>
 
-              </span>
-            `;
+      <div class="admin-actions">
 
-          }
-        ).join("");
-
-      div.innerHTML=`
-
-        <img
-          src="${escapeAttr(
-            product.image ||
-            placeholder(product.name)
-          )}"
-          alt="${escapeAttr(product.name)}"
+        <button
+          class="btn btn-light"
+          onclick="editProduct(${product.id})"
         >
+          ✏️ Edit
+        </button>
 
-        <div>
+        <button
+          class="btn btn-danger"
+          onclick="deleteProduct(${product.id})"
+        >
+          🗑️ Remove
+        </button>
 
-          <strong>
-            ${escapeHtml(product.name)}
-          </strong>
+      </div>
+    `;
 
-          <div class="small">
-            ${escapeHtml(product.category)}
-          </div>
+    box.appendChild(div);
 
-          <div style="margin-top:7px">
-            ${packs}
-          </div>
-
-        </div>
-
-        <div class="admin-actions">
-
-          <button
-            class="btn btn-light"
-            onclick="editProduct(${product.id})">
-            ✏️ Edit
-          </button>
-
-          <button
-            class="btn btn-danger"
-            onclick="deleteProduct(${product.id})">
-            🗑️ Remove
-          </button>
-
-        </div>
-
-      `;
-
-      box.appendChild(div);
-
-    }
-  );
+  });
 
 }
 
 function deleteProduct(id){
 
   const product=
-    products.find(
-      p=>p.id===id
-    );
+    products.find(p=>p.id===id);
 
-  if(!product)
-    return;
+  if(!product)return;
 
   if(!confirm(
     "Remove "+product.name+"?"
-  ))
-    return;
+  ))return;
 
   products=
-    products.filter(
-      p=>p.id!==id
-    );
+    products.filter(p=>p.id!==id);
 
   cart=
-    cart.filter(
-      item=>item.productId!==id
-    );
+    cart.filter(item=>item.productId!==id);
 
   saveAll();
 
   renderProducts();
-
   renderCart();
-
   renderAdminProducts();
-
-  renderInventory();
-
   updateStats();
 
 }
@@ -4361,42 +2832,28 @@ function openAddProduct(){
 
   editingPhoto=null;
 
-  document.getElementById(
-    "editorTitle"
-  ).textContent=
-    "Add Product";
+  document.getElementById("editorTitle")
+    .textContent="Add Product";
 
-  document.getElementById(
-    "editProductId"
-  ).value="";
+  document.getElementById("editProductId")
+    .value="";
 
-  document.getElementById(
-    "editProductName"
-  ).value="";
+  document.getElementById("editProductName")
+    .value="";
 
-  document.getElementById(
-    "editProductDescription"
-  ).value="";
+  document.getElementById("editProductDescription")
+    .value="";
 
   fillCategorySelect();
 
-  document.getElementById(
-    "editProductCategory"
-  ).value=
-    categories[0] || "Others";
+  document.getElementById("editProductCategory")
+    .value=categories[0] || "Others";
 
-  document.getElementById(
-    "productPhotoPreview"
-  ).src=
-    placeholder("New Product");
+  document.getElementById("productPhotoPreview")
+    .src=placeholder("New Product");
 
-  document.getElementById(
-    "productPhotoFile"
-  ).value="";
-
-  document.getElementById(
-    "packEditor"
-  ).innerHTML="";
+  document.getElementById("packEditor")
+    .innerHTML="";
 
   addPackField();
 
@@ -4409,73 +2866,40 @@ function openAddProduct(){
 function editProduct(id){
 
   const product=
-    products.find(
-      p=>p.id===id
-    );
+    products.find(p=>p.id===id);
 
-  if(!product)
-    return;
+  if(!product)return;
 
-  editingPhoto=
-    product.image || null;
+  editingPhoto=product.image;
 
-  document.getElementById(
-    "editorTitle"
-  ).textContent=
-    "Edit Product";
+  document.getElementById("editorTitle")
+    .textContent="Edit Product";
 
-  document.getElementById(
-    "editProductId"
-  ).value=id;
+  document.getElementById("editProductId")
+    .value=id;
 
-  document.getElementById(
-    "editProductName"
-  ).value=
-    product.name;
+  document.getElementById("editProductName")
+    .value=product.name;
 
-  document.getElementById(
-    "editProductDescription"
-  ).value=
-    product.description || "";
+  document.getElementById("editProductDescription")
+    .value=product.description || "";
 
   fillCategorySelect();
 
-  document.getElementById(
-    "editProductCategory"
-  ).value=
-    product.category;
+  document.getElementById("editProductCategory")
+    .value=product.category;
 
-  document.getElementById(
-    "productPhotoPreview"
-  ).src=
-    product.image ||
-    placeholder(product.name);
-
-  document.getElementById(
-    "productPhotoFile"
-  ).value="";
+  document.getElementById("productPhotoPreview")
+    .src=product.image || placeholder(product.name);
 
   const box=
-    document.getElementById(
-      "packEditor"
-    );
+    document.getElementById("packEditor");
 
   box.innerHTML="";
 
-  product.packs.forEach(
-    pack=>{
-
-      addPackField(
-        pack.size,
-        pack.price,
-        pack.stock
-      );
-
-    }
-  );
-
-  if(product.packs.length===0)
-    addPackField();
+  product.packs.forEach(pack=>{
+    addPackField(pack.size,pack.price);
+  });
 
   document.getElementById(
     "productEditor"
@@ -4498,38 +2922,26 @@ function fillCategorySelect(){
       "editProductCategory"
     );
 
-  if(!select)
-    return;
-
   select.innerHTML="";
 
-  categories.forEach(
-    category=>{
+  categories.forEach(category=>{
 
-      const option=
-        document.createElement("option");
+    const option=
+      document.createElement("option");
 
-      option.value=category;
+    option.value=category;
+    option.textContent=category;
 
-      option.textContent=category;
+    select.appendChild(option);
 
-      select.appendChild(option);
-
-    }
-  );
+  });
 
 }
 
-function addPackField(
-  size="",
-  price="",
-  stock=0
-){
+function addPackField(size="",price=""){
 
   const box=
-    document.getElementById(
-      "packEditor"
-    );
+    document.getElementById("packEditor");
 
   const row=
     document.createElement("div");
@@ -4552,22 +2964,12 @@ function addPackField(
       class="pack-price"
     >
 
-    <input
-      type="number"
-      min="0"
-      placeholder="Stock"
-      value="${stock}"
-      class="pack-stock"
-    >
-
     <button
       class="btn btn-danger"
-      onclick="this.parentElement.remove()">
-
+      onclick="this.parentElement.remove()"
+    >
       Remove
-
     </button>
-
   `;
 
   box.appendChild(row);
@@ -4576,27 +2978,21 @@ function addPackField(
 
 function previewProductPhoto(event){
 
-  const file=
-    event.target.files[0];
+  const file=event.target.files[0];
 
-  if(!file)
-    return;
+  if(!file)return;
 
-  const reader=
-    new FileReader();
+  const reader=new FileReader();
 
-  reader.onload=
-    function(e){
+  reader.onload=function(e){
 
-      editingPhoto=
-        e.target.result;
+    editingPhoto=e.target.result;
 
-      document.getElementById(
-        "productPhotoPreview"
-      ).src=
-        e.target.result;
+    document.getElementById(
+      "productPhotoPreview"
+    ).src=e.target.result;
 
-    };
+  };
 
   reader.readAsDataURL(file);
 
@@ -4609,13 +3005,11 @@ function removeProductPhoto(){
   const name=
     document.getElementById(
       "editProductName"
-    ).value ||
-    "Product";
+    ).value || "Product";
 
   document.getElementById(
     "productPhotoPreview"
-  ).src=
-    placeholder(name);
+  ).src=placeholder(name);
 
 }
 
@@ -4645,10 +3039,7 @@ function saveProduct(){
 
   if(!name){
 
-    alert(
-      "Enter product name."
-    );
-
+    alert("Enter product name.");
     return;
 
   }
@@ -4659,96 +3050,35 @@ function saveProduct(){
     );
 
   const packs=[];
+  const oldProduct=id ? products.find(p=>p.id===id) : null;
 
-  const oldProduct=
-    id
-    ? products.find(
-        p=>p.id===id
-      )
-    : null;
-
-  const usedSizes=
-    new Set();
-
-  for(const row of rows){
+  rows.forEach(row=>{
 
     const size=
-      row.querySelector(
-        ".pack-size"
-      ).value.trim();
+      row.querySelector(".pack-size")
+        .value.trim();
 
     const price=
       Number(
-        row.querySelector(
-          ".pack-price"
-        ).value
+        row.querySelector(".pack-price")
+          .value
       );
 
-    const stock=
-      Math.max(
-        0,
-        Math.floor(
-          Number(
-            row.querySelector(
-              ".pack-stock"
-            ).value || 0
-          )
-        )
-      );
+    if(size && price>=0){
 
-    if(!size)
-      continue;
-
-    if(usedSizes.has(size)){
-
-      alert(
-        "Duplicate pack size: "+
-        size
-      );
-
-      return;
+      packs.push({
+        size,
+        price,
+        stock:oldProduct ? Number((oldProduct.packs.find(p=>p.size===size)||{}).stock||0) : 0
+      });
 
     }
 
-    if(!Number.isFinite(price) ||
-       price<0){
-
-      alert(
-        "Enter a valid price for "+
-        size
-      );
-
-      return;
-
-    }
-
-    usedSizes.add(size);
-
-    /*
-      If an existing pack is being renamed,
-      preserve its inventory only when the same
-      pack size remains. Otherwise the entered
-      stock is used.
-    */
-
-    packs.push({
-
-      size,
-
-      price,
-
-      stock
-
-    });
-
-  }
+  });
 
   if(packs.length===0){
 
-    alert(
-      "Add at least one pack size and price."
-    );
-
+    alert("Add at least one pack size and price.");
     return;
 
   }
@@ -4756,25 +3086,14 @@ function saveProduct(){
   if(id){
 
     const product=
-      products.find(
-        p=>p.id===id
-      );
-
-    if(!product)
-      return;
+      products.find(p=>p.id===id);
 
     product.name=name;
-
     product.category=category;
-
-    product.description=
-      description;
-
+    product.description=description;
     product.packs=packs;
-
     product.image=
-      editingPhoto ||
-      placeholder(name);
+      editingPhoto || placeholder(name);
 
   }else{
 
@@ -4787,8 +3106,7 @@ function saveProduct(){
       category,
 
       image:
-        editingPhoto ||
-        placeholder(name),
+        editingPhoto || placeholder(name),
 
       packs,
 
@@ -4801,18 +3119,12 @@ function saveProduct(){
   saveAll();
 
   renderProducts();
-
   renderAdminProducts();
-
-  renderInventory();
-
   updateStats();
 
   closeProductEditor();
 
-  alert(
-    "Product saved successfully."
-  );
+  alert("Product saved successfully.");
 
 }
 
@@ -4828,44 +3140,34 @@ function renderAdminCategories(){
       "adminCategoriesList"
     );
 
-  if(!box)
-    return;
-
   box.innerHTML="";
 
-  categories.forEach(
-    category=>{
+  categories.forEach(category=>{
 
-      const row=
-        document.createElement("div");
+    const row=
+      document.createElement("div");
 
-      row.style.cssText=
-        "display:flex;justify-content:space-between;"+
-        "align-items:center;padding:12px 0;"+
-        "border-bottom:1px solid #eee";
+    row.style.cssText=
+      "display:flex;justify-content:space-between;"+
+      "align-items:center;padding:12px 0;"+
+      "border-bottom:1px solid #eee";
 
-      row.innerHTML=`
+    row.innerHTML=`
 
-        <strong>
-          ${escapeHtml(category)}
-        </strong>
+      <strong>${escapeHtml(category)}</strong>
 
-        <button
-          class="btn btn-danger"
-          onclick="removeCategory(
-            '${escapeAttr(category)}'
-          )">
+      <button
+        class="btn btn-danger"
+        onclick="removeCategory('${escapeAttr(category)}')"
+      >
+        🗑️ Remove
+      </button>
 
-          🗑️ Remove
+    `;
 
-        </button>
+    box.appendChild(row);
 
-      `;
-
-      box.appendChild(row);
-
-    }
-  );
+  });
 
 }
 
@@ -4876,39 +3178,15 @@ function renderAdminCategories(){
 
 function updateStats(){
 
-  const productsStat=
-    document.getElementById(
-      "statProducts"
-    );
+  document.getElementById("statProducts")
+    .textContent=products.length;
 
-  const categoriesStat=
-    document.getElementById(
-      "statCategories"
-    );
+  document.getElementById("statCategories")
+    .textContent=categories.length;
 
-  const cartStat=
-    document.getElementById(
-      "statCart"
-    );
-
-  if(productsStat)
-    productsStat.textContent=
-      products.length;
-
-  if(categoriesStat)
-    categoriesStat.textContent=
-      categories.length;
-
-  if(cartStat)
-    cartStat.textContent=
-      cart.reduce(
-        (sum,item)=>
-          sum+
-          Number(item.qty||0),
-        0
-      );
-
-  updateOrderStats();
+  document.getElementById("statCart")
+    .textContent=
+      cart.reduce((sum,item)=>sum+item.qty,0);
 
 }
 
@@ -4920,9 +3198,7 @@ function updateStats(){
 function scrollToProducts(){
 
   document
-    .getElementById(
-      "productsSection"
-    )
+    .getElementById("productsSection")
     .scrollIntoView({
       behavior:"smooth"
     });
@@ -4932,9 +3208,7 @@ function scrollToProducts(){
 function scrollToCart(){
 
   document
-    .getElementById(
-      "cartSection"
-    )
+    .getElementById("cartSection")
     .scrollIntoView({
       behavior:"smooth"
     });
@@ -4943,33 +3217,20 @@ function scrollToCart(){
 
 function escapeHtml(value){
 
-  return String(value ?? "")
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
-    );
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
 }
 
 function escapeAttr(value){
 
-  return escapeHtml(value);
+  return String(value)
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
 }
 
@@ -4979,18 +3240,18 @@ function escapeAttr(value){
 ===================================================== */
 
 applyLogo();
-
 applyWebsite();
 
 renderCategories();
-
 renderProducts();
-
 renderCart();
 
-updateStats();
 
+// Ensure the initial login email is always shown.
+document.addEventListener("DOMContentLoaded",()=>{
+  const email=document.getElementById("adminUsername");
+  if(email && !email.value) email.value="jayvik.india@gmail.com";
+});
 </script>
-
 </body>
 </html>
