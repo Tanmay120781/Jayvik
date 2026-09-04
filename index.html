@@ -840,6 +840,15 @@ footer{
 
 </section>
 
+<section class="container" id="liveOrderSection" style="display:none">
+  <div class="section-title">
+    <h2>📦 Live Order Status</h2>
+  </div>
+  <div class="cart-box">
+    <div id="liveOrderStatus"></div>
+  </div>
+</section>
+
 </main>
 
 <footer>
@@ -1415,6 +1424,7 @@ try{
 }
 
 loadFirebaseStore();
+startCustomerOrderStatusListener();
 
 function togglePassword(id,button){
   const input=document.getElementById(id);
@@ -1864,48 +1874,213 @@ products.forEach(product=>{
    SAVE
 ===================================================== */
 
-function saveAll(){
+function isAdminUser(user=auth?.currentUser){
+  return !!(user && user.email && user.email.toLowerCase()==="jayvik.india@gmail.com");
+}
+
+function normalizeProducts(){
+  products.forEach(product=>{
+    product.packs=(product.packs||[]).map(pack=>({
+      ...pack,
+      stock:Number.isFinite(Number(pack.stock)) ? Number(pack.stock) : 0
+    }));
+  });
+}
+
+function saveLocalStore(){
   localStorage.setItem("jayvik_products",JSON.stringify(products));
   localStorage.setItem("jayvik_categories",JSON.stringify(categories));
   localStorage.setItem("jayvik_cart",JSON.stringify(cart));
   localStorage.setItem("jayvik_orders",JSON.stringify(orders));
   localStorage.setItem("jayvik_logo",logo);
   localStorage.setItem("jayvik_website",JSON.stringify(website));
+}
 
-  if(firebaseReady && db){
-    const payload={products,categories,logo,website,orders};
-    db.ref("store").set(payload).catch(err=>console.error("Firebase save failed:",err));
+/*
+  Secure Firebase layout:
+  /store/public  -> products, categories, logo, website (public read; admin write)
+  /orders/<id>    -> orders (admin read/write; customer may create only)
+
+  This keeps customer-visible catalogue data separate from private order data.
+*/
+function publicStorePayload(){
+  return {products,categories,logo,website};
+}
+
+function publicOrderStatusPayload(order){
+  return {
+    id:String(order.id||""),
+    status:String(order.status||"pending"),
+    updatedAt:new Date().toISOString()
+  };
+}
+
+async function savePublicOrderStatus(order){
+  if(firebaseReady && db && order && order.id && isAdminUser()){
+    try{
+      await db.ref("publicOrderStatus/"+order.id).set(publicOrderStatusPayload(order));
+    }catch(err){
+      console.error("Firebase public order status save failed:",err);
+    }
   }
+}
+
+function renderLiveOrderStatus(data){
+  const section=document.getElementById("liveOrderSection");
+  const box=document.getElementById("liveOrderStatus");
+  if(!section || !box)return;
+  const id=localStorage.getItem("jayvik_last_order_id");
+  if(!id){section.style.display="none";return;}
+  section.style.display="block";
+  const status=(data && data.status)||"pending";
+  const labels={pending:"🔴 Pending for Dispatch",ready:"🟢 Ready for Packing",packing:"🟡 Packing",packed:"📦 Packed",dispatched:"🚚 Dispatched"};
+  box.innerHTML=`<strong>Order ${escapeHtml(id)}</strong><div style="font-size:20px;margin-top:10px">${labels[status]||status}</div><p style="color:var(--muted);margin:8px 0 0">This status updates automatically while this page is open. No refresh is required.</p>`;
+}
+
+function startCustomerOrderStatusListener(){
+  if(!firebaseReady || !db)return;
+  const id=localStorage.getItem("jayvik_last_order_id");
+  if(!id){renderLiveOrderStatus(null);return;}
+  db.ref("publicOrderStatus/"+id).on("value",snap=>renderLiveOrderStatus(snap.val()));
+  renderLiveOrderStatus(null);
+}
+
+async function savePublicStore(){
+  saveLocalStore();
+  if(firebaseReady && db && isAdminUser()){
+    try{
+      await db.ref("store/public").set(publicStorePayload());
+    }catch(err){
+      console.error("Firebase public store save failed:",err);
+      alert("Firebase save failed: "+(err?.message||err));
+    }
+  }
+}
+
+async function saveOrderToFirebase(order){
+  saveLocalStore();
+  if(firebaseReady && db){
+    try{
+      await db.ref("orders/"+order.id).set(order);
+    }catch(err){
+      console.error("Firebase order save failed:",err);
+      alert("Order could not be saved to Firebase. Please check the database rules.");
+      return false;
+    }
+  }
+  return true;
+}
+
+function saveAll(){
+  saveLocalStore();
+  /* Never write the private order list from the customer browser. */
+  if(firebaseReady && db && isAdminUser()){
+    db.ref("store/public").set(publicStorePayload())
+      .catch(err=>console.error("Firebase public store save failed:",err));
+    db.ref("orders").set(Object.fromEntries(orders.map(o=>[String(o.id),o])))
+      .catch(err=>console.error("Firebase orders save failed:",err));
+    db.ref("publicOrderStatus").set(Object.fromEntries(orders.map(o=>[String(o.id),publicOrderStatusPayload(o)])))
+      .catch(err=>console.error("Firebase public order status save failed:",err));
+  }
+}
+
+async function migrateLegacyFirebaseStore(){
+  if(!firebaseReady || !db || !isAdminUser())return;
+  try{
+    const legacySnap=await db.ref("store").once("value");
+    const legacy=legacySnap.val();
+    if(legacy && (legacy.products || legacy.categories || legacy.logo || legacy.website || legacy.orders)){
+      const publicData={
+        products:Array.isArray(legacy.products)?legacy.products:products,
+        categories:Array.isArray(legacy.categories)?legacy.categories:categories,
+        logo:typeof legacy.logo==="string" && legacy.logo ? legacy.logo:logo,
+        website:legacy.website && typeof legacy.website==="object" ? legacy.website:website
+      };
+      await db.ref("store/public").set(publicData);
+      if(Array.isArray(legacy.orders)){
+        const orderMap={};
+        legacy.orders.forEach(o=>{if(o && o.id)orderMap[String(o.id)]=o;});
+        if(Object.keys(orderMap).length) await db.ref("orders").update(orderMap);
+      }
+      /* Do not delete /store automatically. It can be removed manually after verification. */
+    }
+  }catch(err){
+    console.warn("Legacy Firebase migration check failed:",err);
+  }
+}
+
+function startFirebaseRealtimeListeners(){
+  if(!firebaseReady || !db)return;
+
+  db.ref("store/public").on("value",snap=>{
+    const data=snap.val();
+    if(!data)return;
+    if(Array.isArray(data.products))products=data.products;
+    if(Array.isArray(data.categories))categories=data.categories;
+    if(typeof data.logo==="string" && data.logo)logo=data.logo;
+    if(data.website && typeof data.website==="object")website=data.website;
+    normalizeProducts();
+    localStorage.setItem("jayvik_products",JSON.stringify(products));
+    localStorage.setItem("jayvik_categories",JSON.stringify(categories));
+    localStorage.setItem("jayvik_logo",logo);
+    localStorage.setItem("jayvik_website",JSON.stringify(website));
+    renderCategories();renderProducts();applyLogo();applyWebsite();updateStats();
+    if(typeof renderAdminProducts==="function")renderAdminProducts();
+    if(typeof renderAdminCategories==="function")renderAdminCategories();
+    if(typeof renderWebsiteAdmin==="function")renderWebsiteAdmin();
+  });
+
+  auth.onAuthStateChanged(async user=>{
+    if(isAdminUser(user)){
+      await migrateLegacyFirebaseStore();
+      db.ref("orders").on("value",snap=>{
+        const data=snap.val();
+        if(data && typeof data==="object"){
+          orders=Object.values(data).sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+          orders.forEach(o=>savePublicOrderStatus(o));
+          localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+          refreshOrderStatuses();
+          if(typeof renderOrders==="function")renderOrders();
+          if(typeof updateOrderStats==="function")updateOrderStats();
+        }else{
+          orders=[];
+          localStorage.setItem("jayvik_orders","[]");
+          if(typeof renderOrders==="function")renderOrders();
+          if(typeof updateOrderStats==="function")updateOrderStats();
+        }
+      });
+    }else{
+      db.ref("orders").off("value");
+      orders=[];
+      localStorage.setItem("jayvik_orders","[]");
+    }
+  });
 }
 
 async function loadFirebaseStore(){
   if(!firebaseReady || !db || firebaseDataLoaded)return;
   try{
-    const snap=await db.ref("store").once("value");
+    const snap=await db.ref("store/public").once("value");
     const data=snap.val();
     if(data){
-      if(Array.isArray(data.products)){products=data.products;}
-      if(Array.isArray(data.categories)){categories=data.categories;}
-      if(Array.isArray(data.orders)){orders=data.orders;}
+      if(Array.isArray(data.products))products=data.products;
+      if(Array.isArray(data.categories))categories=data.categories;
       if(typeof data.logo==="string" && data.logo)logo=data.logo;
       if(data.website && typeof data.website==="object")website=data.website;
-      products.forEach(product=>{product.packs=(product.packs||[]).map(pack=>({...pack,stock:Number.isFinite(Number(pack.stock))?Number(pack.stock):0}));});
+      normalizeProducts();
       localStorage.setItem("jayvik_products",JSON.stringify(products));
       localStorage.setItem("jayvik_categories",JSON.stringify(categories));
-      localStorage.setItem("jayvik_orders",JSON.stringify(orders));
       localStorage.setItem("jayvik_logo",logo);
       localStorage.setItem("jayvik_website",JSON.stringify(website));
       renderCategories();renderProducts();renderCart();applyLogo();applyWebsite();updateStats();
-    }else{
-      await db.ref("store").set({products,categories,logo,website,orders});
     }
     firebaseDataLoaded=true;
+    startFirebaseRealtimeListeners();
   }catch(err){
-    console.error("Firebase store load failed:",err);
+    console.error("Firebase public store load failed:",err);
     firebaseDataLoaded=true;
   }
 }
-
 
 
 /* =====================================================
@@ -1947,11 +2122,8 @@ function saveLogo(){
 
   logo=src;
 
-  localStorage.setItem(
-    "jayvik_logo",
-    logo
-  );
-
+  saveLocalStore();
+  savePublicStore();
   applyLogo();
 
   alert("Jayvik logo updated successfully.");
@@ -1964,11 +2136,8 @@ function removeLogo(){
 
   logo=defaultLogo;
 
-  localStorage.setItem(
-    "jayvik_logo",
-    logo
-  );
-
+  saveLocalStore();
+  savePublicStore();
   applyLogo();
 
 }
@@ -2027,11 +2196,8 @@ function saveWebsite(){
   website.heroText=
     document.getElementById("editHeroText").value.trim();
 
-  localStorage.setItem(
-    "jayvik_website",
-    JSON.stringify(website)
-  );
-
+  saveLocalStore();
+  savePublicStore();
   applyWebsite();
 
   alert("Website content updated.");
@@ -2424,7 +2590,7 @@ function removeCartItem(index){
 
 }
 
-function sendWhatsAppOrder(){
+async function sendWhatsAppOrder(){
 
   if(cart.length===0){
 
@@ -2499,8 +2665,12 @@ Contact Number: ${phone}`;
   };
   order.status=orderHasStock(order) ? "ready" : "pending";
   orders.unshift(order);
+  localStorage.setItem("jayvik_last_order_id",String(order.id));
   cart=[];
-  saveAll();
+  saveLocalStore();
+  const saved=await saveOrderToFirebase(order);
+  if(!saved)return;
+  startCustomerOrderStatusListener();
   renderCart();
   alert("Order "+order.id+" saved. Open Admin → Orders to manage packing and dispatch.");
 
@@ -2546,6 +2716,7 @@ function renderOrders(){
   const columns=[
     {key:"pending",title:"🔴 Pending for Dispatch"},
     {key:"ready",title:"🟢 Ready for Packing"},
+    {key:"packing",title:"🟡 Packing"},
     {key:"packed",title:"📦 Packed"},
     {key:"dispatched",title:"🚚 Dispatched"}
   ];
@@ -2577,7 +2748,8 @@ function buildOrderCard(order){
   if(order.status==="pending")actions=missing.length
     ? `<button class="btn btn-light" onclick="renderInventory();alert('Please add the missing pack stock shown below.');">Check Inventory</button>`
     : `<button class="btn btn-green" onclick="moveOrder('${order.id}','ready')">Mark Ready</button>`;
-  if(order.status==="ready")actions=`<button class="btn btn-green" onclick="moveOrder('${order.id}','packed')">📦 Mark Packed</button>`;
+  if(order.status==="ready")actions=`<button class="btn btn-green" onclick="moveOrder('${order.id}','packing')">🟡 Start Packing</button>`;
+  if(order.status==="packing")actions=`<button class="btn btn-green" onclick="moveOrder('${order.id}','packed')">📦 Mark Packed</button>`;
   if(order.status==="packed")actions=`<button class="btn btn-dark" onclick="moveOrder('${order.id}','dispatched')">🚚 Mark Dispatched</button>`;
   card.innerHTML=`
     <strong>${escapeHtml(order.id)}</strong>
@@ -2598,6 +2770,10 @@ function moveOrder(orderId,nextStatus){
   if(nextStatus==="ready"){
     if(!orderHasStock(order)){order.status="pending";saveAll();renderOrders();alert("Order cannot be marked Ready. One or more pack sizes do not have enough inventory.");return;}
     order.status="ready";
+  }
+  if(nextStatus==="packing"){
+    if(!orderHasStock(order)){order.status="pending";saveAll();renderOrders();alert("Packing blocked because inventory is insufficient.");return;}
+    order.status="packing";
   }
   if(nextStatus==="packed"){
     if(!orderHasStock(order)){order.status="pending";saveAll();renderOrders();alert("Packing blocked because inventory is insufficient.");return;}
