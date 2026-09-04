@@ -1994,6 +1994,10 @@ async function saveOrderToFirebase(order){
   if(firebaseReady && db){
     try{
       await db.ref("orders/"+order.id).set(order);
+      /* Create the initial customer-visible status record as well.
+         Firebase rules allow a customer to create this record once, while
+         only the admin can change it afterwards. */
+      await db.ref("publicOrderStatus/"+order.id).set(publicOrderStatusPayload(order));
     }catch(err){
       console.error("Firebase order save failed:",err);
       alert("Order could not be saved to Firebase. Please check the database rules.");
