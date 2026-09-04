@@ -795,6 +795,15 @@ footer{
 
 </section>
 
+<!-- ================= LIVE ORDER STATUS ================= -->
+<section class="container" id="liveOrderStatusSection" style="display:none">
+  <div class="section-title">
+    <h2>📦 Live Order Status</h2>
+  </div>
+  <div id="liveOrderStatus"></div>
+</section>
+<!-- ================= END LIVE ORDER STATUS ================= -->
+
 <section class="container" id="cartSection">
 
   <div class="section-title">
@@ -1372,18 +1381,17 @@ footer{
 
 
 <script>
+
 /* =====================================================
-   JAYVIK – FIREBASE STORE ENGINE
-   Corrected replacement engine
-   - Safe localStorage parsing
-   - Firebase public store isolation
-   - Firebase async syntax fixed
-   - Admin authorization enforced
-   - Product/pack/cart controls use robust IDs
-   - Order workflow: Pending -> Ready -> Packed -> Dispatched
-   - Customer live order status
+   FIREBASE AUTHENTICATION
 ===================================================== */
 
+/*
+  IMPORTANT: Replace the values below with the Firebase Web App
+  configuration from your Firebase project. Never put your Gmail
+  password here. The initial admin user must be created in Firebase
+  Authentication with email/password sign-in enabled.
+*/
 const firebaseConfig = {
   apiKey: "AIzaSyDSZ_VAoKkjPgVpHVvwrVwycpIn0ECVzg0",
   authDomain: "jayvik-61ae3.firebaseapp.com",
@@ -1395,235 +1403,549 @@ const firebaseConfig = {
   measurementId: "G-D7CLK5NS8L"
 };
 
-const ADMIN_EMAIL = "jayvik.india@gmail.com";
-const WHATSAPP_NUMBER = "919356959561";
+let firebaseReady=false;
+let auth=null;
+let db=null;
+let firebaseDataLoaded=false;
+try{
+  const configured=Object.values(firebaseConfig).every(v=>v && !String(v).startsWith("PASTE_YOUR_"));
+  if(configured && window.firebase){
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    auth=firebase.auth();
+    db=firebase.database();
+    firebaseReady=true;
+    // Public catalogue is readable by customers. Orders remain private.
+    db.ref("store/public").on("value",snap=>{
+      const data=snap.val();
+      if(!data)return;
+      if(Array.isArray(data.products) && data.products.length){
+        products=data.products;
+        products.forEach(product=>{
+          product.packs=(product.packs||[]).map(pack=>({...pack,stock:Number.isFinite(Number(pack.stock))?Number(pack.stock):0}));
+        });
+        localStorage.setItem("jayvik_products",JSON.stringify(products));
+      }
+      if(Array.isArray(data.categories) && data.categories.length){categories=data.categories;localStorage.setItem("jayvik_categories",JSON.stringify(categories));}
+      if(typeof data.logo==="string" && data.logo){logo=data.logo;localStorage.setItem("jayvik_logo",logo);}
+      if(data.website && typeof data.website==="object"){website=data.website;localStorage.setItem("jayvik_website",JSON.stringify(website));}
+      if(document.getElementById("categories"))renderCategories();
+      if(document.getElementById("products"))renderProducts();
+      if(document.getElementById("cartItems"))renderCart();
+      applyLogo(); applyWebsite(); updateStats();
+      if(document.getElementById("adminOverlay")?.style.display!=="none"){
+        if(typeof renderAdminProducts==="function")renderAdminProducts();
+        if(typeof renderAdminCategories==="function")renderAdminCategories();
+        if(typeof renderInventory==="function")renderInventory();
+      }
+    },err=>console.error("Firebase public store listener failed:",err));
 
-let firebaseReady = false;
-let auth = null;
-let db = null;
-let firebaseDataLoaded = false;
-let customerOrderStatusRef = null;
-let adminOrdersRef = null;
+    auth.onAuthStateChanged(user=>{
+      const el=document.getElementById("authCurrentUser");
+      if(el) el.textContent=user ? "Signed in as: "+user.email : "Not signed in";
+      if(user && user.email === "jayvik.india@gmail.com"){
+        if(window.jayvikOrdersRef) window.jayvikOrdersRef.off("value");
+        window.jayvikOrdersRef=db.ref("orders");
+        window.jayvikOrdersRef.on("value",snap=>{
+          const data=snap.val() || {};
+          orders=Object.values(data).filter(Boolean).sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+          localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+          if(document.getElementById("adminOverlay")?.style.display!=="none"){
+            renderOrders(); updateOrderStats();
+          }
+        },err=>console.error("Firebase orders listener failed:",err));
+      }else if(window.jayvikOrdersRef){
+        window.jayvikOrdersRef.off("value");
+        window.jayvikOrdersRef=null;
+      }
+    });
+  }
+}catch(err){
+  console.error("Firebase Authentication initialization failed",err);
+}
 
-function safeJSON(key, fallback){
+loadFirebaseStore();
+
+function togglePassword(id,button){
+  const input=document.getElementById(id);
+  if(!input)return;
+  const visible=input.type==="text";
+  input.type=visible?"password":"text";
+  button.textContent=visible?"👁️ Show":"🙈 Hide";
+}
+
+async function adminLogin(){
+  const email=(document.getElementById("adminUsername")?.value||"").trim();
+  const password=document.getElementById("adminPassword")?.value||"";
+  const error=document.getElementById("adminLoginError");
+  if(!firebaseReady){
+    if(error){error.textContent="Firebase Authentication is not configured in this index.html yet.";error.style.display="block";}
+    return;
+  }
+  if(!email || !password){
+    if(error){error.textContent="Enter your admin email and password.";error.style.display="block";}
+    return;
+  }
   try{
-    const raw = localStorage.getItem(key);
-    if(!raw) return fallback;
-    const value = JSON.parse(raw);
-    return value ?? fallback;
+    await auth.signInWithEmailAndPassword(email,password);
+    sessionStorage.setItem("jayvik_admin_logged_in","1");
+    closeAdminLogin();
+    openAdmin();
   }catch(err){
-    console.warn("Invalid localStorage data for", key, err);
-    try{ localStorage.removeItem(key); }catch(e){}
-    return fallback;
+    console.error(err);
+    if(error){error.textContent=authErrorMessage(err);error.style.display="block";}
   }
 }
 
-function safeLocalSet(key,value){
-  try{ localStorage.setItem(key,value); }
-  catch(err){ console.warn("localStorage save failed:",key,err); }
+function authErrorMessage(err){
+  const code=err?.code||"";
+  if(code.includes("invalid-credential")||code.includes("wrong-password")||code.includes("user-not-found")) return "Incorrect admin email or password.";
+  if(code.includes("too-many-requests")) return "Too many failed attempts. Please wait and try again.";
+  if(code.includes("invalid-email")) return "Please enter a valid email address.";
+  return err?.message || "Authentication failed.";
 }
 
-function normalizePack(pack){
-  const p = (pack && typeof pack === "object") ? pack : {};
-  const stock = Number(p.stock);
-  const price = Number(p.price);
-  return {
-    size: String(p.size || "").trim(),
-    price: Number.isFinite(price) ? price : 0,
-    stock: Number.isFinite(stock) && stock >= 0 ? stock : 0
-  };
+function openForgotPassword(){
+  document.getElementById("forgotPasswordPanel").style.display="block";
+  document.getElementById("adminPassword").style.display="none";
+  document.querySelectorAll(".show-pass").forEach(b=>b.style.display="none");
+  const e=document.getElementById("adminUsername");
+  const r=document.getElementById("resetEmail");
+  if(r && e && e.value.trim()) r.value=e.value.trim();
+  document.getElementById("resetMessage").style.display="none";
+}
+function backToLogin(){
+  document.getElementById("forgotPasswordPanel").style.display="none";
+  document.getElementById("adminPassword").style.display="block";
+  document.querySelectorAll(".show-pass").forEach(b=>b.style.display="block");
+  const err=document.getElementById("adminLoginError");
+  if(err){err.style.display="none";err.textContent="";}
+}
+async function sendPasswordReset(){
+  const email=(document.getElementById("resetEmail")?.value||"").trim();
+  const msg=document.getElementById("resetMessage");
+  if(!firebaseReady || !auth){msg.textContent="Firebase Authentication is not configured.";msg.style.display="block";msg.style.color="var(--danger)";return;}
+  if(!email){msg.textContent="Enter your admin email.";msg.style.display="block";msg.style.color="var(--danger)";return;}
+  try{
+    await auth.sendPasswordResetEmail(email);
+    msg.textContent="Password reset email sent. Check your inbox and follow the Firebase reset link.";
+    msg.style.display="block"; msg.style.color="var(--green)";
+  }catch(err){
+    console.error(err);
+    msg.textContent=err?.code==="auth/invalid-email"?"Please enter a valid email address.":"Unable to send the reset email. Please verify the email and Firebase Authentication settings.";
+    msg.style.display="block"; msg.style.color="var(--danger)";
+  }
 }
 
-function normalizeProduct(product,index){
-  const p = (product && typeof product === "object") ? product : {};
-  const id = p.id ?? (Date.now()+index);
-  const name = String(p.name || "Product").trim() || "Product";
-  return {
-    ...p,
-    id,
-    name,
-    category: String(p.category || "Others").trim() || "Others",
-    image: typeof p.image === "string" && p.image ? p.image : placeholder(name),
-    packs: Array.isArray(p.packs) ? p.packs.map(normalizePack).filter(x=>x.size) : [],
-    description: String(p.description || "")
-  };
+async function changeAdminCredentials(){
+  if(!firebaseReady || !auth){alert("Firebase Authentication is not configured.");return;}
+  const user=auth.currentUser;
+  if(!user){alert("Please log in first.");return;}
+  const newEmail=(document.getElementById("newAdminEmail")?.value||"").trim();
+  const newPassword=document.getElementById("newAdminPassword")?.value||"";
+  const confirmPassword=document.getElementById("confirmAdminPassword")?.value||"";
+  if(!newEmail && !newPassword){alert("Enter a new email, a new password, or both.");return;}
+  if(newPassword && newPassword.length<6){alert("Firebase passwords must contain at least 6 characters.");return;}
+  if(newPassword!==confirmPassword){alert("New password and confirmation do not match.");return;}
+  try{
+    if(newEmail && newEmail!==user.email){await user.updateEmail(newEmail);}
+    if(newPassword){await user.updatePassword(newPassword);}
+    await user.reload();
+    const updated=auth.currentUser;
+    document.getElementById("currentAdminEmail").value=updated?.email||"";
+    document.getElementById("newAdminEmail").value="";
+    document.getElementById("newAdminPassword").value="";
+    document.getElementById("confirmAdminPassword").value="";
+    alert("Admin login credentials updated successfully.");
+  }catch(err){
+    console.error(err);
+    if(err?.code==="auth/requires-recent-login"){
+      alert("For security, Firebase requires a recent login before changing credentials. Please log out, log back in, then try again.");
+    }else if(err?.code==="auth/email-already-in-use"){
+      alert("That email address is already used by another Firebase account.");
+    }else{
+      alert(authErrorMessage(err));
+    }
+  }
 }
 
-function normalizeProducts(list){
-  if(!Array.isArray(list)) return [];
-  return list.map(normalizeProduct).filter(p=>p.name && p.packs.length);
+function loadCredentials(){
+  const user=auth?.currentUser;
+  const current=document.getElementById("currentAdminEmail");
+  const badge=document.getElementById("authCurrentUser");
+  if(current) current.value=user?.email||"";
+  if(badge) badge.textContent=user?"Signed in as: "+user.email:"Not signed in";
 }
 
-function normalizeCategories(list){
-  if(!Array.isArray(list)) return [];
-  return list.map(x=>String(x||"").trim()).filter(Boolean);
-}
-
-function escapeHtml(value){
-  return String(value ?? "")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-}
-
-function escapeAttr(value){ return escapeHtml(value); }
+/* =====================================================
+   DEFAULT DATA
+===================================================== */
 
 const defaultLogo =
-  "data:image/svg+xml;charset=UTF-8,"+
-  encodeURIComponent(`
-  <svg xmlns="http://www.w3.org/2000/svg" width="600" height="600">
-    <rect width="100%" height="100%" rx="80" fill="#edf7ed"/>
-    <circle cx="300" cy="260" r="130" fill="#267a35"/>
-    <text x="300" y="310" text-anchor="middle" font-family="Arial" font-size="150" font-weight="bold" fill="white">J</text>
-    <text x="300" y="465" text-anchor="middle" font-family="Arial" font-size="52" font-weight="bold" fill="#267a35">JAYVIK</text>
-  </svg>`);
+"data:image/svg+xml;charset=UTF-8,"+
+encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg"
+width="600" height="600">
+<rect width="100%" height="100%" rx="80"
+fill="#edf7ed"/>
+<circle cx="300" cy="260" r="130"
+fill="#267a35"/>
+<text x="300" y="310"
+text-anchor="middle"
+font-family="Arial"
+font-size="150"
+font-weight="bold"
+fill="white">J</text>
+<text x="300" y="465"
+text-anchor="middle"
+font-family="Arial"
+font-size="52"
+font-weight="bold"
+fill="#267a35">JAYVIK</text>
+</svg>
+`);
 
 const placeholder = name =>
-  "data:image/svg+xml;charset=UTF-8,"+
-  encodeURIComponent(`
-  <svg xmlns="http://www.w3.org/2000/svg" width="700" height="500">
-    <rect width="100%" height="100%" fill="#edf5ed"/>
-    <text x="50%" y="46%" text-anchor="middle" font-family="Arial" font-size="38" font-weight="bold" fill="#267a35">Jayvik</text>
-    <text x="50%" y="58%" text-anchor="middle" font-family="Arial" font-size="24" fill="#666">${escapeHtml(name)}</text>
-  </svg>`);
+"data:image/svg+xml;charset=UTF-8,"+
+encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg"
+width="700" height="500">
+<rect width="100%" height="100%" fill="#edf5ed"/>
+<text x="50%" y="46%"
+text-anchor="middle"
+font-family="Arial"
+font-size="38"
+font-weight="bold"
+fill="#267a35">Jayvik</text>
+<text x="50%" y="58%"
+text-anchor="middle"
+font-family="Arial"
+font-size="24"
+fill="#666">${name}</text>
+</svg>
+`);
 
-const defaultCategories = [
-  "Cold Pressed Oils","Ghee","Millet Corner","Spices","Jaggery",
-  "Honey","Dals/Lentils","Dryfruit","Vegetables","Fruits","Others"
+
+/* =====================================================
+   CATEGORIES
+===================================================== */
+
+let categories =
+JSON.parse(localStorage.getItem("jayvik_categories")) ||
+[
+  "Cold Pressed Oils",
+  "Ghee",
+  "Millet Corner",
+  "Spices",
+  "Jaggery",
+  "Honey",
+  "Dals/Lentils",
+  "Dryfruit",
+  "Vegetables",
+  "Fruits",
+  "Others"
 ];
 
-const defaultProducts = [
-  {id:1,name:"Groundnut Oil",category:"Cold Pressed Oils",image:placeholder("Groundnut Oil"),packs:[{size:"5 L",price:1500},{size:"1 L",price:310},{size:"500 ml",price:155}],description:"Traditional cold pressed groundnut oil."},
-  {id:2,name:"Mustard Oil",category:"Cold Pressed Oils",image:placeholder("Mustard Oil"),packs:[{size:"1 L",price:360},{size:"500 ml",price:190}],description:"Natural mustard oil."},
-  {id:3,name:"Flaxseed Oil",category:"Cold Pressed Oils",image:placeholder("Flaxseed Oil"),packs:[{size:"1 L",price:420},{size:"500 ml",price:220}],description:"Cold pressed flaxseed oil."},
-  {id:4,name:"Sesame Oil (Til Tel)",category:"Cold Pressed Oils",image:placeholder("Sesame Oil"),packs:[{size:"1 L",price:540},{size:"500 ml",price:280}],description:"Traditional sesame oil."},
-  {id:5,name:"Coconut Oil",category:"Cold Pressed Oils",image:placeholder("Coconut Oil"),packs:[{size:"1 L",price:600},{size:"500 ml",price:310}],description:"Natural coconut oil."},
-  {id:6,name:"Sunflower Oil",category:"Cold Pressed Oils",image:placeholder("Sunflower Oil"),packs:[{size:"1 L",price:370}],description:"Natural sunflower oil."},
-  {id:7,name:"Kardai Oil",category:"Cold Pressed Oils",image:placeholder("Kardai Oil"),packs:[{size:"1 L",price:370}],description:"Traditional safflower oil."},
-  {id:8,name:"Gir Cow Ghee",category:"Ghee",image:placeholder("Gir Cow Ghee"),packs:[{size:"1 L",price:1600},{size:"500 ml",price:850}],description:"Gir cow ghee made using traditional bilona method."},
-  {id:9,name:"Rajgira",category:"Millet Corner",image:placeholder("Rajgira"),packs:[{size:"1 kg",price:240},{size:"500 g",price:130}],description:"Naturally grown unpolished rajgira."},
-  {id:10,name:"Rajgira Flour",category:"Millet Corner",image:placeholder("Rajgira Flour"),packs:[{size:"1 kg",price:300},{size:"500 g",price:160}],description:"Fresh rajgira flour."},
-  {id:11,name:"Bhagar",category:"Millet Corner",image:placeholder("Bhagar"),packs:[{size:"1 kg",price:200},{size:"500 g",price:110}],description:"Naturally grown bhagar."},
-  {id:12,name:"Varai / Little Millet",category:"Millet Corner",image:placeholder("Varai"),packs:[{size:"1 kg",price:220},{size:"500 g",price:120}],description:"Naturally grown little millet."},
-  {id:13,name:"Jowar Flakes",category:"Millet Corner",image:placeholder("Jowar Flakes"),packs:[{size:"1 kg",price:160},{size:"500 g",price:90}],description:"Healthy jowar flakes."},
-  {id:14,name:"Ragi Flakes",category:"Millet Corner",image:placeholder("Ragi Flakes"),packs:[{size:"1 kg",price:200},{size:"500 g",price:110}],description:"Healthy ragi flakes."},
-  {id:15,name:"Jeera",category:"Spices",image:placeholder("Jeera"),packs:[{size:"100 g",price:60}],description:"Natural cumin seeds."},
-  {id:16,name:"Mishri",category:"Jaggery",image:placeholder("Mishri"),packs:[{size:"100 g",price:40}],description:"Traditional rock sugar."},
-  {id:17,name:"Himalayan Multiflora Forest Honey",category:"Honey",image:placeholder("Himalayan Honey"),packs:[{size:"500 g",price:1050}],description:"Himalayan multiflora forest honey."},
-  {id:18,name:"Badam Oil",category:"Others",image:placeholder("Badam Oil"),packs:[{size:"100 ml",price:270}],description:"Natural almond oil."},
-  {id:19,name:"Castor Oil",category:"Others",image:placeholder("Castor Oil"),packs:[{size:"100 ml",price:60}],description:"Natural castor oil."}
-].map(normalizeProduct);
 
-let categories = normalizeCategories(safeJSON("jayvik_categories", defaultCategories));
-if(!categories.length) categories = [...defaultCategories];
+/* =====================================================
+   PRODUCTS
+===================================================== */
 
-let products = normalizeProducts(safeJSON("jayvik_products", defaultProducts));
-if(!products.length) products = defaultProducts.map(p=>({...p,packs:p.packs.map(x=>({...x}))}));
+let products =
+JSON.parse(localStorage.getItem("jayvik_products")) ||
+[
+  {
+    id:1,
+    name:"Groundnut Oil",
+    category:"Cold Pressed Oils",
+    image:placeholder("Groundnut Oil"),
+    packs:[
+      {size:"5 L",price:1500},
+      {size:"1 L",price:310},
+      {size:"500 ml",price:155}
+    ],
+    description:"Traditional cold pressed groundnut oil."
+  },
 
-let cart = safeJSON("jayvik_cart", []);
-if(!Array.isArray(cart)) cart=[];
+  {
+    id:2,
+    name:"Mustard Oil",
+    category:"Cold Pressed Oils",
+    image:placeholder("Mustard Oil"),
+    packs:[
+      {size:"1 L",price:360},
+      {size:"500 ml",price:190}
+    ],
+    description:"Natural mustard oil."
+  },
 
-let orders = safeJSON("jayvik_orders", []);
-if(!Array.isArray(orders)) orders=[];
+  {
+    id:3,
+    name:"Flaxseed Oil",
+    category:"Cold Pressed Oils",
+    image:placeholder("Flaxseed Oil"),
+    packs:[
+      {size:"1 L",price:420},
+      {size:"500 ml",price:220}
+    ],
+    description:"Cold pressed flaxseed oil."
+  },
+
+  {
+    id:4,
+    name:"Sesame Oil (Til Tel)",
+    category:"Cold Pressed Oils",
+    image:placeholder("Sesame Oil"),
+    packs:[
+      {size:"1 L",price:540},
+      {size:"500 ml",price:280}
+    ],
+    description:"Traditional sesame oil."
+  },
+
+  {
+    id:5,
+    name:"Coconut Oil",
+    category:"Cold Pressed Oils",
+    image:placeholder("Coconut Oil"),
+    packs:[
+      {size:"1 L",price:600},
+      {size:"500 ml",price:310}
+    ],
+    description:"Natural coconut oil."
+  },
+
+  {
+    id:6,
+    name:"Sunflower Oil",
+    category:"Cold Pressed Oils",
+    image:placeholder("Sunflower Oil"),
+    packs:[
+      {size:"1 L",price:370}
+    ],
+    description:"Natural sunflower oil."
+  },
+
+  {
+    id:7,
+    name:"Kardai Oil",
+    category:"Cold Pressed Oils",
+    image:placeholder("Kardai Oil"),
+    packs:[
+      {size:"1 L",price:370}
+    ],
+    description:"Traditional safflower oil."
+  },
+
+  {
+    id:8,
+    name:"Gir Cow Ghee",
+    category:"Ghee",
+    image:placeholder("Gir Cow Ghee"),
+    packs:[
+      {size:"1 L",price:1600},
+      {size:"500 ml",price:850}
+    ],
+    description:"Gir cow ghee made using traditional bilona method."
+  },
+
+  {
+    id:9,
+    name:"Rajgira",
+    category:"Millet Corner",
+    image:placeholder("Rajgira"),
+    packs:[
+      {size:"1 kg",price:240},
+      {size:"500 g",price:130}
+    ],
+    description:"Naturally grown unpolished rajgira."
+  },
+
+  {
+    id:10,
+    name:"Rajgira Flour",
+    category:"Millet Corner",
+    image:placeholder("Rajgira Flour"),
+    packs:[
+      {size:"1 kg",price:300},
+      {size:"500 g",price:160}
+    ],
+    description:"Fresh rajgira flour."
+  },
+
+  {
+    id:11,
+    name:"Bhagar",
+    category:"Millet Corner",
+    image:placeholder("Bhagar"),
+    packs:[
+      {size:"1 kg",price:200},
+      {size:"500 g",price:110}
+    ],
+    description:"Naturally grown bhagar."
+  },
+
+  {
+    id:12,
+    name:"Varai / Little Millet",
+    category:"Millet Corner",
+    image:placeholder("Varai"),
+    packs:[
+      {size:"1 kg",price:220},
+      {size:"500 g",price:120}
+    ],
+    description:"Naturally grown little millet."
+  },
+
+  {
+    id:13,
+    name:"Jowar Flakes",
+    category:"Millet Corner",
+    image:placeholder("Jowar Flakes"),
+    packs:[
+      {size:"1 kg",price:160},
+      {size:"500 g",price:90}
+    ],
+    description:"Healthy jowar flakes."
+  },
+
+  {
+    id:14,
+    name:"Ragi Flakes",
+    category:"Millet Corner",
+    image:placeholder("Ragi Flakes"),
+    packs:[
+      {size:"1 kg",price:200},
+      {size:"500 g",price:110}
+    ],
+    description:"Healthy ragi flakes."
+  },
+
+  {
+    id:15,
+    name:"Jeera",
+    category:"Spices",
+    image:placeholder("Jeera"),
+    packs:[
+      {size:"100 g",price:60}
+    ],
+    description:"Natural cumin seeds."
+  },
+
+  {
+    id:16,
+    name:"Mishri",
+    category:"Jaggery",
+    image:placeholder("Mishri"),
+    packs:[
+      {size:"100 g",price:40}
+    ],
+    description:"Traditional rock sugar."
+  },
+
+  {
+    id:17,
+    name:"Himalayan Multiflora Forest Honey",
+    category:"Honey",
+    image:placeholder("Himalayan Honey"),
+    packs:[
+      {size:"500 g",price:1050}
+    ],
+    description:"Himalayan multiflora forest honey."
+  },
+
+  {
+    id:18,
+    name:"Badam Oil",
+    category:"Others",
+    image:placeholder("Badam Oil"),
+    packs:[
+      {size:"100 ml",price:270}
+    ],
+    description:"Natural almond oil."
+  },
+
+  {
+    id:19,
+    name:"Castor Oil",
+    category:"Others",
+    image:placeholder("Castor Oil"),
+    packs:[
+      {size:"100 ml",price:60}
+    ],
+    description:"Natural castor oil."
+  }
+];
+
+
+/* =====================================================
+   STATE
+===================================================== */
+
+let cart =
+JSON.parse(localStorage.getItem("jayvik_cart")) || [];
 
 let selectedCategory = "All";
-let logo = localStorage.getItem("jayvik_logo") || defaultLogo;
-let website = safeJSON("jayvik_website", {
+
+let logo =
+localStorage.getItem("jayvik_logo") || defaultLogo;
+
+let website =
+JSON.parse(localStorage.getItem("jayvik_website")) || {
   brandName:"Jayvik",
   tagline:"The Complete Health Store",
   heroHeading:"Pure • Natural • From the Farm",
   heroText:"Healthy, natural and carefully selected products from Jayvik – The Complete Health Store."
-});
-if(!website || typeof website!=="object") website={brandName:"Jayvik",tagline:"The Complete Health Store",heroHeading:"Pure • Natural • From the Farm",heroText:"Healthy, natural and carefully selected products from Jayvik – The Complete Health Store."};
+};
+
 let selectedPacks = {};
+let orders = JSON.parse(localStorage.getItem("jayvik_orders")) || [];
 let orderFilter = "all";
-let editingPhoto = null;
 
-function normalizeCart(){
-  cart = cart.filter(item=>item && item.name && item.size && Number(item.price)>=0 && Number(item.qty)>0)
-    .map(item=>({...item,productId:item.productId,price:Number(item.price),qty:Number(item.qty)}));
-}
-normalizeCart();
+products.forEach(product=>{
+  product.packs=(product.packs||[]).map(pack=>({
+    ...pack,
+    stock:Number.isFinite(Number(pack.stock)) ? Number(pack.stock) : 0
+  }));
+});
 
-function isAdminUser(user=auth?.currentUser){
-  return !!(user && String(user.email||"").toLowerCase()===ADMIN_EMAIL.toLowerCase());
-}
 
-function saveLocalStore(){
-  safeLocalSet("jayvik_products",JSON.stringify(products));
-  safeLocalSet("jayvik_categories",JSON.stringify(categories));
-  safeLocalSet("jayvik_cart",JSON.stringify(cart));
-  safeLocalSet("jayvik_orders",JSON.stringify(orders));
-  safeLocalSet("jayvik_logo",logo);
-  safeLocalSet("jayvik_website",JSON.stringify(website));
-}
-
-function publicStorePayload(){ return {products,categories,logo,website}; }
-
-async function savePublicStore(){
-  saveLocalStore();
-  if(firebaseReady && db && isAdminUser()){
-    try{ await db.ref("store/public").set(publicStorePayload()); }
-    catch(err){ console.error("Firebase public store save failed:",err); alert("Firebase save failed: "+(err?.message||err)); }
-  }
-}
+/* =====================================================
+   SAVE
+===================================================== */
 
 function saveAll(){
-  saveLocalStore();
-  if(firebaseReady && db && isAdminUser()){
-    db.ref("store/public").set(publicStorePayload()).catch(err=>console.error("Firebase public store save failed:",err));
-    const map={};
-    orders.forEach(o=>{if(o && o.id) map[String(o.id)]=o;});
-    db.ref("orders").set(map).catch(err=>console.error("Firebase orders save failed:",err));
-  }
-}
+  localStorage.setItem("jayvik_products",JSON.stringify(products));
+  localStorage.setItem("jayvik_categories",JSON.stringify(categories));
+  localStorage.setItem("jayvik_cart",JSON.stringify(cart));
+  localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+  localStorage.setItem("jayvik_logo",logo);
+  localStorage.setItem("jayvik_website",JSON.stringify(website));
 
-function publicOrderStatusPayload(order){
-  return {
-    id:String(order.id),
-    createdAt:order.createdAt,
-    status:order.status,
-    total:Number(order.total||0),
-    customerName:String(order.customer?.name||""),
-    itemCount:Array.isArray(order.items)?order.items.reduce((n,i)=>n+Number(i.qty||0),0):0,
-    updatedAt:new Date().toISOString()
-  };
-}
-
-async function saveOrderToFirebase(order){
-  saveLocalStore();
-  if(!firebaseReady || !db) return true;
-  try{
-    await db.ref("orders/"+String(order.id)).set(order);
-    await db.ref("publicOrderStatus/"+String(order.id)).set(publicOrderStatusPayload(order));
-    return true;
-  }catch(err){
-    console.error("Firebase order save failed:",err);
-    alert("Order was created locally, but Firebase could not save it. Please check Firebase Realtime Database rules.");
-    return false;
+  // Only the authenticated admin writes the public catalogue.
+  if(firebaseReady && db && auth?.currentUser?.email === "jayvik.india@gmail.com"){
+    const publicPayload={products,categories,logo,website};
+    db.ref("store/public").set(publicPayload).catch(err=>console.error("Firebase public store save failed:",err));
   }
 }
 
 async function loadFirebaseStore(){
-  if(!firebaseReady || !db || firebaseDataLoaded) return;
+  if(!firebaseReady || !db || firebaseDataLoaded)return;
   try{
     const snap=await db.ref("store/public").once("value");
     const data=snap.val();
-    if(data && typeof data === "object"){
-      if(Array.isArray(data.products) && data.products.length){
-        products=normalizeProducts(data.products);
-      }
-      if(Array.isArray(data.categories) && data.categories.length){
-        categories=normalizeCategories(data.categories);
-      }
-      if(typeof data.logo === "string" && data.logo) logo=data.logo;
-      if(data.website && typeof data.website === "object") website={...website,...data.website};
-      saveLocalStore();
-      renderAll();
-    }else if(isAdminUser()){
-      await db.ref("store/public").set(publicStorePayload());
+    if(data){
+      if(Array.isArray(data.products) && data.products.length)products=data.products;
+      if(Array.isArray(data.categories) && data.categories.length)categories=data.categories;
+      if(typeof data.logo==="string" && data.logo)logo=data.logo;
+      if(data.website && typeof data.website==="object")website=data.website;
+      products.forEach(product=>{product.packs=(product.packs||[]).map(pack=>({...pack,stock:Number.isFinite(Number(pack.stock))?Number(pack.stock):0}));});
+      localStorage.setItem("jayvik_products",JSON.stringify(products));
+      localStorage.setItem("jayvik_categories",JSON.stringify(categories));
+      localStorage.setItem("jayvik_logo",logo);
+      localStorage.setItem("jayvik_website",JSON.stringify(website));
+      renderCategories();renderProducts();renderCart();applyLogo();applyWebsite();updateStats();
+    }else if(auth?.currentUser?.email === "jayvik.india@gmail.com"){
+      await db.ref("store/public").set({products,categories,logo,website});
     }
     firebaseDataLoaded=true;
   }catch(err){
@@ -1632,54 +1954,36 @@ async function loadFirebaseStore(){
   }
 }
 
-function startPublicStoreListener(){
-  if(!firebaseReady || !db) return;
-  db.ref("store/public").on("value",snap=>{
-    const data=snap.val();
-    if(!data || typeof data!=="object") return;
-    if(Array.isArray(data.products) && data.products.length) products=normalizeProducts(data.products);
-    if(Array.isArray(data.categories) && data.categories.length) categories=normalizeCategories(data.categories);
-    if(typeof data.logo==="string" && data.logo) logo=data.logo;
-    if(data.website && typeof data.website==="object") website={...website,...data.website};
-    saveLocalStore();
-    renderAll();
-  },err=>console.error("Firebase public store listener failed:",err));
+async function saveOrderToFirebase(order){
+  if(!firebaseReady || !db)return false;
+  try{
+    await db.ref("orders").child(String(order.id)).set(order);
+    await db.ref("publicOrderStatus").child(String(order.id)).set(publicOrderStatusPayload(order));
+    return true;
+  }catch(err){
+    console.error("Firebase order save failed:",err);
+    alert("Order was created, but Firebase could not save the live order status. Please check Firebase Rules.");
+    return false;
+  }
 }
 
-function startAdminOrdersListener(){
-  if(!firebaseReady || !db || !isAdminUser()) return;
-  if(adminOrdersRef) adminOrdersRef.off("value");
-  adminOrdersRef=db.ref("orders");
-  adminOrdersRef.on("value",snap=>{
-    const data=snap.val();
-    if(data && typeof data==="object"){
-      orders=Object.values(data).filter(Boolean);
-      orders.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
-      saveLocalStore();
-      updateOrderStats();
-      if(document.getElementById("ordersAdmin")?.classList.contains("active")) renderOrders();
-    }
-  },err=>console.error("Firebase orders listener failed:",err));
+function publicOrderStatusPayload(order){
+  return {
+    id:String(order.id||""),
+    status:String(order.status||"pending"),
+    total:Number(order.total||0),
+    itemCount:Array.isArray(order.items)?order.items.reduce((sum,item)=>sum+Number(item.qty||0),0):0,
+    updatedAt:new Date().toISOString()
+  };
 }
 
-function stopAdminOrdersListener(){
-  if(adminOrdersRef){adminOrdersRef.off("value");adminOrdersRef=null;}
-}
-
-function startCustomerOrderStatusListener(){
-  if(!firebaseReady || !db) return;
-  const id=String(localStorage.getItem("jayvik_last_order_id")||"").trim();
-  if(customerOrderStatusRef){customerOrderStatusRef.off("value");customerOrderStatusRef=null;}
-  if(!id){renderLiveOrderStatus(null);return;}
-  customerOrderStatusRef=db.ref("publicOrderStatus").child(id);
-  customerOrderStatusRef.on("value",snap=>renderLiveOrderStatus(snap.val()),err=>console.error("Customer status listener failed:",err));
-}
+let customerOrderStatusRef=null;
 
 function renderLiveOrderStatus(data){
   const box=document.getElementById("liveOrderStatus");
-  if(!box) return;
-  if(!data){box.parentElement.style.display="none";return;}
-  box.parentElement.style.display="block";
+  const section=document.getElementById("liveOrderStatusSection");
+  if(!box || !section)return;
+  if(!data){section.style.display="none";box.innerHTML="";return;}
   const labels={
     pending:"🔴 Pending for Dispatch",
     ready:"🟢 Ready for Packing",
@@ -1687,273 +1991,693 @@ function renderLiveOrderStatus(data){
     packed:"📦 Packed",
     dispatched:"🚚 Dispatched"
   };
-  box.innerHTML=`<div class="notice"><strong>Order ${escapeHtml(data.id||"")}</strong><br>Status: <strong>${escapeHtml(labels[data.status]||data.status||"Pending")}</strong><br>Total: ₹${Number(data.total||0).toLocaleString("en-IN")}</div>`;
+  const statusLabel=labels[data.status] || ("📦 "+String(data.status||"Pending"));
+  section.style.display="block";
+  box.innerHTML=`
+    <div class="cart-box">
+      <div style="font-size:18px;font-weight:800;color:var(--dark);margin-bottom:12px">Order ${escapeHtml(data.id||"")}</div>
+      <div class="notice" style="font-size:17px">Current Status: <strong>${escapeHtml(statusLabel)}</strong></div>
+      <div style="margin-top:12px;color:var(--muted)">Order Total: <strong style="color:var(--green)">₹${Number(data.total||0).toLocaleString("en-IN")}</strong></div>
+      <div style="margin-top:8px;color:var(--muted)">Items: <strong>${Number(data.itemCount||0)}</strong></div>
+      <div style="margin-top:12px;font-size:13px;color:var(--muted)">🔄 This status updates automatically when the store updates your order.</div>
+    </div>`;
 }
 
+function startCustomerOrderStatusListener(){
+  if(!firebaseReady || !db){
+    console.warn("Customer live status: Firebase is not ready.");
+    return;
+  }
+  const id=String(localStorage.getItem("jayvik_last_order_id")||"").trim();
+  if(customerOrderStatusRef){customerOrderStatusRef.off("value");customerOrderStatusRef=null;}
+  if(!id){renderLiveOrderStatus(null);return;}
+  customerOrderStatusRef=db.ref("publicOrderStatus").child(id);
+  customerOrderStatusRef.on("value",snap=>{
+    const data=snap.val();
+    console.log("Customer live status received:",id,data);
+    renderLiveOrderStatus(data || {id,status:"Status unavailable"});
+  },err=>{
+    console.error("Customer live status listener FAILED:",err);
+    renderLiveOrderStatus({id,status:"Status unavailable"});
+  });
+}
+
+
+
+/* =====================================================
+   LOGO
+===================================================== */
+
 function applyLogo(){
-  ["mainLogo","heroLogo","adminLogo","dashboardLogo","logoPreviewAdmin"].forEach(id=>{const el=document.getElementById(id);if(el)el.src=logo;});
+
+  document.getElementById("mainLogo").src=logo;
+  document.getElementById("heroLogo").src=logo;
+  document.getElementById("adminLogo").src=logo;
+  document.getElementById("dashboardLogo").src=logo;
+  document.getElementById("logoPreviewAdmin").src=logo;
+
 }
 
 function previewLogo(event){
-  const file=event?.target?.files?.[0];
+
+  const file=event.target.files[0];
+
   if(!file)return;
+
   const reader=new FileReader();
-  reader.onload=e=>{const el=document.getElementById("logoPreviewAdmin");if(el)el.src=e.target.result;};
+
+  reader.onload=function(e){
+    document.getElementById("logoPreviewAdmin").src=e.target.result;
+  };
+
   reader.readAsDataURL(file);
+
 }
 
-async function saveLogo(){
-  const src=document.getElementById("logoPreviewAdmin")?.src;
+function saveLogo(){
+
+  const src=
+    document.getElementById("logoPreviewAdmin").src;
+
   if(!src)return;
+
   logo=src;
+
+  localStorage.setItem(
+    "jayvik_logo",
+    logo
+  );
+
   applyLogo();
-  await savePublicStore();
+
   alert("Jayvik logo updated successfully.");
+
 }
 
-async function removeLogo(){
+function removeLogo(){
+
   if(!confirm("Remove current logo?"))return;
+
   logo=defaultLogo;
+
+  localStorage.setItem(
+    "jayvik_logo",
+    logo
+  );
+
   applyLogo();
-  await savePublicStore();
+
 }
+
+
+/* =====================================================
+   WEBSITE
+===================================================== */
 
 function applyWebsite(){
-  const brand=document.getElementById("brandName");
-  const tag=document.getElementById("brandTagline");
-  const hero=document.getElementById("heroText");
-  const heading=document.querySelector(".hero h1");
-  if(brand)brand.textContent=website.brandName||"Jayvik";
-  if(tag)tag.textContent=website.tagline||"The Complete Health Store";
-  if(hero)hero.textContent=website.heroText||"";
-  if(heading){
-    heading.textContent="";
-    const parts=String(website.heroHeading||"Pure • Natural • From the Farm").split("From the Farm");
-    heading.append(document.createTextNode(parts[0]||""));
-    if(parts.length>1){const span=document.createElement("span");span.textContent="From the Farm";heading.append(span);}
-  }
+
+  document.getElementById("brandName").textContent=
+    website.brandName;
+
+  document.getElementById("brandTagline").textContent=
+    website.tagline;
+
+  document.getElementById("heroText").textContent=
+    website.heroText;
+
+  document.querySelector(".hero h1").innerHTML=
+    website.heroHeading;
+
 }
 
 function loadWebsiteEditor(){
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||"";};
-  set("editBrandName",website.brandName);set("editTagline",website.tagline);set("editHeroHeading",website.heroHeading);set("editHeroText",website.heroText);
+
+  document.getElementById("editBrandName").value=
+    website.brandName;
+
+  document.getElementById("editTagline").value=
+    website.tagline;
+
+  document.getElementById("editHeroHeading").value=
+    website.heroHeading;
+
+  document.getElementById("editHeroText").value=
+    website.heroText;
+
 }
 
-async function saveWebsite(){
-  website.brandName=document.getElementById("editBrandName")?.value.trim()||"Jayvik";
-  website.tagline=document.getElementById("editTagline")?.value.trim()||"The Complete Health Store";
-  website.heroHeading=document.getElementById("editHeroHeading")?.value.trim()||"Pure • Natural • From the Farm";
-  website.heroText=document.getElementById("editHeroText")?.value.trim()||"";
+function saveWebsite(){
+
+  website.brandName=
+    document.getElementById("editBrandName").value.trim() ||
+    "Jayvik";
+
+  website.tagline=
+    document.getElementById("editTagline").value.trim() ||
+    "The Complete Health Store";
+
+  website.heroHeading=
+    document.getElementById("editHeroHeading").value.trim() ||
+    "Pure • Natural • From the Farm";
+
+  website.heroText=
+    document.getElementById("editHeroText").value.trim();
+
+  localStorage.setItem(
+    "jayvik_website",
+    JSON.stringify(website)
+  );
+
   applyWebsite();
-  await savePublicStore();
+
   alert("Website content updated.");
+
 }
+
+
+/* =====================================================
+   CATEGORIES
+===================================================== */
 
 function renderCategories(){
-  const box=document.getElementById("categories");
-  if(!box)return;
+
+  const box=
+    document.getElementById("categories");
+
   box.innerHTML="";
+
   const all=document.createElement("button");
-  all.className="category-btn "+(selectedCategory==="All"?"active":"");
+
+  all.className=
+    "category-btn "+
+    (selectedCategory==="All"?"active":"");
+
   all.textContent="All";
-  all.onclick=()=>{selectedCategory="All";renderCategories();renderProducts();};
+
+  all.onclick=()=>{
+    selectedCategory="All";
+    renderCategories();
+    renderProducts();
+  };
+
   box.appendChild(all);
+
   categories.forEach(cat=>{
-    const button=document.createElement("button");
-    button.className="category-btn "+(selectedCategory===cat?"active":"");
+
+    const button=
+      document.createElement("button");
+
+    button.className=
+      "category-btn "+
+      (selectedCategory===cat?"active":"");
+
     button.textContent=cat;
-    button.onclick=()=>{selectedCategory=cat;renderCategories();renderProducts();};
+
+    button.onclick=()=>{
+      selectedCategory=cat;
+      renderCategories();
+      renderProducts();
+    };
+
     box.appendChild(button);
+
   });
+
 }
 
-async function addCategory(){
-  const input=document.getElementById("newCategory");
-  const name=input?.value.trim();
+function addCategory(){
+
+  const input=
+    document.getElementById("newCategory");
+
+  const name=input.value.trim();
+
   if(!name)return;
-  if(categories.some(c=>c.toLowerCase()===name.toLowerCase())){alert("Category already exists.");return;}
+
+  if(categories.includes(name)){
+    alert("Category already exists.");
+    return;
+  }
+
   categories.push(name);
-  await savePublicStore();
-  if(input)input.value="";
-  renderAll();
+
+  saveAll();
+
+  input.value="";
+
+  renderCategories();
   renderAdminCategories();
+  updateStats();
+
 }
 
-async function removeCategory(category){
-  if(products.some(p=>p.category===category)){alert("This category is being used by a product. Change the product category first.");return;}
+function removeCategory(category){
+
+  const used=
+    products.some(p=>p.category===category);
+
+  if(used){
+    alert(
+      "This category is being used by a product. "+
+      "Change the product category first."
+    );
+    return;
+  }
+
   if(!confirm("Remove category "+category+"?"))return;
-  categories=categories.filter(c=>c!==category);
-  if(selectedCategory===category)selectedCategory="All";
-  await savePublicStore();
-  renderAll();
+
+  categories=
+    categories.filter(c=>c!==category);
+
+  if(selectedCategory===category)
+    selectedCategory="All";
+
+  saveAll();
+
+  renderCategories();
   renderAdminCategories();
+  updateStats();
+
 }
 
-function getPackStock(pack){return Math.max(0,Number(pack?.stock||0));}
-function findProduct(productId){return products.find(p=>String(p.id)===String(productId));}
-function findPack(productId,size){const p=findProduct(productId);return p?.packs.find(x=>String(x.size)===String(size))||null;}
+
+/* =====================================================
+   PRODUCTS CUSTOMER
+===================================================== */
 
 function renderProducts(){
-  const box=document.getElementById("products");
-  const searchBox=document.getElementById("searchBox");
-  if(!box)return;
-  const search=String(searchBox?.value||"").toLowerCase().trim();
+
+  const box=
+    document.getElementById("products");
+
+  const search=
+    document.getElementById("searchBox")
+      .value.toLowerCase();
+
   box.innerHTML="";
-  const filtered=products.filter(p=>
-    (selectedCategory==="All"||p.category===selectedCategory) &&
-    (String(p.name).toLowerCase().includes(search)||String(p.category).toLowerCase().includes(search))
-  );
-  const count=document.getElementById("productCount");
-  if(count)count.textContent=filtered.length+" products";
-  if(!filtered.length){box.innerHTML='<div class="empty">No products found.</div>';return;}
+
+  const filtered=
+    products.filter(p=>{
+
+      const categoryMatch=
+        selectedCategory==="All" ||
+        p.category===selectedCategory;
+
+      const searchMatch=
+        p.name.toLowerCase().includes(search);
+
+      return categoryMatch && searchMatch;
+
+    });
+
+  document.getElementById("productCount").textContent=
+    filtered.length+" products";
+
+  if(filtered.length===0){
+
+    box.innerHTML=
+      `<div class="empty">
+        No products found.
+      </div>`;
+
+    return;
+  }
 
   filtered.forEach(product=>{
-    const packs=Array.isArray(product.packs)?product.packs:[];
-    if(!packs.length)return;
-    const saved=selectedPacks[String(product.id)];
-    const selected=packs.find(p=>String(p.size)===String(saved?.size))||packs[0];
-    selectedPacks[String(product.id)]=selected;
-    const card=document.createElement("div");card.className="product-card";
-    const image=document.createElement("img");image.className="product-image";image.src=product.image||placeholder(product.name);image.alt=product.name;
-    image.onerror=()=>{image.src=placeholder(product.name);};
-    const body=document.createElement("div");body.className="product-body";
-    body.innerHTML=`<div class="product-category">${escapeHtml(product.category)}</div><h3 class="product-name">${escapeHtml(product.name)}</h3>`;
-    const packBox=document.createElement("div");packBox.className="pack-row";
-    const price=document.createElement("div");price.className="product-price";
-    const add=document.createElement("button");add.className="add-btn";add.textContent="🛒 Add to Cart";
-    const update=pack=>{
-      selectedPacks[String(product.id)]=pack;
-      price.textContent="₹"+Number(pack.price||0).toLocaleString("en-IN");
-      packBox.querySelectorAll(".pack-btn").forEach(b=>b.classList.toggle("active",b.dataset.size===String(pack.size)));
-      const stock=getPackStock(pack);
-      add.disabled=stock<=0;
-      add.style.opacity=stock<=0?".55":"1";
-      add.textContent=stock<=0?"❌ Not Available":"🛒 Add to Cart";
-    };
-    packs.forEach(pack=>{
-      const b=document.createElement("button");b.type="button";b.className="pack-btn";b.dataset.size=String(pack.size);b.textContent=String(pack.size);
-      b.onclick=()=>update(pack);packBox.appendChild(b);
+
+    let selectedPack=
+      selectedPacks[product.id] || product.packs[0];
+
+    const card=
+      document.createElement("div");
+
+    card.className="product-card";
+
+    card.innerHTML=`
+
+      <img
+        class="product-image"
+        src="${product.image || placeholder(product.name)}"
+        alt="${escapeHtml(product.name)}"
+      >
+
+      <div class="product-body">
+
+        <div class="product-category">
+          ${escapeHtml(product.category)}
+        </div>
+
+        <h3 class="product-name">
+          ${escapeHtml(product.name)}
+        </h3>
+
+        <div class="pack-row" id="packs-${product.id}"></div>
+
+        <div class="product-price"
+             id="price-${product.id}">
+          ₹${selectedPack.price.toLocaleString("en-IN")}
+        </div>
+
+        <button class="add-btn"
+          onclick="addToCart(${product.id})">
+          🛒 Add to Cart
+        </button>
+
+      </div>
+    `;
+
+    box.appendChild(card);
+
+    const packBox=
+      card.querySelector("#packs-"+product.id);
+
+    product.packs.forEach((pack,index)=>{
+
+      const button=
+        document.createElement("button");
+
+      button.className=
+        "pack-btn "+
+        (index===0?"active":"");
+
+      button.textContent=pack.size;
+
+      button.onclick=()=>{
+
+        selectedPack=pack;
+        selectedPacks[product.id]=pack;
+
+        packBox
+          .querySelectorAll(".pack-btn")
+          .forEach(b=>b.classList.remove("active"));
+
+        button.classList.add("active");
+
+        card.querySelector(
+          "#price-"+product.id
+        ).textContent=
+          "₹"+pack.price.toLocaleString("en-IN");
+
+      };
+
+      packBox.appendChild(button);
+
     });
-    add.onclick=()=>addToCart(product.id);
-    body.append(packBox,price,add);card.append(image,body);box.appendChild(card);update(selected);
+
   });
+
 }
 
+
+/* =====================================================
+   CART
+===================================================== */
+
 function addToCart(productId){
-  const product=findProduct(productId);if(!product)return;
-  const pack=selectedPacks[String(productId)]||product.packs[0];if(!pack)return;
-  const stock=getPackStock(pack);
-  const existing=cart.find(item=>String(item.productId)===String(productId)&&String(item.size)===String(pack.size));
-  if(stock<=0){alert(product.name+" ("+pack.size+") is currently not available.");return;}
+
+  const product=
+    products.find(p=>p.id===productId);
+
+  if(!product)return;
+
+  const pack=selectedPacks[productId] || product.packs[0];
+
+  const existing=
+    cart.find(item=>
+      item.productId===productId &&
+      item.size===pack.size
+    );
+
   if(existing){
-    if(existing.qty>=stock){alert("Only "+stock+" unit(s) are available for "+pack.size+".");return;}
     existing.qty++;
-  }else cart.push({productId:product.id,name:product.name,size:pack.size,price:Number(pack.price||0),qty:1});
-  saveAll();renderCart();alert(product.name+" ("+pack.size+") added to cart.");
+  }else{
+
+    cart.push({
+      productId,
+      name:product.name,
+      size:pack.size,
+      price:pack.price,
+      qty:1
+    });
+
+  }
+
+  saveAll();
+  renderCart();
+
+  alert(
+    product.name+
+    " ("+pack.size+") added to cart."
+  );
+
 }
 
 function renderCart(){
-  const box=document.getElementById("cartItems");if(!box)return;
-  box.innerHTML="";let total=0,count=0;
-  if(!cart.length)box.innerHTML='<div class="empty">Your cart is empty.<br>Add products above to place your order.</div>';
+
+  const box=
+    document.getElementById("cartItems");
+
+  box.innerHTML="";
+
+  if(cart.length===0){
+
+    box.innerHTML=
+      `<div class="empty">
+        Your cart is empty.<br>
+        Add products above to place your order.
+      </div>`;
+
+  }
+
+  let total=0;
+  let count=0;
+
   cart.forEach((item,index)=>{
-    const subtotal=Number(item.price||0)*Number(item.qty||0);total+=subtotal;count+=Number(item.qty||0);
-    const div=document.createElement("div");div.className="cart-item";
-    const info=document.createElement("div");info.innerHTML=`<strong>${escapeHtml(item.name)}</strong><br><small>${escapeHtml(item.size)} × ₹${Number(item.price||0).toLocaleString("en-IN")}</small>`;
-    const qty=document.createElement("div");qty.className="qty";
-    const minus=document.createElement("button");minus.textContent="−";minus.onclick=()=>changeQty(index,-1);
-    const number=document.createElement("strong");number.textContent=item.qty;
-    const plus=document.createElement("button");plus.textContent="+";plus.onclick=()=>changeQty(index,1);
-    qty.append(minus,number,plus);
-    const right=document.createElement("div");right.innerHTML=`<strong>₹${subtotal.toLocaleString("en-IN")}</strong>`;
-    const remove=document.createElement("button");remove.className="btn btn-danger";remove.style.cssText="padding:5px 8px;margin-left:8px";remove.textContent="✕";remove.onclick=()=>removeCartItem(index);right.appendChild(remove);
-    div.append(info,qty,right);box.appendChild(div);
+
+    const subtotal=
+      item.price*item.qty;
+
+    total+=subtotal;
+    count+=item.qty;
+
+    const div=
+      document.createElement("div");
+
+    div.className="cart-item";
+
+    div.innerHTML=`
+
+      <div>
+        <strong>${escapeHtml(item.name)}</strong><br>
+        <small>${escapeHtml(item.size)}
+          × ₹${item.price.toLocaleString("en-IN")}
+        </small>
+      </div>
+
+      <div class="qty">
+
+        <button onclick="changeQty(${index},-1)">
+          −
+        </button>
+
+        <strong>${item.qty}</strong>
+
+        <button onclick="changeQty(${index},1)">
+          +
+        </button>
+
+      </div>
+
+      <div>
+        <strong>
+          ₹${subtotal.toLocaleString("en-IN")}
+        </strong>
+
+        <button
+          class="btn btn-danger"
+          style="padding:5px 8px;margin-left:8px"
+          onclick="removeCartItem(${index})"
+        >
+          ✕
+        </button>
+      </div>
+
+    `;
+
+    box.appendChild(div);
+
   });
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  set("cartTotal",total.toLocaleString("en-IN"));set("cartCount",count);set("statCart",count);
+
+  document.getElementById("cartTotal").textContent=
+    total.toLocaleString("en-IN");
+
+  document.getElementById("cartCount").textContent=
+    count;
+
+  document.getElementById("statCart").textContent=
+    count;
+
 }
 
 function changeQty(index,change){
-  const item=cart[index];if(!item)return;
-  const pack=findPack(item.productId,item.size);
-  const stock=pack?getPackStock(pack):0;
-  const next=Number(item.qty||0)+change;
-  if(change>0 && next>stock){alert("Only "+stock+" unit(s) are available for "+item.size+".");return;}
-  if(next<=0)cart.splice(index,1);else item.qty=next;
-  saveAll();renderCart();
+
+  cart[index].qty+=change;
+
+  if(cart[index].qty<=0)
+    cart.splice(index,1);
+
+  saveAll();
+  renderCart();
+
 }
 
-function removeCartItem(index){if(index<0||index>=cart.length)return;cart.splice(index,1);saveAll();renderCart();}
+function removeCartItem(index){
+
+  cart.splice(index,1);
+
+  saveAll();
+  renderCart();
+
+}
 
 async function sendWhatsAppOrder(){
-  if(!cart.length){alert("Please add products to cart first.");return;}
+  if(cart.length===0){alert("Please add products to cart first.");return;}
   const name=document.getElementById("customerName")?.value.trim()||"";
   const phone=document.getElementById("customerPhone")?.value.trim()||"";
   const address=document.getElementById("customerAddress")?.value.trim()||"";
-  if(!name||!phone||!address){alert("Please enter Name, Contact Number and Address.");return;}
-  const missing=cart.filter(item=>{const p=findPack(item.productId,item.size);return !p||getPackStock(p)<Number(item.qty||0);});
-  if(missing.length){alert("One or more cart items are no longer available in the requested quantity. Please review the cart.");renderProducts();renderCart();return;}
-  let message="Hello Jayvik, I would like to place an order:\n\n",total=0;
-  cart.forEach((item,index)=>{const sub=Number(item.price||0)*Number(item.qty||0);total+=sub;message+=`${index+1}. ${item.name} – ${item.size} × ${item.qty} = ₹${sub}\n`;});
-  message+=`\nTotal: ₹${total}\n\nName: ${name}\nAddress: ${address}\nContact Number: ${phone}`;
-  const order={id:"JY"+Date.now(),createdAt:new Date().toISOString(),customer:{name,phone,address},items:cart.map(i=>({productId:i.productId,name:i.name,size:i.size,price:Number(i.price||0),qty:Number(i.qty||0)})),total,status:"pending",stockDeducted:false};
+  if(!name || !phone || !address){alert("Please enter Name, Contact Number and Address.");return;}
+
+  const order={
+    id:"JY"+Date.now(),
+    createdAt:new Date().toISOString(),
+    customer:{name,phone,address},
+    items:cart.map(item=>({productId:item.productId,name:item.name,size:item.size,price:item.price,qty:item.qty})),
+    total:cart.reduce((sum,item)=>sum+Number(item.price||0)*Number(item.qty||0),0),
+    status:"pending",
+    stockDeducted:false
+  };
   order.status=orderHasStock(order)?"ready":"pending";
-  orders.unshift(order);cart=[];
-  safeLocalSet("jayvik_last_order_id",String(order.id));
-  saveLocalStore();renderCart();startCustomerOrderStatusListener();renderLiveOrderStatus(publicOrderStatusPayload(order));
-  const wa="https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(message);
-  window.open(wa,"_blank");
+
+  let message=`Hello Jayvik, I would like to place an order:
+
+`;
+  order.items.forEach((item,index)=>{
+    const subtotal=Number(item.price||0)*Number(item.qty||0);
+    message+=`${index+1}. ${item.name} – ${item.size} × ${item.qty} = ₹${subtotal}
+`;
+  });
+  message+=`
+Total: ₹${order.total}
+
+Name: ${name}
+Address: ${address}
+Contact Number: ${phone}
+
+Order ID: ${order.id}`;
+
+  orders.unshift(order);
+  localStorage.setItem("jayvik_last_order_id",order.id);
+  saveAll();
+  renderCart();
+  renderLiveOrderStatus(publicOrderStatusPayload(order));
+  startCustomerOrderStatusListener();
   await saveOrderToFirebase(order);
-  alert("Order "+order.id+" saved. Open Admin → Orders to manage packing and dispatch.");
+
+  const url="https://wa.me/919356959561?text="+encodeURIComponent(message);
+  window.open(url,"_blank");
+  alert("Order "+order.id+" saved. Your Live Order Status is now shown on the dashboard.");
 }
 
-function getOrderMissingItems(order){return (order.items||[]).filter(item=>{const pack=findPack(item.productId,item.size);return !pack||getPackStock(pack)<Number(item.qty||0);});}
-function orderHasStock(order){return getOrderMissingItems(order).length===0;}
+
+
+/* =====================================================
+   ADMIN
+===================================================== */
+
+function findPack(productId,size){
+  const product=products.find(p=>String(p.id)===String(productId));
+  if(!product)return null;
+  return product.packs.find(p=>String(p.size)===String(size)) || null;
+}
+
+function getOrderMissingItems(order){
+  return order.items.filter(item=>{
+    const pack=findPack(item.productId,item.size);
+    return !pack || Number(pack.stock||0)<Number(item.qty||0);
+  });
+}
+
+function orderHasStock(order){
+  return getOrderMissingItems(order).length===0;
+}
 
 function refreshOrderStatuses(){
   let changed=false;
-  orders.forEach(order=>{if(order.status==="pending"&&orderHasStock(order)){order.status="ready";changed=true;}});
+  orders.forEach(order=>{
+    if(order.status==="pending" && orderHasStock(order)){
+      order.status="ready";
+      changed=true;
+    }
+  });
   if(changed)saveAll();
-  return changed;
 }
 
 function renderOrders(){
   refreshOrderStatuses();
-  const board=document.getElementById("ordersBoard");if(!board)return;
-  const columns=[{key:"pending",title:"🔴 Pending for Dispatch"},{key:"ready",title:"🟢 Ready for Packing"},{key:"packed",title:"📦 Packed"},{key:"dispatched",title:"🚚 Dispatched"}];
+  const board=document.getElementById("ordersBoard");
+  if(!board)return;
+  const columns=[
+    {key:"pending",title:"🔴 Pending for Dispatch"},
+    {key:"ready",title:"🟢 Ready for Packing"},
+    {key:"packed",title:"📦 Packed"},
+    {key:"dispatched",title:"🚚 Dispatched"}
+  ];
   board.innerHTML="";
   columns.forEach(col=>{
-    const column=document.createElement("div");column.className="order-column";
-    const list=orders.filter(o=>o.status===col.key&&(orderFilter==="all"||orderFilter===col.key));
+    const column=document.createElement("div");
+    column.className="order-column";
+    const list=orders.filter(o=>o.status===col.key && (orderFilter==="all" || orderFilter===col.key));
     column.innerHTML=`<h4>${col.title} <span class="brand-sub">(${list.length})</span></h4>`;
-    if(!list.length){column.innerHTML+='<div class="empty" style="padding:20px">No orders</div>';}
+    if(list.length===0)column.innerHTML+=`<div class="empty" style="padding:20px">No orders</div>`;
     list.forEach(order=>column.appendChild(buildOrderCard(order)));
     board.appendChild(column);
   });
-  renderInventory();updateOrderStats();
+  renderInventory();
+  updateOrderStats();
 }
 
 function buildOrderCard(order){
-  const card=document.createElement("div");card.className="order-card "+String(order.status||"pending");
+  const card=document.createElement("div");
+  card.className="order-card "+order.status;
   const missing=getOrderMissingItems(order);
-  const itemHtml=(order.items||[]).map(item=>{const pack=findPack(item.productId,item.size);const available=pack?getPackStock(pack):0;const enough=available>=Number(item.qty||0);return `<div>${escapeHtml(item.name)} — <strong>${escapeHtml(item.size)}</strong> × ${Number(item.qty||0)} <span class="${enough?"stock-ok":"stock-missing"}">(${available} in stock)</span></div>`;}).join("");
-  const content=document.createElement("div");
-  content.innerHTML=`<strong>${escapeHtml(order.id)}</strong><div class="brand-sub">${new Date(order.createdAt||Date.now()).toLocaleString("en-IN")}</div><hr><div><strong>${escapeHtml(order.customer?.name||"")}</strong></div><div class="brand-sub">📞 ${escapeHtml(order.customer?.phone||"")}</div><div class="brand-sub">📍 ${escapeHtml(order.customer?.address||"")}</div><div class="order-items">${itemHtml}</div><strong>Total: ₹${Number(order.total||0).toLocaleString("en-IN")}</strong>`;
-  if(missing.length){const warn=document.createElement("div");warn.className="stock-missing";warn.style.marginTop="8px";warn.textContent="⚠ Missing "+missing.length+" pack item(s) — Pending for Dispatch";content.appendChild(warn);}
-  const actions=document.createElement("div");actions.className="order-actions";
-  if(order.status==="pending"){
-    const b=document.createElement("button");b.className=missing.length?"btn btn-light":"btn btn-green";b.textContent=missing.length?"Check Inventory":"Mark Ready";b.onclick=()=>{if(missing.length){showAdminTabById("ordersAdmin");alert("Please add the missing pack stock shown in inventory.");}else moveOrder(order.id,"ready");};actions.appendChild(b);
-  }else if(order.status==="ready"){
-    const b=document.createElement("button");b.className="btn btn-green";b.textContent="📦 Start Packing / Mark Packed";b.onclick=()=>moveOrder(order.id,"packed");actions.appendChild(b);
-  }else if(order.status==="packed"){
-    const b=document.createElement("button");b.className="btn btn-dark";b.textContent="🚚 Mark Dispatched";b.onclick=()=>moveOrder(order.id,"dispatched");actions.appendChild(b);
-  }
-  content.appendChild(actions);card.appendChild(content);return card;
+  const itemHtml=order.items.map(item=>{
+    const pack=findPack(item.productId,item.size);
+    const available=pack ? Number(pack.stock||0) : 0;
+    const enough=available>=Number(item.qty||0);
+    return `<div>${escapeHtml(item.name)} — <strong>${escapeHtml(item.size)}</strong> × ${item.qty} <span class="${enough?"stock-ok":"stock-missing"}">(${available} in stock)</span></div>`;
+  }).join("");
+  let actions="";
+  if(order.status==="pending")actions=missing.length
+    ? `<button class="btn btn-light" onclick="renderInventory();alert('Please add the missing pack stock shown below.');">Check Inventory</button>`
+    : `<button class="btn btn-green" onclick="moveOrder('${order.id}','ready')">Mark Ready</button>`;
+  if(order.status==="ready")actions=`<button class="btn btn-green" onclick="moveOrder('${order.id}','packed')">📦 Mark Packed</button>`;
+  if(order.status==="packed")actions=`<button class="btn btn-dark" onclick="moveOrder('${order.id}','dispatched')">🚚 Mark Dispatched</button>`;
+  card.innerHTML=`
+    <strong>${escapeHtml(order.id)}</strong>
+    <div class="brand-sub">${new Date(order.createdAt).toLocaleString("en-IN")}</div><hr>
+    <div><strong>${escapeHtml(order.customer.name)}</strong></div>
+    <div class="brand-sub">📞 ${escapeHtml(order.customer.phone)}</div>
+    <div class="brand-sub">📍 ${escapeHtml(order.customer.address)}</div>
+    <div class="order-items">${itemHtml}</div>
+    <strong>Total: ₹${Number(order.total||0).toLocaleString("en-IN")}</strong>
+    ${missing.length ? `<div class="stock-missing" style="margin-top:8px">⚠ Missing ${missing.length} pack item(s) — Pending for Dispatch</div>` : ""}
+    <div class="order-actions">${actions}</div>`;
+  return card;
 }
 
-async function moveOrder(orderId,nextStatus){
-  if(!isAdminUser()){alert("Admin login required.");return;}
-  const order=orders.find(o=>String(o.id)===String(orderId));if(!order)return;
+function moveOrder(orderId,nextStatus){
+  const order=orders.find(o=>o.id===orderId);
+  if(!order)return;
   if(nextStatus==="ready"){
     if(!orderHasStock(order)){order.status="pending";saveAll();renderOrders();alert("Order cannot be marked Ready. One or more pack sizes do not have enough inventory.");return;}
     order.status="ready";
@@ -1961,260 +2685,661 @@ async function moveOrder(orderId,nextStatus){
   if(nextStatus==="packed"){
     if(!orderHasStock(order)){order.status="pending";saveAll();renderOrders();alert("Packing blocked because inventory is insufficient.");return;}
     if(!order.stockDeducted){
-      (order.items||[]).forEach(item=>{const pack=findPack(item.productId,item.size);if(pack)pack.stock=Math.max(0,getPackStock(pack)-Number(item.qty||0));});
+      order.items.forEach(item=>{const pack=findPack(item.productId,item.size);if(pack)pack.stock=Math.max(0,Number(pack.stock||0)-Number(item.qty||0));});
       order.stockDeducted=true;
     }
     order.status="packed";
   }
   if(nextStatus==="dispatched")order.status="dispatched";
-  order.updatedAt=new Date().toISOString();
-  saveLocalStore();
-  try{
-    if(firebaseReady&&db){
-      await db.ref("orders/"+String(order.id)).set(order);
-      await db.ref("publicOrderStatus/"+String(order.id)).set(publicOrderStatusPayload(order));
-      await db.ref("store/public").set(publicStorePayload());
-    }
-  }catch(err){console.error("Order update failed:",err);alert("Order status changed locally, but Firebase update failed. Check Firebase rules.");}
-  renderAll();renderOrders();renderAdminProducts();updateOrderStats();
+  saveAll();renderOrders();renderAdminProducts();
+  if(firebaseReady && db && auth?.currentUser?.email === "jayvik.india@gmail.com"){
+    db.ref("orders").child(String(order.id)).set(order)
+      .then(()=>db.ref("publicOrderStatus").child(String(order.id)).set(publicOrderStatusPayload(order)))
+      .catch(err=>console.error("Firebase order status update failed:",err));
+  }
 }
 
-function filterOrders(filter,button){orderFilter=filter;document.querySelectorAll(".order-filter button").forEach(b=>b.classList.remove("active"));if(button)button.classList.add("active");renderOrders();}
+function filterOrders(filter,button){
+  orderFilter=filter;
+  document.querySelectorAll(".order-filter button").forEach(b=>b.classList.remove("active"));
+  if(button)button.classList.add("active");
+  renderOrders();
+}
 
 function updateOrderStats(){
   const count=s=>orders.filter(o=>o.status===s).length;
-  const totalStock=products.reduce((sum,p)=>sum+(p.packs||[]).reduce((n,pack)=>n+getPackStock(pack),0),0);
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const totalStock=products.reduce((sum,p)=>sum+p.packs.reduce((s,pack)=>s+Number(pack.stock||0),0),0);
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
   set("orderStatTotal",orders.length);set("orderStatPending",count("pending"));set("orderStatReady",count("ready"));set("orderStatPacked",count("packed"));set("orderStatDispatched",count("dispatched"));set("orderStatStock",totalStock);
 }
 
 function renderInventory(){
-  const box=document.getElementById("inventoryList");if(!box)return;box.innerHTML="";
-  products.forEach(product=>(product.packs||[]).forEach((pack,packIndex)=>{
+  const box=document.getElementById("inventoryList");
+  if(!box)return;
+  box.innerHTML="";
+  products.forEach(product=>product.packs.forEach((pack,packIndex)=>{
     const row=document.createElement("div");row.className="inventory-row";
-    const info=document.createElement("div");info.innerHTML=`<strong>${escapeHtml(product.name)}</strong><br><small>${escapeHtml(pack.size)}</small>`;
-    const input=document.createElement("input");input.type="number";input.min="0";input.value=getPackStock(pack);input.id=`stock-${String(product.id)}-${packIndex}`;
-    const btn=document.createElement("button");btn.className="btn btn-green";btn.textContent="Save";btn.onclick=()=>savePackStock(product.id,packIndex);
-    row.append(info,input,btn);box.appendChild(row);
+    row.innerHTML=`<div><strong>${escapeHtml(product.name)}</strong><br><small>${escapeHtml(pack.size)}</small></div><input id="stock-${product.id}-${packIndex}" type="number" min="0" value="${Number(pack.stock||0)}"><button class="btn btn-green" onclick="savePackStock(${product.id},${packIndex})">Save</button>`;
+    box.appendChild(row);
   }));
 }
 
-async function savePackStock(productId,packIndex){
-  if(!isAdminUser()){alert("Admin login required.");return;}
-  const product=findProduct(productId);if(!product||!product.packs[packIndex])return;
-  const input=document.getElementById(`stock-${String(productId)}-${packIndex}`);if(!input)return;
-  product.packs[packIndex].stock=Math.max(0,Math.floor(Number(input.value||0)));
-  refreshOrderStatuses();
-  await savePublicStore();
-  renderAll();renderOrders();renderAdminProducts();
+function savePackStock(productId,packIndex){
+  const product=products.find(p=>p.id===productId);
+  if(!product || !product.packs[packIndex])return;
+  const input=document.getElementById(`stock-${productId}-${packIndex}`);
+  product.packs[packIndex].stock=Math.max(0,Number(input.value||0));
+  saveAll();refreshOrderStatuses();renderOrders();renderAdminProducts();
   alert("Pack inventory updated.");
 }
 
-function togglePassword(id,button){const input=document.getElementById(id);if(!input)return;const visible=input.type==="text";input.type=visible?"password":"text";if(button)button.textContent=visible?"👁️ Show":"🙈 Hide";}
-
-async function adminLogin(){
-  const email=(document.getElementById("adminUsername")?.value||"").trim();
-  const password=document.getElementById("adminPassword")?.value||"";
-  const error=document.getElementById("adminLoginError");
-  const showError=msg=>{if(error){error.textContent=msg;error.style.display="block";}};
-  if(!firebaseReady||!auth){showError("Firebase Authentication is not available.");return;}
-  if(!email||!password){showError("Enter your admin email and password.");return;}
-  try{
-    const result=await auth.signInWithEmailAndPassword(email,password);
-    if(!isAdminUser(result.user)){
-      await auth.signOut();
-      showError("This Firebase account is not authorized for the Jayvik Admin Dashboard.");
-      return;
-    }
-    sessionStorage.setItem("jayvik_admin_logged_in","1");
-    closeAdminLogin();
-    startAdminOrdersListener();
-    await loadFirebaseStore();
+function openAdminLogin(){
+  const login=document.getElementById("adminLoginOverlay");
+  const panel=document.getElementById("adminOverlay");
+  if(firebaseReady && auth?.currentUser){
     openAdmin();
-  }catch(err){console.error(err);showError(authErrorMessage(err));}
-}
-
-function authErrorMessage(err){
-  const code=err?.code||"";
-  if(code.includes("invalid-credential")||code.includes("wrong-password")||code.includes("user-not-found"))return "Incorrect admin email or password.";
-  if(code.includes("too-many-requests"))return "Too many failed attempts. Please wait and try again.";
-  if(code.includes("invalid-email"))return "Please enter a valid email address.";
-  return err?.message||"Authentication failed.";
-}
-
-function openForgotPassword(){
-  const panel=document.getElementById("forgotPasswordPanel");if(panel)panel.style.display="block";
-  const pw=document.getElementById("adminPassword");if(pw)pw.style.display="none";
-  document.querySelectorAll("#adminLoginOverlay .show-pass").forEach(b=>b.style.display="none");
-  const email=document.getElementById("adminUsername")?.value.trim();const reset=document.getElementById("resetEmail");if(reset&&email)reset.value=email;
-  const msg=document.getElementById("resetMessage");if(msg)msg.style.display="none";
-}
-
-function backToLogin(){
-  const panel=document.getElementById("forgotPasswordPanel");if(panel)panel.style.display="none";
-  const pw=document.getElementById("adminPassword");if(pw)pw.style.display="block";
-  document.querySelectorAll("#adminLoginOverlay .show-pass").forEach(b=>b.style.display="block");
-  const err=document.getElementById("adminLoginError");if(err){err.style.display="none";err.textContent="";}
-}
-
-async function sendPasswordReset(){
-  const email=(document.getElementById("resetEmail")?.value||"").trim();const msg=document.getElementById("resetMessage");
-  if(!firebaseReady||!auth){if(msg){msg.textContent="Firebase Authentication is not configured.";msg.style.display="block";msg.style.color="var(--danger)";}return;}
-  if(!email){if(msg){msg.textContent="Enter your admin email.";msg.style.display="block";msg.style.color="var(--danger)";}return;}
-  try{await auth.sendPasswordResetEmail(email);if(msg){msg.textContent="Password reset email sent. Check your inbox and follow the reset link.";msg.style.display="block";msg.style.color="var(--green)";}}
-  catch(err){if(msg){msg.textContent=err?.code==="auth/invalid-email"?"Please enter a valid email address.":"Unable to send the reset email. Verify the email and Firebase Authentication settings.";msg.style.display="block";msg.style.color="var(--danger)";}}
-}
-
-async function changeAdminCredentials(){
-  if(!isAdminUser()){alert("Please log in as the authorized admin first.");return;}
-  const user=auth.currentUser;
-  const newEmail=(document.getElementById("newAdminEmail")?.value||"").trim();
-  const newPassword=document.getElementById("newAdminPassword")?.value||"";
-  const confirmPassword=document.getElementById("confirmAdminPassword")?.value||"";
-  if(!newEmail&&!newPassword){alert("Enter a new email, a new password, or both.");return;}
-  if(newPassword&&newPassword.length<6){alert("Firebase passwords must contain at least 6 characters.");return;}
-  if(newPassword!==confirmPassword){alert("New password and confirmation do not match.");return;}
-  if(newEmail&&newEmail.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){
-    alert("The current HTML authorizes "+ADMIN_EMAIL+" as the admin email. Change the authorized email in the code only after you intentionally change the Firebase admin account.");
     return;
   }
-  try{
-    if(newPassword)await user.updatePassword(newPassword);
-    await user.reload();loadCredentials();
-    document.getElementById("newAdminEmail").value="";document.getElementById("newAdminPassword").value="";document.getElementById("confirmAdminPassword").value="";
-    alert("Admin password updated successfully.");
-  }catch(err){if(err?.code==="auth/requires-recent-login")alert("For security, Firebase requires a recent login. Log out, log back in, then retry.");else alert(authErrorMessage(err));}
+  if(login){
+    login.style.display="flex";
+    const error=document.getElementById("adminLoginError");
+    if(error){error.style.display="none";error.textContent="";}
+    backToLogin();
+    setTimeout(()=>document.getElementById("adminPassword")?.focus(),50);
+  }
 }
 
-function loadCredentials(){
-  const user=auth?.currentUser;const current=document.getElementById("currentAdminEmail");const badge=document.getElementById("authCurrentUser");
-  if(current)current.value=user?.email||"";if(badge)badge.textContent=user?"Signed in as: "+user.email:"Not signed in";
+function closeAdminLogin(){
+  const login=document.getElementById("adminLoginOverlay");
+  if(login)login.style.display="none";
 }
 
-function openAdminLogin(){
-  if(isAdminUser()) {openAdmin();return;}
-  const login=document.getElementById("adminLoginOverlay");if(!login)return;
-  login.style.display="flex";backToLogin();
-  const error=document.getElementById("adminLoginError");if(error){error.style.display="none";error.textContent="";}
-  const email=document.getElementById("adminUsername");if(email&&!email.value)email.value=ADMIN_EMAIL;
-  setTimeout(()=>document.getElementById("adminPassword")?.focus(),50);
+function adminLoginLegacyRemoved(){
+  return adminLogin();
 }
-
-function closeAdminLogin(){const login=document.getElementById("adminLoginOverlay");if(login)login.style.display="none";}
 
 async function adminLogout(){
-  try{if(auth)await auth.signOut();}catch(err){console.error(err);}
-  stopAdminOrdersListener();sessionStorage.removeItem("jayvik_admin_logged_in");closeAdmin();alert("Admin logged out.");
+  try{if(auth) await auth.signOut();}catch(err){console.error(err);}
+  sessionStorage.removeItem("jayvik_admin_logged_in");
+  closeAdmin();
+  alert("Admin logged out.");
 }
 
 function openAdmin(){
-  if(!isAdminUser()){openAdminLogin();return;}
-  const panel=document.getElementById("adminOverlay");if(!panel)return;
-  panel.style.display="block";loadWebsiteEditor();renderAdminProducts();renderAdminCategories();updateStats();applyLogo();loadCredentials();renderOrders();
+  if(!firebaseReady || !auth?.currentUser || auth.currentUser.email !== "jayvik.india@gmail.com"){
+    openAdminLogin();
+    return;
+  }
+  document.getElementById("adminOverlay").style.display="block";
+  loadWebsiteEditor();
+  renderAdminProducts();
+  renderAdminCategories();
+  updateStats();
+  applyLogo();
 }
 
-function closeAdmin(){const panel=document.getElementById("adminOverlay");if(panel)panel.style.display="none";}
+function closeAdmin(){
+
+  document.getElementById(
+    "adminOverlay"
+  ).style.display="none";
+
+}
 
 function showAdminTab(id,button){
-  if(!isAdminUser()){openAdminLogin();return;}
-  document.querySelectorAll(".admin-section").forEach(s=>s.classList.remove("active"));
-  document.querySelectorAll(".admin-tab").forEach(b=>b.classList.remove("active"));
-  const section=document.getElementById(id);if(section)section.classList.add("active");if(button)button.classList.add("active");
-  if(id==="websiteAdmin")loadWebsiteEditor();
-  if(id==="logoAdmin")applyLogo();
-  if(id==="productsAdmin")renderAdminProducts();
-  if(id==="categoriesAdmin")renderAdminCategories();
-  if(id==="ordersAdmin")renderOrders();
-  if(id==="credentialsAdmin")loadCredentials();
+
+  document
+    .querySelectorAll(".admin-section")
+    .forEach(s=>s.classList.remove("active"));
+
+  document
+    .querySelectorAll(".admin-tab")
+    .forEach(b=>b.classList.remove("active"));
+
+  document
+    .getElementById(id)
+    .classList.add("active");
+
+  button.classList.add("active");
+
 }
 
-function showAdminTabById(id){const section=document.getElementById(id);if(!section)return;const button=[...document.querySelectorAll(".admin-tab")].find(b=>b.getAttribute("onclick")?.includes("'"+id+"'"));showAdminTab(id,button);}
+
+/* =====================================================
+   ADMIN PRODUCTS
+===================================================== */
 
 function renderAdminProducts(){
-  const box=document.getElementById("adminProductsList");if(!box)return;box.innerHTML="";
-  if(!products.length){box.innerHTML='<div class="empty">No products. Click + Add Product.</div>';return;}
+
+  const box=
+    document.getElementById("adminProductsList");
+
+  box.innerHTML="";
+
   products.forEach(product=>{
-    const div=document.createElement("div");div.className="admin-product";
-    const img=document.createElement("img");img.src=product.image||placeholder(product.name);img.alt=product.name;img.onerror=()=>img.src=placeholder(product.name);
-    const info=document.createElement("div");info.innerHTML=`<strong>${escapeHtml(product.name)}</strong><div class="small">${escapeHtml(product.category)}</div><div style="margin-top:7px">${product.packs.map(p=>`<span style="display:inline-block;background:#edf5ed;padding:4px 7px;border-radius:6px;margin:2px;font-size:12px">${escapeHtml(p.size)} ₹${Number(p.price||0).toLocaleString("en-IN")} | Stock ${getPackStock(p)}</span>`).join("")}</div>`;
-    const actions=document.createElement("div");actions.className="admin-actions";
-    const edit=document.createElement("button");edit.className="btn btn-light";edit.textContent="✏️ Edit";edit.onclick=()=>editProduct(product.id);
-    const del=document.createElement("button");del.className="btn btn-danger";del.textContent="🗑️ Remove";del.onclick=()=>deleteProduct(product.id);
-    actions.append(edit,del);div.append(img,info,actions);box.appendChild(div);
+
+    const div=
+      document.createElement("div");
+
+    div.className="admin-product";
+
+    div.innerHTML=`
+
+      <img
+        src="${product.image || placeholder(product.name)}"
+      >
+
+      <div>
+
+        <strong>
+          ${escapeHtml(product.name)}
+        </strong>
+
+        <div class="small">
+          ${escapeHtml(product.category)}
+        </div>
+
+        <div style="margin-top:7px">
+
+          ${product.packs.map(p=>
+            `<span style="
+              display:inline-block;
+              background:#edf5ed;
+              padding:4px 7px;
+              border-radius:6px;
+              margin:2px;
+              font-size:12px">
+              ${escapeHtml(p.size)}
+              ₹${p.price}
+            </span>`
+          ).join("")}
+
+        </div>
+
+      </div>
+
+      <div class="admin-actions">
+
+        <button
+          class="btn btn-light"
+          onclick="editProduct(${product.id})"
+        >
+          ✏️ Edit
+        </button>
+
+        <button
+          class="btn btn-danger"
+          onclick="deleteProduct(${product.id})"
+        >
+          🗑️ Remove
+        </button>
+
+      </div>
+    `;
+
+    box.appendChild(div);
+
   });
+
 }
 
-async function deleteProduct(id){
-  const product=findProduct(id);if(!product)return;if(!confirm("Remove "+product.name+"?"))return;
-  products=products.filter(p=>String(p.id)!==String(id));cart=cart.filter(item=>String(item.productId)!==String(id));
-  await savePublicStore();renderAll();renderAdminProducts();updateStats();
+function deleteProduct(id){
+
+  const product=
+    products.find(p=>p.id===id);
+
+  if(!product)return;
+
+  if(!confirm(
+    "Remove "+product.name+"?"
+  ))return;
+
+  products=
+    products.filter(p=>p.id!==id);
+
+  cart=
+    cart.filter(item=>item.productId!==id);
+
+  saveAll();
+
+  renderProducts();
+  renderCart();
+  renderAdminProducts();
+  updateStats();
+
 }
+
+
+/* =====================================================
+   PRODUCT EDITOR
+===================================================== */
+
+let editingPhoto=null;
 
 function openAddProduct(){
-  editingPhoto=null;document.getElementById("editorTitle").textContent="Add Product";document.getElementById("editProductId").value="";document.getElementById("editProductName").value="";document.getElementById("editProductDescription").value="";fillCategorySelect();document.getElementById("editProductCategory").value=categories[0]||"Others";document.getElementById("productPhotoPreview").src=placeholder("New Product");document.getElementById("packEditor").innerHTML="";addPackField();document.getElementById("productEditor").style.display="block";
+
+  editingPhoto=null;
+
+  document.getElementById("editorTitle")
+    .textContent="Add Product";
+
+  document.getElementById("editProductId")
+    .value="";
+
+  document.getElementById("editProductName")
+    .value="";
+
+  document.getElementById("editProductDescription")
+    .value="";
+
+  fillCategorySelect();
+
+  document.getElementById("editProductCategory")
+    .value=categories[0] || "Others";
+
+  document.getElementById("productPhotoPreview")
+    .src=placeholder("New Product");
+
+  document.getElementById("packEditor")
+    .innerHTML="";
+
+  addPackField();
+
+  document.getElementById(
+    "productEditor"
+  ).style.display="block";
+
 }
 
 function editProduct(id){
-  const product=findProduct(id);if(!product)return;editingPhoto=product.image;document.getElementById("editorTitle").textContent="Edit Product";document.getElementById("editProductId").value=String(product.id);document.getElementById("editProductName").value=product.name;document.getElementById("editProductDescription").value=product.description||"";fillCategorySelect();document.getElementById("editProductCategory").value=product.category;document.getElementById("productPhotoPreview").src=product.image||placeholder(product.name);const box=document.getElementById("packEditor");box.innerHTML="";(product.packs||[]).forEach(pack=>addPackField(pack.size,pack.price,pack.stock));document.getElementById("productEditor").style.display="block";
+
+  const product=
+    products.find(p=>p.id===id);
+
+  if(!product)return;
+
+  editingPhoto=product.image;
+
+  document.getElementById("editorTitle")
+    .textContent="Edit Product";
+
+  document.getElementById("editProductId")
+    .value=id;
+
+  document.getElementById("editProductName")
+    .value=product.name;
+
+  document.getElementById("editProductDescription")
+    .value=product.description || "";
+
+  fillCategorySelect();
+
+  document.getElementById("editProductCategory")
+    .value=product.category;
+
+  document.getElementById("productPhotoPreview")
+    .src=product.image || placeholder(product.name);
+
+  const box=
+    document.getElementById("packEditor");
+
+  box.innerHTML="";
+
+  product.packs.forEach(pack=>{
+    addPackField(pack.size,pack.price);
+  });
+
+  document.getElementById(
+    "productEditor"
+  ).style.display="block";
+
 }
 
-function closeProductEditor(){const el=document.getElementById("productEditor");if(el)el.style.display="none";}
+function closeProductEditor(){
 
-function fillCategorySelect(){const select=document.getElementById("editProductCategory");if(!select)return;select.innerHTML="";categories.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;select.appendChild(o);});}
+  document.getElementById(
+    "productEditor"
+  ).style.display="none";
 
-function addPackField(size="",price="",stock=0){
-  const box=document.getElementById("packEditor");if(!box)return;const row=document.createElement("div");row.className="pack-edit";
-  row.innerHTML=`<input placeholder="Pack size e.g. 1 L" value="${escapeAttr(size)}" class="pack-size"><input type="number" min="0" placeholder="Price" value="${Number(price)||0}" class="pack-price"><button type="button" class="btn btn-danger">Remove</button>`;
-  row.dataset.stock=String(Math.max(0,Number(stock)||0));row.querySelector("button").onclick=()=>row.remove();box.appendChild(row);
 }
 
-function previewProductPhoto(event){const file=event?.target?.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{editingPhoto=e.target.result;const el=document.getElementById("productPhotoPreview");if(el)el.src=e.target.result;};reader.readAsDataURL(file);}
-function removeProductPhoto(){editingPhoto=null;const name=document.getElementById("editProductName")?.value||"Product";const el=document.getElementById("productPhotoPreview");if(el)el.src=placeholder(name);}
+function fillCategorySelect(){
 
-async function saveProduct(){
-  if(!isAdminUser()){alert("Admin login required.");return;}
-  const rawId=document.getElementById("editProductId")?.value||"";const name=document.getElementById("editProductName")?.value.trim()||"";const category=document.getElementById("editProductCategory")?.value||"Others";const description=document.getElementById("editProductDescription")?.value.trim()||"";
-  if(!name){alert("Enter product name.");return;}
-  const rows=[...document.querySelectorAll("#packEditor .pack-edit")];const packs=[];
-  const oldProduct=rawId?findProduct(rawId):null;
-  rows.forEach(row=>{const size=row.querySelector(".pack-size")?.value.trim()||"";const price=Number(row.querySelector(".pack-price")?.value||0);if(size&&Number.isFinite(price)&&price>=0){const oldPack=oldProduct?.packs.find(p=>String(p.size)===String(size));packs.push({size,price,stock:oldPack?getPackStock(oldPack):Math.max(0,Number(row.dataset.stock)||0)});}});
-  if(!packs.length){alert("Add at least one pack size and price.");return;}
-  if(rawId){const product=findProduct(rawId);if(!product)return;product.name=name;product.category=category;product.description=description;product.packs=packs;product.image=editingPhoto||placeholder(name);}else products.push({id:"P"+Date.now(),name,category,image:editingPhoto||placeholder(name),packs,description});
-  await savePublicStore();renderAll();renderAdminProducts();updateStats();closeProductEditor();alert("Product saved successfully.");
+  const select=
+    document.getElementById(
+      "editProductCategory"
+    );
+
+  select.innerHTML="";
+
+  categories.forEach(category=>{
+
+    const option=
+      document.createElement("option");
+
+    option.value=category;
+    option.textContent=category;
+
+    select.appendChild(option);
+
+  });
+
 }
+
+function addPackField(size="",price=""){
+
+  const box=
+    document.getElementById("packEditor");
+
+  const row=
+    document.createElement("div");
+
+  row.className="pack-edit";
+
+  row.innerHTML=`
+
+    <input
+      placeholder="Pack size e.g. 1 L"
+      value="${escapeAttr(size)}"
+      class="pack-size"
+    >
+
+    <input
+      type="number"
+      min="0"
+      placeholder="Price"
+      value="${price}"
+      class="pack-price"
+    >
+
+    <button
+      class="btn btn-danger"
+      onclick="this.parentElement.remove()"
+    >
+      Remove
+    </button>
+  `;
+
+  box.appendChild(row);
+
+}
+
+function previewProductPhoto(event){
+
+  const file=event.target.files[0];
+
+  if(!file)return;
+
+  const reader=new FileReader();
+
+  reader.onload=function(e){
+
+    editingPhoto=e.target.result;
+
+    document.getElementById(
+      "productPhotoPreview"
+    ).src=e.target.result;
+
+  };
+
+  reader.readAsDataURL(file);
+
+}
+
+function removeProductPhoto(){
+
+  editingPhoto=null;
+
+  const name=
+    document.getElementById(
+      "editProductName"
+    ).value || "Product";
+
+  document.getElementById(
+    "productPhotoPreview"
+  ).src=placeholder(name);
+
+}
+
+function saveProduct(){
+
+  const id=
+    Number(
+      document.getElementById(
+        "editProductId"
+      ).value
+    );
+
+  const name=
+    document.getElementById(
+      "editProductName"
+    ).value.trim();
+
+  const category=
+    document.getElementById(
+      "editProductCategory"
+    ).value;
+
+  const description=
+    document.getElementById(
+      "editProductDescription"
+    ).value.trim();
+
+  if(!name){
+
+    alert("Enter product name.");
+    return;
+
+  }
+
+  const rows=
+    document.querySelectorAll(
+      "#packEditor .pack-edit"
+    );
+
+  const packs=[];
+  const oldProduct=id ? products.find(p=>p.id===id) : null;
+
+  rows.forEach(row=>{
+
+    const size=
+      row.querySelector(".pack-size")
+        .value.trim();
+
+    const price=
+      Number(
+        row.querySelector(".pack-price")
+          .value
+      );
+
+    if(size && price>=0){
+
+      packs.push({
+        size,
+        price,
+        stock:oldProduct ? Number((oldProduct.packs.find(p=>p.size===size)||{}).stock||0) : 0
+      });
+
+    }
+
+  });
+
+  if(packs.length===0){
+
+    alert("Add at least one pack size and price.");
+    return;
+
+  }
+
+  if(id){
+
+    const product=
+      products.find(p=>p.id===id);
+
+    product.name=name;
+    product.category=category;
+    product.description=description;
+    product.packs=packs;
+    product.image=
+      editingPhoto || placeholder(name);
+
+  }else{
+
+    products.push({
+
+      id:Date.now(),
+
+      name,
+
+      category,
+
+      image:
+        editingPhoto || placeholder(name),
+
+      packs,
+
+      description
+
+    });
+
+  }
+
+  saveAll();
+
+  renderProducts();
+  renderAdminProducts();
+  updateStats();
+
+  closeProductEditor();
+
+  alert("Product saved successfully.");
+
+}
+
+
+/* =====================================================
+   ADMIN CATEGORIES
+===================================================== */
 
 function renderAdminCategories(){
-  const box=document.getElementById("adminCategoriesList");if(!box)return;box.innerHTML="";
-  categories.forEach(category=>{const row=document.createElement("div");row.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #eee";const name=document.createElement("strong");name.textContent=category;const b=document.createElement("button");b.className="btn btn-danger";b.textContent="🗑️ Remove";b.onclick=()=>removeCategory(category);row.append(name,b);box.appendChild(row);});
+
+  const box=
+    document.getElementById(
+      "adminCategoriesList"
+    );
+
+  box.innerHTML="";
+
+  categories.forEach(category=>{
+
+    const row=
+      document.createElement("div");
+
+    row.style.cssText=
+      "display:flex;justify-content:space-between;"+
+      "align-items:center;padding:12px 0;"+
+      "border-bottom:1px solid #eee";
+
+    row.innerHTML=`
+
+      <strong>${escapeHtml(category)}</strong>
+
+      <button
+        class="btn btn-danger"
+        onclick="removeCategory('${escapeAttr(category)}')"
+      >
+        🗑️ Remove
+      </button>
+
+    `;
+
+    box.appendChild(row);
+
+  });
+
 }
 
-function updateStats(){const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};set("statProducts",products.length);set("statCategories",categories.length);set("statCart",cart.reduce((s,i)=>s+Number(i.qty||0),0));}
-function scrollToProducts(){document.getElementById("productsSection")?.scrollIntoView({behavior:"smooth"});}
-function scrollToCart(){document.getElementById("cartSection")?.scrollIntoView({behavior:"smooth"});}
 
-function renderAll(){
-  try{renderCategories();renderProducts();renderCart();applyLogo();applyWebsite();updateStats();updateOrderStats();}catch(err){console.error("Jayvik render error:",err);}
+/* =====================================================
+   STATS
+===================================================== */
+
+function updateStats(){
+
+  document.getElementById("statProducts")
+    .textContent=products.length;
+
+  document.getElementById("statCategories")
+    .textContent=categories.length;
+
+  document.getElementById("statCart")
+    .textContent=
+      cart.reduce((sum,item)=>sum+item.qty,0);
+
 }
 
-try{
-  if(window.firebase){
-    if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
-    auth=firebase.auth();db=firebase.database();firebaseReady=true;
-    auth.onAuthStateChanged(async user=>{
-      const el=document.getElementById("authCurrentUser");if(el)el.textContent=user?"Signed in as: "+user.email:"Not signed in";
-      if(isAdminUser(user)){
-        startAdminOrdersListener();
-        await loadFirebaseStore();
-      }else stopAdminOrdersListener();
-      renderAll();
+
+/* =====================================================
+   HELPERS
+===================================================== */
+
+function scrollToProducts(){
+
+  document
+    .getElementById("productsSection")
+    .scrollIntoView({
+      behavior:"smooth"
     });
-  }
-}catch(err){console.error("Firebase initialization failed:",err);firebaseReady=false;}
 
-document.addEventListener("DOMContentLoaded",async()=>{
-  const email=document.getElementById("adminUsername");if(email&&!email.value)email.value=ADMIN_EMAIL;
-  renderAll();
-  if(firebaseReady){await loadFirebaseStore();startPublicStoreListener();startCustomerOrderStatusListener();}
+}
+
+function scrollToCart(){
+
+  document
+    .getElementById("cartSection")
+    .scrollIntoView({
+      behavior:"smooth"
+    });
+
+}
+
+function escapeHtml(value){
+
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+function escapeAttr(value){
+
+  return String(value)
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+/* =====================================================
+   INITIALIZE
+===================================================== */
+
+applyLogo();
+applyWebsite();
+
+renderCategories();
+renderProducts();
+renderCart();
+startCustomerOrderStatusListener();
+
+
+// Ensure the initial login email is always shown.
+document.addEventListener("DOMContentLoaded",()=>{
+  const email=document.getElementById("adminUsername");
+  if(email && !email.value) email.value="jayvik.india@gmail.com";
 });
 </script>
 </body>
