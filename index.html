@@ -1969,12 +1969,29 @@ function renderLiveOrderStatus(data){
   box.innerHTML=`<strong>Order ${escapeHtml(id)}</strong><div style="font-size:20px;margin-top:10px">${labels[status]||status}</div><p style="color:var(--muted);margin:8px 0 0">This status updates automatically while this page is open. No refresh is required.</p>`;
 }
 
+let customerOrderStatusRef=null;
 function startCustomerOrderStatusListener(){
   if(!firebaseReady || !db)return;
-  const id=localStorage.getItem("jayvik_last_order_id");
+  const id=String(localStorage.getItem("jayvik_last_order_id")||"").trim();
+  if(customerOrderStatusRef){
+    customerOrderStatusRef.off("value");
+    customerOrderStatusRef=null;
+  }
   if(!id){renderLiveOrderStatus(null);return;}
-  db.ref("publicOrderStatus/"+id).on("value",snap=>renderLiveOrderStatus(snap.val()));
-  renderLiveOrderStatus(null);
+  customerOrderStatusRef=db.ref("publicOrderStatus").child(id);
+  customerOrderStatusRef.on("value",snap=>{
+    const data=snap.val();
+    if(data && String(data.id||id)===id){
+      renderLiveOrderStatus(data);
+    }else if(data===null){
+      renderLiveOrderStatus(null);
+    }
+  },err=>{
+    console.error("Customer order status listener failed:",err);
+  });
+  customerOrderStatusRef.once("value").then(snap=>{
+    if(snap.exists()) renderLiveOrderStatus(snap.val());
+  }).catch(err=>console.error("Customer order status read failed:",err));
 }
 
 async function savePublicStore(){
@@ -2015,8 +2032,6 @@ function saveAll(){
       .catch(err=>console.error("Firebase public store save failed:",err));
     db.ref("orders").set(Object.fromEntries(orders.map(o=>[String(o.id),o])))
       .catch(err=>console.error("Firebase orders save failed:",err));
-    db.ref("publicOrderStatus").set(Object.fromEntries(orders.map(o=>[String(o.id),publicOrderStatusPayload(o)])))
-      .catch(err=>console.error("Firebase public order status save failed:",err));
   }
 }
 
@@ -2073,7 +2088,16 @@ function startFirebaseRealtimeListeners(){
         const data=snap.val();
         if(data && typeof data==="object"){
           orders=Object.values(data).sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
-          orders.forEach(o=>savePublicOrderStatus(o));
+          /* Keep the customer-facing status path authoritative.
+             Do not overwrite existing live statuses here; moveOrder() writes
+             the status immediately when Admin changes it. */
+          orders.forEach(o=>{
+            if(o && o.id){
+              db.ref("publicOrderStatus/"+o.id).once("value").then(statusSnap=>{
+                if(!statusSnap.exists()) return savePublicOrderStatus(o);
+              }).catch(err=>console.error("Firebase public status check failed:",err));
+            }
+          });
           localStorage.setItem("jayvik_orders",JSON.stringify(orders));
           refreshOrderStatuses();
           if(typeof renderOrders==="function")renderOrders();
