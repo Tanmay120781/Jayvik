@@ -287,7 +287,39 @@ header{
   font-size:21px;
   font-weight:800;
   color:var(--green);
+  margin-bottom:8px;
+}
+
+.availability{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:800;
   margin-bottom:12px;
+}
+
+.availability.available{
+  background:#e9f7ec;
+  color:#267a35;
+}
+
+.availability.limited{
+  background:#fff4df;
+  color:#a76500;
+}
+
+.availability.unavailable{
+  background:#fdeaea;
+  color:#c62828;
+}
+
+.add-btn:disabled{
+  background:#b9c1b9;
+  cursor:not-allowed;
+  opacity:.85;
 }
 
 .add-btn{
@@ -2315,128 +2347,101 @@ function removeCategory(category){
    PRODUCTS CUSTOMER
 ===================================================== */
 
+function getPackStock(pack){
+  const n=Number(pack && pack.stock);
+  return Number.isFinite(n) && n>0 ? Math.floor(n) : 0;
+}
+
+function availabilityForPack(pack){
+  const stock=getPackStock(pack);
+  if(stock<=0){
+    return {stock, className:"unavailable", text:"🔴 Not Available"};
+  }
+  if(stock<=5){
+    return {stock, className:"limited", text:"🟠 Limited Stock — "+stock+" available"};
+  }
+  return {stock, className:"available", text:"🟢 Available"};
+}
+
+function updateProductAvailability(card,product,pack){
+  const info=availabilityForPack(pack);
+  const badge=card.querySelector(".availability");
+  const addBtn=card.querySelector(".add-btn");
+  if(badge){
+    badge.className="availability "+info.className;
+    badge.textContent=info.text;
+  }
+  if(addBtn){
+    addBtn.disabled=info.stock<=0;
+    addBtn.textContent=info.stock<=0 ? "🚫 Not Available" : "🛒 Add to Cart";
+    addBtn.title=info.stock<=0 ? "This pack is currently out of stock" : "Add this pack to cart";
+  }
+}
+
 function renderProducts(){
 
-  const box=
-    document.getElementById("products");
-
-  const search=
-    document.getElementById("searchBox")
-      .value.toLowerCase();
-
+  const box=document.getElementById("products");
+  const search=document.getElementById("searchBox").value.toLowerCase();
   box.innerHTML="";
 
-  const filtered=
-    products.filter(p=>{
+  const filtered=products.filter(p=>{
+    const categoryMatch=selectedCategory==="All" || p.category===selectedCategory;
+    const searchMatch=p.name.toLowerCase().includes(search);
+    return categoryMatch && searchMatch;
+  });
 
-      const categoryMatch=
-        selectedCategory==="All" ||
-        p.category===selectedCategory;
-
-      const searchMatch=
-        p.name.toLowerCase().includes(search);
-
-      return categoryMatch && searchMatch;
-
-    });
-
-  document.getElementById("productCount").textContent=
-    filtered.length+" products";
+  document.getElementById("productCount").textContent=filtered.length+" products";
 
   if(filtered.length===0){
-
-    box.innerHTML=
-      `<div class="empty">
-        No products found.
-      </div>`;
-
+    box.innerHTML=`<div class="empty">No products found.</div>`;
     return;
   }
 
   filtered.forEach(product=>{
+    if(!Array.isArray(product.packs) || product.packs.length===0)return;
 
-    let selectedPack=
-      selectedPacks[product.id] || product.packs[0];
+    let selectedPack=selectedPacks[product.id] || product.packs[0];
+    const currentPack=product.packs.find(p=>String(p.size)===String(selectedPack.size)) || product.packs[0];
+    selectedPack=currentPack;
+    selectedPacks[product.id]=selectedPack;
 
-    const card=
-      document.createElement("div");
-
+    const card=document.createElement("div");
     card.className="product-card";
 
     card.innerHTML=`
-
-      <img
-        class="product-image"
-        src="${product.image || placeholder(product.name)}"
-        alt="${escapeHtml(product.name)}"
-      >
-
+      <img class="product-image" src="${product.image || placeholder(product.name)}" alt="${escapeHtml(product.name)}">
       <div class="product-body">
-
-        <div class="product-category">
-          ${escapeHtml(product.category)}
-        </div>
-
-        <h3 class="product-name">
-          ${escapeHtml(product.name)}
-        </h3>
-
+        <div class="product-category">${escapeHtml(product.category)}</div>
+        <h3 class="product-name">${escapeHtml(product.name)}</h3>
         <div class="pack-row" id="packs-${product.id}"></div>
-
-        <div class="product-price"
-             id="price-${product.id}">
-          ₹${selectedPack.price.toLocaleString("en-IN")}
-        </div>
-
-        <button class="add-btn"
-          onclick="addToCart(${product.id})">
-          🛒 Add to Cart
-        </button>
-
+        <div class="product-price" id="price-${product.id}">₹${Number(selectedPack.price||0).toLocaleString("en-IN")}</div>
+        <div class="availability" aria-live="polite"></div>
+        <button class="add-btn" onclick="addToCart(${product.id})">🛒 Add to Cart</button>
       </div>
     `;
 
     box.appendChild(card);
+    updateProductAvailability(card,product,selectedPack);
 
-    const packBox=
-      card.querySelector("#packs-"+product.id);
-
+    const packBox=card.querySelector("#packs-"+product.id);
     product.packs.forEach((pack,index)=>{
-
-      const button=
-        document.createElement("button");
-
-      button.className=
-        "pack-btn "+
-        (index===0?"active":"");
-
+      const button=document.createElement("button");
+      button.className="pack-btn "+(String(pack.size)===String(selectedPack.size)?"active":"");
       button.textContent=pack.size;
-
+      button.title=availabilityForPack(pack).stock>0 ? "Available: "+availabilityForPack(pack).stock : "Not Available";
       button.onclick=()=>{
-
         selectedPack=pack;
         selectedPacks[product.id]=pack;
-
-        packBox
-          .querySelectorAll(".pack-btn")
-          .forEach(b=>b.classList.remove("active"));
-
+        packBox.querySelectorAll(".pack-btn").forEach(b=>b.classList.remove("active"));
         button.classList.add("active");
-
-        card.querySelector(
-          "#price-"+product.id
-        ).textContent=
-          "₹"+pack.price.toLocaleString("en-IN");
-
+        card.querySelector("#price-"+product.id).textContent="₹"+Number(pack.price||0).toLocaleString("en-IN");
+        updateProductAvailability(card,product,pack);
       };
-
       packBox.appendChild(button);
-
     });
-
   });
-
 }
+
 
 
 /* =====================================================
@@ -2451,6 +2456,13 @@ function addToCart(productId){
   if(!product)return;
 
   const pack=selectedPacks[productId] || product.packs[0];
+  const stock=getPackStock(pack);
+
+  if(stock<=0){
+    alert(product.name+" ("+pack.size+") is currently not available.");
+    renderProducts();
+    return;
+  }
 
   const existing=
     cart.find(item=>
@@ -2459,6 +2471,10 @@ function addToCart(productId){
     );
 
   if(existing){
+    if(existing.qty>=stock){
+      alert("Only "+stock+" of "+product.name+" ("+pack.size+") is currently available.");
+      return;
+    }
     existing.qty++;
   }else{
 
