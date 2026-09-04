@@ -2780,27 +2780,88 @@ function buildOrderCard(order){
   return card;
 }
 
-function moveOrder(orderId,nextStatus){
-  const order=orders.find(o=>o.id===orderId);
+async function moveOrder(orderId,nextStatus){
+  const order=orders.find(o=>String(o.id)===String(orderId));
   if(!order)return;
+  const previousStatus=order.status;
+  const previousStockDeducted=!!order.stockDeducted;
+
   if(nextStatus==="ready"){
-    if(!orderHasStock(order)){order.status="pending";saveAll();renderOrders();alert("Order cannot be marked Ready. One or more pack sizes do not have enough inventory.");return;}
+    if(!orderHasStock(order)){
+      order.status="pending";
+      renderOrders();
+      alert("Order cannot be marked Ready. One or more pack sizes do not have enough inventory.");
+      return;
+    }
     order.status="ready";
   }
+
   if(nextStatus==="packing"){
-    if(!orderHasStock(order)){order.status="pending";saveAll();renderOrders();alert("Packing blocked because inventory is insufficient.");return;}
+    if(previousStatus!=="ready"){
+      renderOrders();
+      alert("This order must be Ready for Packing before packing can start.");
+      return;
+    }
+    if(!orderHasStock(order)){
+      order.status="pending";
+      renderOrders();
+      alert("Packing blocked because inventory is insufficient.");
+      return;
+    }
     order.status="packing";
   }
+
   if(nextStatus==="packed"){
-    if(!orderHasStock(order)){order.status="pending";saveAll();renderOrders();alert("Packing blocked because inventory is insufficient.");return;}
+    if(previousStatus!=="packing"){
+      renderOrders();
+      alert("Please start Packing before marking the order Packed.");
+      return;
+    }
+    if(!orderHasStock(order)){
+      order.status="pending";
+      renderOrders();
+      alert("Packing blocked because inventory is insufficient.");
+      return;
+    }
     if(!order.stockDeducted){
-      order.items.forEach(item=>{const pack=findPack(item.productId,item.size);if(pack)pack.stock=Math.max(0,Number(pack.stock||0)-Number(item.qty||0));});
+      order.items.forEach(item=>{
+        const pack=findPack(item.productId,item.size);
+        if(pack)pack.stock=Math.max(0,Number(pack.stock||0)-Number(item.qty||0));
+      });
       order.stockDeducted=true;
     }
     order.status="packed";
   }
-  if(nextStatus==="dispatched")order.status="dispatched";
-  saveAll();renderOrders();renderAdminProducts();
+
+  if(nextStatus==="dispatched"){
+    if(previousStatus!=="packed"){
+      renderOrders();
+      alert("Please mark the order Packed before dispatching it.");
+      return;
+    }
+    order.status="dispatched";
+  }
+
+  order.updatedAt=new Date().toISOString();
+  renderOrders();
+  renderAdminProducts();
+
+  if(firebaseReady && db && isAdminUser()){
+    try{
+      await db.ref("orders/"+order.id).set(order);
+      await db.ref("publicOrderStatus/"+order.id).set(publicOrderStatusPayload(order));
+      saveLocalStore();
+    }catch(err){
+      console.error("Order status update failed:",err);
+      order.status=previousStatus;
+      order.stockDeducted=previousStockDeducted;
+      renderOrders();
+      renderAdminProducts();
+      alert("Order status could not be saved to Firebase. Please check the Realtime Database Rules and try again.");
+    }
+  }else{
+    saveLocalStore();
+  }
 }
 
 function filterOrders(filter,button){
