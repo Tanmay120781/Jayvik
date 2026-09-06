@@ -16,9 +16,7 @@
   --shadow:0 8px 25px rgba(0,0,0,.08);
 }
 
-*{
-  box-sizing:border-box
-}
+*{box-sizing:border-box}
 
 body{
   margin:0;
@@ -27,10 +25,7 @@ body{
   color:#202820;
 }
 
-button,
-input,
-textarea,
-select{
+button,input,textarea,select{
   font:inherit;
 }
 
@@ -242,32 +237,11 @@ header{
   box-shadow:var(--shadow);
 }
 
-/* =====================================================
-   PRODUCT IMAGE
-   FIXED: SHOW ENTIRE UPLOADED PHOTO
-   ===================================================== */
-
 .product-image{
   width:100%;
   height:205px;
-  object-fit:contain;
-  object-position:center;
-  display:block;
-  background:#fff;
-}
-
-/* =====================================================
-   PRODUCT PHOTO PREVIEW
-   ===================================================== */
-
-#productPhotoPreview{
-  width:240px !important;
-  height:170px !important;
-  object-fit:contain !important;
-  object-position:center !important;
-  display:block;
-  background:#fff !important;
-  border-radius:10px;
+  object-fit:cover;
+  background:#edf5ed;
 }
 
 .product-body{
@@ -415,10 +389,8 @@ footer{
   flex-wrap:wrap;
 }
 
-/* =====================================================
-   ADMIN LOGIN
-   ===================================================== */
 
+/* ADMIN LOGIN */
 .admin-login-overlay{
   display:none;
   position:fixed;
@@ -429,7 +401,6 @@ footer{
   justify-content:center;
   padding:20px;
 }
-
 .admin-login-box{
   width:min(420px,100%);
   background:#fff;
@@ -437,36 +408,15 @@ footer{
   padding:28px;
   box-shadow:0 20px 60px rgba(0,0,0,.25);
 }
-
-.admin-login-box h2{
-  margin:0 0 8px;
-  color:var(--dark);
-}
-
-.admin-login-box p{
-  color:var(--muted);
-  margin:0 0 20px;
-}
-
+.admin-login-box h2{margin:0 0 8px;color:var(--dark)}
+.admin-login-box p{color:var(--muted);margin:0 0 20px}
 .admin-login-box input{
-  width:100%;
-  padding:13px 14px;
-  border:1px solid #d7dfd7;
-  border-radius:10px;
-  margin-bottom:12px;
-  font-size:16px;
+  width:100%;padding:13px 14px;border:1px solid #d7dfd7;
+  border-radius:10px;margin-bottom:12px;font-size:16px;
 }
+.admin-login-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
 
-.admin-login-actions{
-  display:flex;
-  gap:10px;
-  justify-content:flex-end;
-  flex-wrap:wrap;
-}
-
-/* =====================================================
-   ADMIN
-   ===================================================== */
+/* ADMIN */
 
 .admin-overlay{
   display:none;
@@ -551,11 +501,6 @@ footer{
   padding:8px;
 }
 
-/* =====================================================
-   ADMIN PRODUCT IMAGE
-   FIXED: SHOW ENTIRE UPLOADED PHOTO
-   ===================================================== */
-
 .admin-product{
   display:grid;
   grid-template-columns:100px 1fr auto;
@@ -568,11 +513,9 @@ footer{
 .admin-product img{
   width:100px;
   height:80px;
-  object-fit:contain;
-  object-position:center;
-  display:block;
+  object-fit:cover;
   border-radius:10px;
-  background:#fff;
+  background:#edf5ed;
 }
 
 .admin-actions{
@@ -641,131 +584,25 @@ footer{
   color:#715b14;
 }
 
-.order-summary-grid{
-  display:grid;
-  grid-template-columns:repeat(6,minmax(130px,1fr));
-  gap:10px;
-  margin-bottom:20px;
-}
-
-.order-stat{
-  background:white;
-  border:1px solid #e4ebe4;
-  border-radius:12px;
-  padding:14px;
-  box-shadow:0 3px 12px rgba(0,0,0,.04);
-}
-
-.order-stat strong{
-  display:block;
-  font-size:12px;
-  color:var(--muted);
-}
-
-.order-stat b{
-  display:block;
-  font-size:25px;
-  margin-top:5px;
-  color:var(--dark);
-}
-
-.order-columns{
-  display:grid;
-  grid-template-columns:repeat(5,minmax(260px,1fr));
-  gap:15px;
-  overflow-x:auto;
-  padding-bottom:10px;
-}
-
-.order-column{
-  background:#eef3ee;
-  border-radius:14px;
-  padding:12px;
-  min-height:180px;
-}
-
-.order-column h4{
-  margin:0 0 10px;
-  color:var(--dark);
-}
-
-.order-card{
-  background:white;
-  border:1px solid #e1e8e1;
-  border-radius:12px;
-  padding:13px;
-  margin-bottom:10px;
-  box-shadow:0 3px 10px rgba(0,0,0,.04);
-}
-
-.order-card.pending{
-  border-left:5px solid var(--danger);
-}
-
-.order-card.ready{
-  border-left:5px solid var(--green);
-}
-
-.order-card.packed{
-  border-left:5px solid var(--gold);
-}
-
-.order-card.dispatched{
-  border-left:5px solid #2563eb;
-}
-
-.order-items{
-  font-size:13px;
-  line-height:1.55;
-  margin:9px 0;
-}
-
-.stock-ok{
-  color:var(--green);
-  font-weight:800;
-}
-
-.stock-missing{
-  color:var(--danger);
-  font-weight:800;
-}
-
-.order-actions{
-  display:flex;
-  gap:7px;
-  flex-wrap:wrap;
-  margin-top:10px;
-}
-
-.order-filter{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-bottom:15px;
-}
-
-.inventory-row{
-  display:grid;
-  grid-template-columns:1fr 100px 100px;
-  gap:8px;
-  align-items:center;
-  padding:10px 0;
-  border-bottom:1px solid #eee;
-}
-
-/* =====================================================
-   RESPONSIVE DESIGN
-   ===================================================== */
-
-@media(max-width:1100px){
-  .order-columns{
-    grid-template-columns:repeat(5,260px);
-  }
-
-  .order-summary-grid{
-    grid-template-columns:repeat(3,1fr);
-  }
-}
+.order-summary-grid{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.order-stat{background:white;border:1px solid #e4ebe4;border-radius:12px;padding:14px;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+.order-stat strong{display:block;font-size:12px;color:var(--muted)}
+.order-stat b{display:block;font-size:25px;margin-top:5px;color:var(--dark)}
+.order-columns{display:grid;grid-template-columns:repeat(5,minmax(260px,1fr));gap:15px;overflow-x:auto;padding-bottom:10px}
+.order-column{background:#eef3ee;border-radius:14px;padding:12px;min-height:180px}
+.order-column h4{margin:0 0 10px;color:var(--dark)}
+.order-card{background:white;border:1px solid #e1e8e1;border-radius:12px;padding:13px;margin-bottom:10px;box-shadow:0 3px 10px rgba(0,0,0,.04)}
+.order-card.pending{border-left:5px solid var(--danger)}
+.order-card.ready{border-left:5px solid var(--green)}
+.order-card.packed{border-left:5px solid var(--gold)}
+.order-card.dispatched{border-left:5px solid #2563eb}
+.order-items{font-size:13px;line-height:1.55;margin:9px 0}
+.stock-ok{color:var(--green);font-weight:800}.stock-missing{color:var(--danger);font-weight:800}
+.order-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.order-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
+.inventory-row{display:grid;grid-template-columns:1fr 100px 100px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
+@media(max-width:1100px){.order-columns{grid-template-columns:repeat(5,260px)}.order-summary-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.order-summary-grid{grid-template-columns:repeat(2,1fr)}}
 
 @media(max-width:850px){
   .hero-inner{
@@ -799,10 +636,6 @@ footer{
 }
 
 @media(max-width:600px){
-  .order-summary-grid{
-    grid-template-columns:repeat(2,1fr);
-  }
-
   .logo{
     width:60px;
     height:60px;
@@ -852,66 +685,41 @@ footer{
   .pack-edit button{
     grid-column:1/-1;
   }
-
-  #productPhotoPreview{
-    width:240px !important;
-    height:170px !important;
-  }
 }
+
+.password-wrap{position:relative;margin-bottom:12px}.password-wrap input{margin-bottom:0!important;padding-right:55px!important}.show-pass{position:absolute;right:8px;top:7px;border:0;background:#edf6ed;color:var(--green);border-radius:8px;padding:7px 10px;font-weight:700}.credentials-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.credential-note{margin-top:12px}.auth-user{font-size:13px;color:#d9eadb}
+@media(max-width:600px){.credentials-grid{grid-template-columns:1fr}}
+
 
 /* =====================================================
-   PASSWORD / ADMIN CREDENTIALS
-   ===================================================== */
-
-.password-wrap{
-  position:relative;
-  margin-bottom:12px;
-}
-
-.password-wrap input{
-  margin-bottom:0 !important;
-  padding-right:55px !important;
-}
-
-.show-pass{
-  position:absolute;
-  right:8px;
-  top:7px;
-  border:0;
-  background:#edf6ed;
-  color:var(--green);
-  border-radius:8px;
-  padding:7px 10px;
+   SAVE / CHANGE NOTIFICATION
+===================================================== */
+#saveNotification{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:99999;
+  display:none;
+  max-width:360px;
+  padding:14px 18px;
+  border-radius:12px;
+  background:#267a35;
+  color:#fff;
   font-weight:700;
+  box-shadow:0 8px 24px rgba(0,0,0,.20);
+  font-size:15px;
 }
+#saveNotification.error{background:#b42318;}
 
-.credentials-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-}
-
-.credential-note{
-  margin-top:12px;
-}
-
-.auth-user{
-  font-size:13px;
-  color:#d9eadb;
-}
-
-@media(max-width:600px){
-  .credentials-grid{
-    grid-template-columns:1fr;
-  }
-}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js"></script>
 </head>
 
 <body>
+<div id="saveNotification" role="status" aria-live="polite"></div>
 
 <div class="topbar">
   🌱 Farm Fresh • Natural • Healthy • Honest
@@ -1622,6 +1430,7 @@ const firebaseConfig = {
 let firebaseReady=false;
 let auth=null;
 let db=null;
+let storage=null;
 let firebaseDataLoaded=false;
 try{
   const configured=Object.values(firebaseConfig).every(v=>v && !String(v).startsWith("PASTE_YOUR_"));
@@ -1629,6 +1438,7 @@ try{
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     auth=firebase.auth();
     db=firebase.database();
+    storage=firebase.storage();
     firebaseReady=true;
     // Public catalogue is readable by customers. Orders remain private.
     db.ref("store/public").on("value",snap=>{
@@ -2129,7 +1939,17 @@ products.forEach(product=>{
    SAVE
 ===================================================== */
 
-function saveAll(){
+function showSaveNotification(message,isError=false){
+  const box=document.getElementById("saveNotification");
+  if(!box){alert(message);return;}
+  box.textContent="✓ "+message;
+  box.classList.toggle("error",!!isError);
+  box.style.display="block";
+  clearTimeout(window.__saveNotificationTimer);
+  window.__saveNotificationTimer=setTimeout(()=>{box.style.display="none";},3000);
+}
+
+async function saveAll(showMessage=false,message="Changes saved successfully."){
   localStorage.setItem("jayvik_products",JSON.stringify(products));
   localStorage.setItem("jayvik_categories",JSON.stringify(categories));
   localStorage.setItem("jayvik_cart",JSON.stringify(cart));
@@ -2140,8 +1960,15 @@ function saveAll(){
   // Only the authenticated admin writes the public catalogue.
   if(firebaseReady && db && auth?.currentUser?.email === "jayvik.india@gmail.com"){
     const publicPayload={products,categories,logo,website};
-    db.ref("store/public").set(publicPayload).catch(err=>console.error("Firebase public store save failed:",err));
+    try{
+      await db.ref("store/public").set(publicPayload);
+      return true;
+    }catch(err){
+      console.error("Firebase public store save failed:",err);
+      return false;
+    }
   }
+  return true;
 }
 
 async function loadFirebaseStore(){
@@ -2270,7 +2097,7 @@ function previewLogo(event){
 
 }
 
-function saveLogo(){
+async function saveLogo(){
 
   const src=
     document.getElementById("logoPreviewAdmin").src;
@@ -2286,7 +2113,8 @@ function saveLogo(){
 
   applyLogo();
 
-  alert("Jayvik logo updated successfully.");
+  const saved=await saveAll(true,"Jayvik logo updated successfully.");
+  if(!saved) return;
 
 }
 
@@ -2342,7 +2170,7 @@ function loadWebsiteEditor(){
 
 }
 
-function saveWebsite(){
+async function saveWebsite(){
 
   website.brandName=
     document.getElementById("editBrandName").value.trim() ||
@@ -2366,7 +2194,8 @@ function saveWebsite(){
 
   applyWebsite();
 
-  alert("Website content updated.");
+  const saved=await saveAll(true,"Website changes saved successfully.");
+  if(!saved) return;
 
 }
 
@@ -2421,7 +2250,7 @@ function renderCategories(){
 
 }
 
-function addCategory(){
+async function addCategory(){
 
   const input=
     document.getElementById("newCategory");
@@ -2437,7 +2266,8 @@ function addCategory(){
 
   categories.push(name);
 
-  saveAll();
+  const saved=await saveAll(true,"Category added and saved successfully.");
+  if(!saved)return;
 
   input.value="";
 
@@ -2447,7 +2277,7 @@ function addCategory(){
 
 }
 
-function removeCategory(category){
+async function removeCategory(category){
 
   const used=
     products.some(p=>p.category===category);
@@ -2468,7 +2298,8 @@ function removeCategory(category){
   if(selectedCategory===category)
     selectedCategory="All";
 
-  saveAll();
+  const saved=await saveAll(true,"Category removed and changes saved successfully.");
+  if(!saved)return;
 
   renderCategories();
   renderAdminCategories();
@@ -2983,13 +2814,14 @@ function renderInventory(){
   }));
 }
 
-function savePackStock(productId,packIndex){
+async function savePackStock(productId,packIndex){
   const product=products.find(p=>p.id===productId);
   if(!product || !product.packs[packIndex])return;
   const input=document.getElementById(`stock-${productId}-${packIndex}`);
   product.packs[packIndex].stock=Math.max(0,Number(input.value||0));
-  saveAll();refreshOrderStatuses();renderOrders();renderAdminProducts();
-  alert("Pack inventory updated.");
+  const saved=await saveAll(true,"Pack inventory updated successfully.");
+  if(!saved)return;
+  refreshOrderStatuses();renderOrders();renderAdminProducts();
 }
 
 function openAdminLogin(){
@@ -3174,10 +3006,12 @@ function deleteProduct(id){
 ===================================================== */
 
 let editingPhoto=null;
+let pendingProductPhotoFile=null;
 
 function openAddProduct(){
 
   editingPhoto=null;
+  pendingProductPhotoFile=null;
 
   document.getElementById("editorTitle")
     .textContent="Add Product";
@@ -3190,6 +3024,9 @@ function openAddProduct(){
 
   document.getElementById("editProductDescription")
     .value="";
+
+  const photoInput=document.getElementById("productPhotoFile");
+  if(photoInput) photoInput.value="";
 
   fillCategorySelect();
 
@@ -3217,7 +3054,11 @@ function editProduct(id){
 
   if(!product)return;
 
-  editingPhoto=product.image;
+  editingPhoto=product.image || null;
+  pendingProductPhotoFile=null;
+
+  const photoInput=document.getElementById("productPhotoFile");
+  if(photoInput) photoInput.value="";
 
   document.getElementById("editorTitle")
     .textContent="Edit Product";
@@ -3329,11 +3170,17 @@ function previewProductPhoto(event){
 
   if(!file)return;
 
+  if(!file.type || !file.type.startsWith("image/")){
+    alert("Please select a valid image file.");
+    event.target.value="";
+    return;
+  }
+
+  pendingProductPhotoFile=file;
+
   const reader=new FileReader();
 
   reader.onload=function(e){
-
-    editingPhoto=e.target.result;
 
     document.getElementById(
       "productPhotoPreview"
@@ -3348,6 +3195,10 @@ function previewProductPhoto(event){
 function removeProductPhoto(){
 
   editingPhoto=null;
+  pendingProductPhotoFile=null;
+
+  const photoInput=document.getElementById("productPhotoFile");
+  if(photoInput) photoInput.value="";
 
   const name=
     document.getElementById(
@@ -3360,7 +3211,71 @@ function removeProductPhoto(){
 
 }
 
-function saveProduct(){
+function prepareProductImage(file){
+  return new Promise((resolve,reject)=>{
+    if(!file){resolve(null);return;}
+
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error("Could not read the selected photo."));
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>reject(new Error("The selected photo could not be opened by the browser."));
+      img.onload=()=>{
+        try{
+          const maxSize=1600;
+          const scale=Math.min(1,maxSize/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height));
+          const width=Math.max(1,Math.round((img.naturalWidth||img.width)*scale));
+          const height=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));
+          const canvas=document.createElement("canvas");
+          canvas.width=width;
+          canvas.height=height;
+          const ctx=canvas.getContext("2d");
+          if(!ctx){resolve(file);return;}
+          ctx.fillStyle="#ffffff";
+          ctx.fillRect(0,0,width,height);
+          ctx.drawImage(img,0,0,width,height);
+          canvas.toBlob(blob=>{
+            if(blob) resolve(blob);
+            else resolve(file);
+          },"image/jpeg",0.86);
+        }catch(err){
+          resolve(file);
+        }
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadProductPhoto(file,productId,productName){
+  if(!file)return null;
+  if(!firebaseReady || !storage){
+    throw new Error("Firebase Storage is not available. Please enable Storage in Firebase and reload the website.");
+  }
+  if(!auth?.currentUser || auth.currentUser.email !== "jayvik.india@gmail.com"){
+    throw new Error("Please sign in as the Jayvik admin before uploading a product photo.");
+  }
+
+  const safeName=String(productName||"product")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-+|-+$/g,"")
+    .slice(0,60) || "product";
+
+  const blob=await prepareProductImage(file);
+  const filePath=`products/${productId}_${Date.now()}_${safeName}.jpg`;
+  const ref=storage.ref().child(filePath);
+
+  const snapshot=await ref.put(blob,{
+    contentType:"image/jpeg",
+    cacheControl:"public,max-age=31536000"
+  });
+
+  return await snapshot.ref.getDownloadURL();
+}
+
+async function saveProduct(){
 
   const id=
     Number(
@@ -3430,48 +3345,87 @@ function saveProduct(){
 
   }
 
-  if(id){
+  const productId=id || Date.now();
+  const saveButton=document.querySelector('#productEditor .btn.btn-green');
+  const originalButtonText=saveButton?.textContent || "💾 Save Product";
 
-    const product=
-      products.find(p=>p.id===id);
+  try{
+    if(saveButton){
+      saveButton.disabled=true;
+      saveButton.style.opacity="0.65";
+      saveButton.textContent=pendingProductPhotoFile ? "Uploading photo..." : "Saving...";
+    }
 
-    product.name=name;
-    product.category=category;
-    product.description=description;
-    product.packs=packs;
-    product.image=
-      editingPhoto || placeholder(name);
+    let finalImage=editingPhoto;
 
-  }else{
+    if(pendingProductPhotoFile){
+      finalImage=await uploadProductPhoto(
+        pendingProductPhotoFile,
+        productId,
+        name
+      );
+    }
 
-    products.push({
+    if(id){
 
-      id:Date.now(),
+      const product=
+        products.find(p=>p.id===id);
 
-      name,
+      if(!product)throw new Error("Product not found.");
 
-      category,
+      product.name=name;
+      product.category=category;
+      product.description=description;
+      product.packs=packs;
+      product.image=finalImage || placeholder(name);
 
-      image:
-        editingPhoto || placeholder(name),
+    }else{
 
-      packs,
+      products.push({
 
-      description
+        id:productId,
 
-    });
+        name,
 
+        category,
+
+        image:
+          finalImage || placeholder(name),
+
+        packs,
+
+        description
+
+      });
+
+    }
+
+    if(saveButton)saveButton.textContent="Saving catalogue...";
+
+    const saved=await saveAll();
+    if(!saved){
+      throw new Error("Firebase could not save the catalogue. The photo may already be in Storage, but the product record was not saved to the database.");
+    }
+
+    renderProducts();
+    renderAdminProducts();
+    updateStats();
+
+    closeProductEditor();
+    pendingProductPhotoFile=null;
+
+    showSaveNotification("Product saved successfully. The photo is stored in Firebase Storage.");
+
+  }catch(err){
+    console.error("Product save/upload failed:",err);
+    alert("Product could not be saved.\n\n"+(err?.message || "Please check Firebase Storage and Realtime Database rules."));
+  }finally{
+    if(saveButton){
+      saveButton.disabled=false;
+      saveButton.style.opacity="1";
+      saveButton.textContent=originalButtonText;
+    }
   }
-
-  saveAll();
-
-  renderProducts();
-  renderAdminProducts();
-  updateStats();
-
-  closeProductEditor();
-
-  alert("Product saved successfully.");
 
 }
 
