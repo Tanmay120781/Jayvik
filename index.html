@@ -247,9 +247,12 @@ header{
 
 .product-image{
   width:100%;
-  height:205px;
-  object-fit:cover;
-  background:#edf5ed;
+  height:235px;
+  object-fit:contain;
+  object-position:center;
+  display:block;
+  background:#fff;
+  padding:10px;
 }
 
 .product-body{
@@ -541,9 +544,11 @@ footer{
 .admin-product img{
   width:100px;
   height:80px;
-  object-fit:cover;
+  object-fit:contain;
+  object-position:center;
   border-radius:10px;
-  background:#edf5ed;
+  background:#fff;
+  padding:5px;
 }
 
 .admin-actions{
@@ -812,7 +817,8 @@ footer{
   }
 
   .product-image{
-    height:145px;
+    height:180px;
+    padding:7px;
   }
 
   .product-body{
@@ -904,6 +910,22 @@ footer{
 #saveNotification.error{
   background:#b42318;
 }
+
+/* CUSTOMER SALE INFORMATION */
+.sale-info-window{
+  background:linear-gradient(135deg,#fffdf1,#f4fbf4);
+  border:2px solid #e4c55b;
+  border-radius:20px;
+  padding:22px 24px;
+  margin-bottom:28px;
+  box-shadow:0 8px 25px rgba(0,0,0,.07);
+}
+.sale-info-window h2{margin:0 0 8px;color:var(--dark);font-size:25px}
+.sale-info-title{color:var(--green);font-size:20px;font-weight:900;margin-bottom:7px}
+.sale-info-text{color:#4f5b51;font-size:15px;line-height:1.65;white-space:pre-line}
+.sale-info-badge{display:inline-block;background:var(--green);color:white;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:800;margin-bottom:10px}
+.sale-admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.sale-admin-grid{grid-template-columns:1fr}.sale-info-window{padding:18px}.sale-info-window h2{font-size:21px}}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -1036,6 +1058,20 @@ footer{
 </section>
 
 <main>
+
+<!-- SALE INFORMATION -->
+<section
+  class="container"
+  id="saleInfoSection"
+>
+  <div class="sale-info-window" id="saleInfoWindow">
+    <span class="sale-info-badge" id="saleInfoBadge">SALE & OFFERS</span>
+    <h2 id="saleInfoTitle">Special Offers</h2>
+    <div class="sale-info-title" id="saleInfoHeadline"></div>
+    <div class="sale-info-text" id="saleInfoText"></div>
+  </div>
+</section>
+<!-- END SALE INFORMATION -->
 
 <section
   class="container"
@@ -1432,6 +1468,13 @@ footer{
 
       <button
         class="admin-tab"
+        onclick="showAdminTab('saleAdmin',this);loadSaleEditor()"
+      >
+        🏷️ Sale & Offers
+      </button>
+
+      <button
+        class="admin-tab"
         onclick="showAdminTab('logoAdmin',this)"
       >
         🖼️ Logo
@@ -1664,7 +1707,60 @@ footer{
             class="btn btn-green"
             onclick="saveWebsite()"
           >
-            💾 Save Website Changes
+            💾 Save Website & Sale Changes
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- SALE & OFFERS -->
+
+    <div
+      id="saleAdmin"
+      class="admin-section"
+    >
+
+      <div class="admin-card">
+
+        <h3>
+          🏷️ Sale & Offers Management
+        </h3>
+
+        <p class="notice">
+          This information appears in the Sale & Offers window on the customer dashboard.
+          You can change the offer message, seasonal sale, festival offer, dates, delivery information and other sales-related information here.
+        </p>
+
+        <div class="admin-form">
+
+          <label>Sale Window Title</label>
+          <input
+            id="editSaleTitle"
+            placeholder="Special Offers"
+          >
+
+          <label>Offer Headline</label>
+          <input
+            id="editSaleHeadline"
+            placeholder="Fresh & Healthy Offers"
+          >
+
+          <label>Sale / Offer Information</label>
+          <textarea
+            id="editSaleText"
+            rows="8"
+            placeholder="Enter sale details, special offers, festival offers, dates, delivery information, etc."
+          ></textarea>
+
+          <button
+            class="btn btn-green"
+            onclick="saveSaleInfo()"
+          >
+            💾 Save Sale & Offers
           </button>
 
         </div>
@@ -2891,6 +2987,46 @@ fill="#666">${escapeHtml(name)}</text>
 `);
 
 
+function loadSaleEditor(){
+
+  const title=document.getElementById("editSaleTitle");
+  const headline=document.getElementById("editSaleHeadline");
+  const text=document.getElementById("editSaleText");
+
+  if(title) title.value=website.saleTitle||"Special Offers";
+  if(headline) headline.value=website.saleHeadline||"";
+  if(text) text.value=website.saleText||"";
+
+}
+
+
+async function saveSaleInfo(){
+
+  website.saleTitle=
+    document.getElementById("editSaleTitle")?.value.trim() ||
+    "Special Offers";
+
+  website.saleHeadline=
+    document.getElementById("editSaleHeadline")?.value.trim() ||
+    "";
+
+  website.saleText=
+    document.getElementById("editSaleText")?.value.trim() ||
+    "";
+
+  applyWebsite();
+
+  const saved=
+    await saveAll(
+      true,
+      "Sale & Offers saved successfully."
+    );
+
+  if(!saved)return;
+
+}
+
+
 /* =====================================================
    CATEGORIES
 ===================================================== */
@@ -3180,8 +3316,15 @@ let website=
   brandName:"Jayvik",
   tagline:"The Complete Health Store",
   heroHeading:"Pure • Natural • From the Farm",
-  heroText:"Healthy, natural and carefully selected products from Jayvik – The Complete Health Store."
+  heroText:"Healthy, natural and carefully selected products from Jayvik – The Complete Health Store.",
+  saleTitle:"Special Offers",
+  saleHeadline:"Fresh & Healthy Offers",
+  saleText:"Check our latest offers, seasonal products and special deals at Jayvik."
 };
+
+if(!website.saleTitle)website.saleTitle="Special Offers";
+if(typeof website.saleHeadline!=="string")website.saleHeadline="Fresh & Healthy Offers";
+if(typeof website.saleText!=="string")website.saleText="Check our latest offers, seasonal products and special deals at Jayvik.";
 
 let selectedPacks={};
 
@@ -3982,6 +4125,18 @@ function applyWebsite(){
   ).innerHTML=
     website.heroHeading;
 
+  const saleSection=document.getElementById("saleInfoSection");
+  const saleTitle=document.getElementById("saleInfoTitle");
+  const saleHeadline=document.getElementById("saleInfoHeadline");
+  const saleText=document.getElementById("saleInfoText");
+
+  if(saleSection && saleTitle && saleHeadline && saleText){
+    saleTitle.textContent=String(website.saleTitle||"Special Offers").trim();
+    saleHeadline.textContent=String(website.saleHeadline||"").trim();
+    saleText.textContent=String(website.saleText||"").trim();
+    saleSection.style.display=(website.saleHeadline||website.saleText)?"block":"none";
+  }
+
 }
 
 
@@ -4006,6 +4161,7 @@ function loadWebsiteEditor(){
     "editHeroText"
   ).value=
     website.heroText;
+
 
 }
 
@@ -4034,6 +4190,7 @@ async function saveWebsite(){
     document.getElementById(
       "editHeroText"
     ).value.trim();
+
 
   applyWebsite();
 
@@ -4335,6 +4492,20 @@ function updateProductAvailability(
 }
 
 
+function getProductImage(product){
+  const raw=product?.image??product?.photo??product?.photoUrl??"";
+  return typeof raw==="string" && raw.trim()?raw.trim():placeholder(product?.name||"Product");
+}
+
+function attachProductImageFallback(img,product){
+  if(!img)return;
+  img.addEventListener("error",()=>{
+    if(img.dataset.fallbackApplied==="1")return;
+    img.dataset.fallbackApplied="1";
+    img.src=placeholder(product?.name||"Product");
+  },{once:true});
+}
+
 function renderProducts(){
 
   const box=
@@ -4404,7 +4575,7 @@ function renderProducts(){
 
       <img
         class="product-image"
-        src="${product.image || placeholder(product.name)}"
+        src="${getProductImage(product)}"
         alt="${escapeHtml(product.name)}"
       >
 
@@ -4446,6 +4617,8 @@ function renderProducts(){
     `;
 
     box.appendChild(card);
+
+    attachProductImageFallback(card.querySelector(".product-image"),product);
 
     updateProductAvailability(
       card,
@@ -5864,6 +6037,8 @@ function openAdmin(){
   ).style.display="block";
 
   loadWebsiteEditor();
+
+  loadSaleEditor();
 
   renderAdminProducts();
 
