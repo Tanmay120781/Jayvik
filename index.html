@@ -3682,27 +3682,15 @@ async function saveOrderToFirebase(order){
 
   try{
 
-    const statusData =
-      publicOrderStatusPayload(order);
-
-    const updates = {};
-
-    /* Full order for Admin */
-    updates[
-      "/orders/" + String(order.id)
-    ] = order;
-
-    /* Existing public status path */
-    updates[
-      "/publicOrderStatus/" + String(order.id)
-    ] = statusData;
-
-    /* Customer-facing live status mirror */
-    updates[
-      "/store/public/orderStatus/" + String(order.id)
-    ] = statusData;
-
-    await db.ref().update(updates);
+    /*
+      Existing Firebase Rules allow a public customer to CREATE
+      /orders/{id}. Keep this customer write limited to that path.
+      Writing protected status paths in the same multi-location
+      update would make Firebase reject the whole order save.
+    */
+    await db
+      .ref("orders/" + String(order.id))
+      .set(order);
 
     return true;
 
@@ -3710,7 +3698,8 @@ async function saveOrderToFirebase(order){
 
     console.error(
       "Firebase order save failed:",
-      err
+      err?.code || "",
+      err?.message || err
     );
 
     showSaveNotification(
@@ -3773,134 +3762,73 @@ function renderLiveOrderStatus(data){
 
 function startCustomerOrderStatusListener(){
 
-  if(
-    !firebaseReady ||
-    !db
-  ){
-
-    console.warn(
-      "Customer live status: Firebase is not ready."
-    );
-
+  if(!firebaseReady || !db){
+    console.warn("Customer live status: Firebase is not ready.");
     return;
   }
 
-  const id =
-    String(
-      localStorage.getItem(
-        "jayvik_last_order_id"
-      ) || ""
-    ).trim();
+  const id = String(
+    localStorage.getItem("jayvik_last_order_id") || ""
+  ).trim();
 
   if(customerOrderStatusRef){
-
-    customerOrderStatusRef.off(
-      "value"
-    );
-
+    customerOrderStatusRef.off("value");
     customerOrderStatusRef = null;
   }
 
   if(!id){
-
     renderLiveOrderStatus(null);
     return;
   }
 
-  /*
-    Use the same public Firebase branch as the customer catalogue.
-    This keeps customer order status live without changing Firebase Rules.
-  */
+  let cachedStatus = null;
+
+  try{
+    cachedStatus = JSON.parse(
+      localStorage.getItem("jayvik_last_order_status") || "null"
+    );
+  }catch(e){
+    cachedStatus = null;
+  }
+
   customerOrderStatusRef =
-    db
-      .ref("store/public/orderStatus")
-      .child(id);
+    db.ref("store/public/orderStatus").child(id);
 
   customerOrderStatusRef.on(
-
     "value",
-
     snap=>{
-
-      const data =
-        snap.val();
-
-      console.log(
-        "Customer live status received:",
-        id,
-        data
-      );
+      const data = snap.val();
 
       if(data){
-
+        localStorage.setItem(
+          "jayvik_last_order_status",
+          JSON.stringify(data)
+        );
         renderLiveOrderStatus(data);
+        return;
+      }
 
+      if(cachedStatus && String(cachedStatus.id)===id){
+        renderLiveOrderStatus(cachedStatus);
       }else{
-
-        /*
-          Backward compatibility:
-          older orders may exist only under publicOrderStatus.
-        */
-        db.ref(
-          "publicOrderStatus/" + id
-        )
-        .once("value")
-        .then(oldSnap=>{
-
-          const oldData =
-            oldSnap.val();
-
-          renderLiveOrderStatus(
-            oldData || {
-              id,
-              status:"Status unavailable"
-            }
-          );
-
-        })
-        .catch(()=>{
-
-          renderLiveOrderStatus({
-            id,
-            status:"Status unavailable"
-          });
-
+        renderLiveOrderStatus({
+          id,
+          status:"pending",
+          total:0,
+          itemCount:0
         });
       }
     },
-
     err=>{
-
       console.error(
         "Customer live status listener FAILED:",
-        err
+        err?.code || "",
+        err?.message || err
       );
 
-      /*
-        Try the old public path if the new mirror listener fails.
-      */
-      db.ref(
-        "publicOrderStatus/" + id
-      )
-      .once("value")
-      .then(oldSnap=>{
-
-        renderLiveOrderStatus(
-          oldSnap.val() || {
-            id,
-            status:"Status unavailable"
-          }
-        );
-
-      })
-      .catch(()=>{
-
-        renderLiveOrderStatus({
-          id,
-          status:"Status unavailable"
-        });
-
-      });
+      if(cachedStatus && String(cachedStatus.id)===id){
+        renderLiveOrderStatus(cachedStatus);
+      }
     }
   );
 }
@@ -5248,6 +5176,14 @@ Order ID: ${order.id}`;
       order.id
     );
 
+    const initialStatus=
+      publicOrderStatusPayload(order);
+
+    localStorage.setItem(
+      "jayvik_last_order_status",
+      JSON.stringify(initialStatus)
+    );
+
     cart=[];
 
     localStorage.setItem(
@@ -5256,9 +5192,7 @@ Order ID: ${order.id}`;
     );
 
     renderCart();
-    renderLiveOrderStatus(
-      publicOrderStatusPayload(order)
-    );
+    renderLiveOrderStatus(initialStatus);
     startCustomerOrderStatusListener();
 
     showSaveNotification(
@@ -5792,11 +5726,6 @@ async function moveOrder(orderId,nextStatus){
     updates[
       "/orders/" + String(order.id)
     ]=order;
-
-    /* Existing public order status */
-    updates[
-      "/publicOrderStatus/" + String(order.id)
-    ]=statusData;
 
     /* Live customer-facing order status */
     updates[
