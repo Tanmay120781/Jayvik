@@ -3505,7 +3505,7 @@ async function saveAll(
 
       await db
         .ref("store/public")
-        .set(publicPayload);
+        .update(publicPayload);
 
       if(showMessage)
         showSaveNotification(message);
@@ -3675,11 +3675,51 @@ async function loadFirebaseStore(){
 
 
 async function saveOrderToFirebase(order){
-  if(!firebaseReady||!db)return false;
+
+  if(!firebaseReady || !db){
+    return false;
+  }
+
   try{
-    const updates={};updates["/orders/"+String(order.id)]=order;updates["/publicOrderStatus/"+String(order.id)]=publicOrderStatusPayload(order);
-    await db.ref().update(updates);return true;
-  }catch(err){console.error("Firebase order save failed:",err);showSaveNotification("Firebase could not confirm the order save. Please try again.",true);return false;}
+
+    const statusData =
+      publicOrderStatusPayload(order);
+
+    const updates = {};
+
+    /* Full order for Admin */
+    updates[
+      "/orders/" + String(order.id)
+    ] = order;
+
+    /* Existing public status path */
+    updates[
+      "/publicOrderStatus/" + String(order.id)
+    ] = statusData;
+
+    /* Customer-facing live status mirror */
+    updates[
+      "/store/public/orderStatus/" + String(order.id)
+    ] = statusData;
+
+    await db.ref().update(updates);
+
+    return true;
+
+  }catch(err){
+
+    console.error(
+      "Firebase order save failed:",
+      err
+    );
+
+    showSaveNotification(
+      "Firebase could not confirm the order save. Please try again.",
+      true
+    );
+
+    return false;
+  }
 }
 
 function publicOrderStatusPayload(order){
@@ -3743,14 +3783,13 @@ function startCustomerOrderStatusListener(){
     );
 
     return;
-
   }
 
-  const id=
+  const id =
     String(
       localStorage.getItem(
         "jayvik_last_order_id"
-      )||""
+      ) || ""
     ).trim();
 
   if(customerOrderStatusRef){
@@ -3759,28 +3798,32 @@ function startCustomerOrderStatusListener(){
       "value"
     );
 
-    customerOrderStatusRef=null;
-
+    customerOrderStatusRef = null;
   }
 
   if(!id){
 
     renderLiveOrderStatus(null);
-
     return;
-
   }
 
-  customerOrderStatusRef=
+  /*
+    Use the same public Firebase branch as the customer catalogue.
+    This keeps customer order status live without changing Firebase Rules.
+  */
+  customerOrderStatusRef =
     db
-      .ref("publicOrderStatus")
+      .ref("store/public/orderStatus")
       .child(id);
 
   customerOrderStatusRef.on(
+
     "value",
+
     snap=>{
 
-      const data=snap.val();
+      const data =
+        snap.val();
 
       console.log(
         "Customer live status received:",
@@ -3788,14 +3831,44 @@ function startCustomerOrderStatusListener(){
         data
       );
 
-      renderLiveOrderStatus(
-        data || {
-          id,
-          status:"Status unavailable"
-        }
-      );
+      if(data){
 
+        renderLiveOrderStatus(data);
+
+      }else{
+
+        /*
+          Backward compatibility:
+          older orders may exist only under publicOrderStatus.
+        */
+        db.ref(
+          "publicOrderStatus/" + id
+        )
+        .once("value")
+        .then(oldSnap=>{
+
+          const oldData =
+            oldSnap.val();
+
+          renderLiveOrderStatus(
+            oldData || {
+              id,
+              status:"Status unavailable"
+            }
+          );
+
+        })
+        .catch(()=>{
+
+          renderLiveOrderStatus({
+            id,
+            status:"Status unavailable"
+          });
+
+        });
+      }
     },
+
     err=>{
 
       console.error(
@@ -3803,14 +3876,33 @@ function startCustomerOrderStatusListener(){
         err
       );
 
-      renderLiveOrderStatus({
-        id,
-        status:"Status unavailable"
-      });
+      /*
+        Try the old public path if the new mirror listener fails.
+      */
+      db.ref(
+        "publicOrderStatus/" + id
+      )
+      .once("value")
+      .then(oldSnap=>{
 
+        renderLiveOrderStatus(
+          oldSnap.val() || {
+            id,
+            status:"Status unavailable"
+          }
+        );
+
+      })
+      .catch(()=>{
+
+        renderLiveOrderStatus({
+          id,
+          status:"Status unavailable"
+        });
+
+      });
     }
   );
-
 }
 
 
@@ -4296,17 +4388,16 @@ async function removeCategory(category){
 
 function getPackStock(pack){
 
-  const n=
-    Number(
-      pack &&
-      pack.stock
-    );
+  const n = Number(
+    pack && pack.stock
+  );
 
-  return
+  return (
     Number.isFinite(n) &&
-    n>0
-    ?Math.floor(n)
-    :0;
+    n > 0
+      ? Math.floor(n)
+      : 0
+  );
 
 }
 
@@ -5325,33 +5416,213 @@ function buildOrderCard(order){
 
 
 async function moveOrder(orderId,nextStatus){
-  if(!auth?.currentUser || auth.currentUser.email!=="jayvik.india@gmail.com"){alert("Admin login required.");return;}
-  const order=orders.find(o=>String(o.id)===String(orderId));
+
+  if(
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    alert("Admin login required.");
+    return;
+  }
+
+  const order=
+    orders.find(
+      o=>String(o.id)===String(orderId)
+    );
+
   if(!order)return;
-  const sequence=["pending","ready","packing","packed","dispatched"];
-  const currentIndex=sequence.indexOf(order.status);
-  const nextIndex=sequence.indexOf(nextStatus);
-  if(currentIndex<0 || nextIndex!==currentIndex+1){alert("Order must move step-by-step: Pending → Ready → Packing → Packed → Dispatched.");return;}
-  if((nextStatus==="ready"||nextStatus==="packing"||nextStatus==="packed")&&!orderHasStock(order)){alert("This order cannot move forward because one or more pack sizes do not have enough stock.");renderOrders();return;}
+
+  const sequence=[
+    "pending",
+    "ready",
+    "packing",
+    "packed",
+    "dispatched"
+  ];
+
+  const currentIndex=
+    sequence.indexOf(order.status);
+
+  const nextIndex=
+    sequence.indexOf(nextStatus);
+
+  if(
+    currentIndex<0 ||
+    nextIndex!==currentIndex+1
+  ){
+    alert(
+      "Order must move step-by-step: Pending → Ready → Packing → Packed → Dispatched."
+    );
+    return;
+  }
+
+  if(
+    (
+      nextStatus==="ready" ||
+      nextStatus==="packing" ||
+      nextStatus==="packed"
+    ) &&
+    !orderHasStock(order)
+  ){
+    alert(
+      "This order cannot move forward because one or more pack sizes do not have enough stock."
+    );
+    renderOrders();
+    return;
+  }
+
   const oldStatus=order.status;
   const oldDeducted=!!order.stockDeducted;
-  const oldStock=order.items.map(item=>{const p=findPack(item.productId,item.size);return {p,stock:p?Number(p.stock||0):null};});
-  if(nextStatus==="packed"&&!order.stockDeducted){order.items.forEach(item=>{const pack=findPack(item.productId,item.size);if(pack)pack.stock=Math.max(0,Number(pack.stock||0)-Number(item.qty||0));});order.stockDeducted=true;}
+
+  const oldStock=
+    order.items.map(item=>{
+
+      const p=
+        findPack(
+          item.productId,
+          item.size
+        );
+
+      return{
+        p,
+        stock:
+          p
+            ?Number(p.stock||0)
+            :null
+      };
+    });
+
+  if(
+    nextStatus==="packed" &&
+    !order.stockDeducted
+  ){
+
+    order.items.forEach(item=>{
+
+      const pack=
+        findPack(
+          item.productId,
+          item.size
+        );
+
+      if(pack){
+
+        pack.stock=
+          Math.max(
+            0,
+            Number(pack.stock||0)-
+            Number(item.qty||0)
+          );
+      }
+    });
+
+    order.stockDeducted=true;
+  }
+
   order.status=nextStatus;
   order.updatedAt=new Date().toISOString();
+
   try{
-    if(!firebaseReady||!db)throw new Error("Firebase is not ready. The order status was not saved.");
+
+    if(
+      !firebaseReady ||
+      !db
+    ){
+      throw new Error(
+        "Firebase is not ready. The order status was not saved."
+      );
+    }
+
+    const statusData=
+      publicOrderStatusPayload(order);
+
     const updates={};
-    updates["/orders/"+String(order.id)]=order;
-    updates["/publicOrderStatus/"+String(order.id)]=publicOrderStatusPayload(order);
-    if(nextStatus==="packed"&&!oldDeducted)updates["/store/public"]={products,categories,logo,website};
+
+    /* Full order for Admin */
+    updates[
+      "/orders/" + String(order.id)
+    ]=order;
+
+    /* Existing public order status */
+    updates[
+      "/publicOrderStatus/" + String(order.id)
+    ]=statusData;
+
+    /* Live customer-facing order status */
+    updates[
+      "/store/public/orderStatus/" + String(order.id)
+    ]=statusData;
+
+    /*
+      When an order is packed, update catalogue/inventory
+      children individually. Do NOT replace /store/public,
+      otherwise customer live order-status data would be deleted.
+    */
+    if(
+      nextStatus==="packed" &&
+      !oldDeducted
+    ){
+
+      updates[
+        "/store/public/products"
+      ]=products;
+
+      updates[
+        "/store/public/categories"
+      ]=categories;
+
+      updates[
+        "/store/public/logo"
+      ]=logo;
+
+      updates[
+        "/store/public/website"
+      ]=website;
+    }
+
     await db.ref().update(updates);
-    localStorage.setItem("jayvik_orders",JSON.stringify(orders));
-    renderOrders();renderAdminProducts();
-    showSaveNotification("Order "+order.id+" updated to "+nextStatus+" and saved to Firebase.");
+
+    localStorage.setItem(
+      "jayvik_orders",
+      JSON.stringify(orders)
+    );
+
+    renderOrders();
+    renderAdminProducts();
+
+    showSaveNotification(
+      "Order " +
+      order.id +
+      " updated to " +
+      nextStatus +
+      " and saved to Firebase."
+    );
+
   }catch(err){
-    console.error("Order status save failed:",err);order.status=oldStatus;order.stockDeducted=oldDeducted;oldStock.forEach(x=>{if(x.p)x.p.stock=x.stock;});
-    renderOrders();renderAdminProducts();showSaveNotification("Order status could not be saved to Firebase. "+(err?.message||""),true);
+
+    console.error(
+      "Order status save failed:",
+      err
+    );
+
+    order.status=oldStatus;
+    order.stockDeducted=oldDeducted;
+
+    oldStock.forEach(x=>{
+
+      if(x.p)
+        x.p.stock=x.stock;
+
+    });
+
+    renderOrders();
+    renderAdminProducts();
+
+    showSaveNotification(
+      "Order status could not be saved to Firebase. " +
+      (err?.message||""),
+      true
+    );
   }
 }
 
