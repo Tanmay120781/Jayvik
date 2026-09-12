@@ -737,7 +737,7 @@ footer{
 
 .inventory-row{
   display:grid;
-  grid-template-columns:1fr 100px 100px;
+  grid-template-columns:1fr 100px 90px 100px;
   gap:8px;
   align-items:center;
   padding:10px 0;
@@ -3443,6 +3443,20 @@ function showSaveNotification(
 }
 
 
+function saveCartLocal(){
+
+  /*
+    Cart changes are customer-local only.
+    NEVER write the public Firebase catalogue from a cart action,
+    because that can overwrite unrelated inventory with stale values.
+  */
+  localStorage.setItem(
+    "jayvik_cart",
+    JSON.stringify(cart)
+  );
+}
+
+
 async function saveAll(
   showMessage=false,
   message="Changes saved successfully."
@@ -3481,11 +3495,11 @@ async function saveAll(
 
   /*
     IMPORTANT:
-    Only the authenticated admin writes
-    the public catalogue.
+    Only authenticated Admin catalogue/settings actions should call saveAll().
+    Customer cart actions use saveCartLocal() and NEVER write store/public.
+    This prevents stale local product stock from depleting unrelated inventory.
 
-    Product photos are now included directly
-    inside the Realtime Database product data.
+    Product photos are included directly inside the Realtime Database product data.
   */
 
   if(
@@ -4725,7 +4739,7 @@ function addToCart(productId){
 
   }
 
-  saveAll();
+  saveCartLocal();
 
   renderCart();
 
@@ -4919,7 +4933,7 @@ function changeQty(
 
   }
 
-  saveAll();
+  saveCartLocal();
 
   renderCart();
 
@@ -4933,7 +4947,7 @@ function removeCartItem(index){
     1
   );
 
-  saveAll();
+  saveCartLocal();
 
   renderCart();
 
@@ -5964,8 +5978,17 @@ function renderInventory(){
             >
 
             <button
+              class="btn btn-light"
+              onclick="increasePackStock(${product.id},${packIndex},10)"
+              title="Add 10 to this pack stock"
+            >
+              +10 Stock
+            </button>
+
+            <button
               class="btn btn-green"
               onclick="savePackStock(${product.id},${packIndex})"
+              title="Save the quantity entered manually"
             >
               Save
             </button>
@@ -5981,51 +6004,230 @@ function renderInventory(){
 }
 
 
+async function increasePackStock(
+  productId,
+  packIndex,
+  amount=10
+){
+
+  const productIndex=
+    products.findIndex(
+      p=>String(p.id)===String(productId)
+    );
+
+  if(productIndex<0){
+    alert("Product could not be found. Please refresh and try again.");
+    return;
+  }
+
+  const product=products[productIndex];
+
+  if(
+    !product ||
+    !Array.isArray(product.packs) ||
+    !product.packs[packIndex]
+  ){
+    alert("Pack could not be found. Please refresh and try again.");
+    return;
+  }
+
+  if(
+    !firebaseReady ||
+    !db ||
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    showSaveNotification(
+      "Inventory was not changed. Please log in as Admin and try again.",
+      true
+    );
+    return;
+  }
+
+  const increment=
+    Number.isFinite(Number(amount))
+      ? Math.max(0,Math.floor(Number(amount)))
+      : 10;
+
+  if(increment<=0)return;
+
+  try{
+
+    const stockRef=
+      db.ref(
+        `store/public/products/${productIndex}/packs/${packIndex}/stock`
+      );
+
+    /*
+      Atomic +10 update on only this exact pack.
+      Firebase uses the latest server value, preventing stale inventory overwrite.
+    */
+    const result=
+      await stockRef.transaction(
+        current=>{
+          const currentStock=
+            Number.isFinite(Number(current))
+              ? Math.max(0,Math.floor(Number(current)))
+              : 0;
+
+          return currentStock+increment;
+        }
+      );
+
+    if(!result.committed){
+      throw new Error("Firebase did not commit the inventory increase.");
+    }
+
+    const newStock=
+      Math.max(
+        0,
+        Math.floor(Number(result.snapshot.val())||0)
+      );
+
+    product.packs[packIndex].stock=newStock;
+
+    localStorage.setItem(
+      "jayvik_products",
+      JSON.stringify(products)
+    );
+
+    showSaveNotification(
+      `${product.name} (${product.packs[packIndex].size}) increased by ${increment}. New stock: ${newStock}.`
+    );
+
+    refreshOrderStatuses();
+    renderInventory();
+    renderOrders();
+    renderAdminProducts();
+    renderProducts();
+    updateStats();
+
+  }catch(err){
+
+    console.error(
+      "Pack inventory increase failed:",
+      err
+    );
+
+    showSaveNotification(
+      "Inventory was NOT increased because Firebase did not confirm the update.",
+      true
+    );
+  }
+}
+
+
 async function savePackStock(
   productId,
   packIndex
 ){
 
-  const product=
-    products.find(
-      p=>p.id===productId
+  const productIndex=
+    products.findIndex(
+      p=>String(p.id)===String(productId)
     );
+
+  if(productIndex<0){
+    alert("Product could not be found. Please refresh and try again.");
+    return;
+  }
+
+  const product=products[productIndex];
 
   if(
     !product ||
+    !Array.isArray(product.packs) ||
     !product.packs[packIndex]
-  )
+  ){
+    alert("Pack could not be found. Please refresh and try again.");
     return;
+  }
 
   const input=
     document.getElementById(
-      `stock-${productId}-${packIndex}`
+      `stock-${product.id}-${packIndex}`
     );
 
-  product.packs[
-    packIndex
-  ].stock=
-    Math.max(
-      0,
-      Number(
-        input.value||0
+  if(!input)return;
+
+  const rawValue=String(input.value??"").trim();
+  const parsed=Number(rawValue);
+
+  if(
+    rawValue==="" ||
+    !Number.isFinite(parsed) ||
+    parsed<0
+  ){
+    alert("Please enter a valid stock quantity of 0 or more.");
+    input.focus();
+    return;
+  }
+
+  const newStock=Math.floor(parsed);
+  const oldStock=Number(product.packs[packIndex].stock||0);
+
+  if(
+    !firebaseReady ||
+    !db ||
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    showSaveNotification(
+      "Inventory was not saved. Please log in as Admin and try again.",
+      true
+    );
+    input.value=oldStock;
+    return;
+  }
+
+  try{
+
+    /*
+      IMPORTANT:
+      Save ONLY this exact pack stock.
+      Do not call saveAll() here because that rewrites the full
+      products array and can overwrite other pack stock values.
+    */
+    await db
+      .ref(
+        `store/public/products/${productIndex}/packs/${packIndex}/stock`
       )
+      .set(newStock);
+
+    /* Update local state only after Firebase confirms the write. */
+    product.packs[packIndex].stock=newStock;
+
+    localStorage.setItem(
+      "jayvik_products",
+      JSON.stringify(products)
     );
 
-  const saved=
-    await saveAll(
-      true,
-      "Pack inventory updated successfully."
+    showSaveNotification(
+      `${product.name} (${product.packs[packIndex].size}) stock updated to ${newStock}.`
     );
 
-  if(!saved)return;
+    refreshOrderStatuses();
+    renderInventory();
+    renderOrders();
+    renderAdminProducts();
+    renderProducts();
+    updateStats();
 
-  refreshOrderStatuses();
+  }catch(err){
 
-  renderOrders();
+    console.error(
+      "Pack inventory save failed:",
+      err
+    );
 
-  renderAdminProducts();
+    product.packs[packIndex].stock=oldStock;
+    input.value=oldStock;
 
+    showSaveNotification(
+      "Inventory was NOT changed because Firebase did not confirm the save.",
+      true
+    );
+  }
 }
 
 
