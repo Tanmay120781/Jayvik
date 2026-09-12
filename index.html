@@ -2281,30 +2281,52 @@ try{
       Product photos are now Base64 strings stored in Realtime Database.
     */
 
-    db.ref("store/public").on("value",snap=>{
+    
+function normalizeFirebaseProducts(rawProducts){
+  if(Array.isArray(rawProducts)){
+    return rawProducts.filter(Boolean);
+  }
+
+  if(rawProducts && typeof rawProducts==="object"){
+    return Object.keys(rawProducts)
+      .sort((a,b)=>{
+        const na=Number(a);
+        const nb=Number(b);
+        if(Number.isFinite(na) && Number.isFinite(nb)) return na-nb;
+        return String(a).localeCompare(String(b));
+      })
+      .map(key=>rawProducts[key])
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+db.ref("store/public").on("value",snap=>{
 
       const data=snap.val();
 
       if(!data)return;
 
-      if(
-        Array.isArray(data.products) &&
-        data.products.length
-      ){
+      const incomingProducts=
+        normalizeFirebaseProducts(
+          data.products
+        );
 
-        products=data.products;
+      if(incomingProducts.length){
 
-        products.forEach(product=>{
+        products=incomingProducts.map(product=>({
+          ...product,
+          packs:(product.packs||[]).map(pack=>({
+            ...pack,
+            stock:Number.isFinite(Number(pack.stock))
+              ? Number(pack.stock)
+              : 0
+          }))
+        }));
 
-          product.packs=
-            (product.packs||[]).map(pack=>({
-              ...pack,
-              stock:Number.isFinite(Number(pack.stock))
-                ? Number(pack.stock)
-                : 0
-            }));
-
-        });
+        normalizeGrainAndDaliyaCategories();
+        syncVerifiedCatalogueProducts();
 
         localStorage.setItem(
           "jayvik_products",
@@ -5177,10 +5199,15 @@ async function refreshProductsForOrderStockCheck(){
   const latest=
     snap.val();
 
-  if(Array.isArray(latest)){
+  const latestProducts=
+    normalizeFirebaseProducts(
+      latest
+    );
+
+  if(latestProducts.length){
 
     products=
-      latest.map(product=>({
+      latestProducts.map(product=>({
         ...product,
         packs:(product.packs||[]).map(pack=>({
           ...pack,
@@ -5189,6 +5216,9 @@ async function refreshProductsForOrderStockCheck(){
             : 0
         }))
       }));
+
+    normalizeGrainAndDaliyaCategories();
+    syncVerifiedCatalogueProducts();
 
     localStorage.setItem(
       "jayvik_products",
@@ -5556,7 +5586,111 @@ function refreshOrderStatuses(){
   return;
 }
 
-function renderOrders(){
+
+let adminInventoryRefreshInProgress=false;
+
+async function refreshAdminInventoryFromFirebase(){
+
+  if(
+    adminInventoryRefreshInProgress ||
+    !firebaseReady ||
+    !db
+  ){
+    return;
+  }
+
+  adminInventoryRefreshInProgress=true;
+
+  try{
+    const snap=
+      await db.ref("store/public/products").once("value");
+
+    const latestProducts=
+      normalizeFirebaseProducts(
+        snap.val()
+      );
+
+    if(latestProducts.length){
+      products=
+        latestProducts.map(product=>({
+          ...product,
+          packs:(product.packs||[]).map(pack=>({
+            ...pack,
+            stock:Number.isFinite(Number(pack.stock))
+              ? Number(pack.stock)
+              : 0
+          }))
+        }));
+
+      normalizeGrainAndDaliyaCategories();
+      syncVerifiedCatalogueProducts();
+
+      localStorage.setItem(
+        "jayvik_products",
+        JSON.stringify(products)
+      );
+    }
+
+  }catch(err){
+    console.error(
+      "Admin inventory refresh failed:",
+      err
+    );
+  }finally{
+    adminInventoryRefreshInProgress=false;
+  }
+}
+
+async function checkOrderInventory(orderId){
+
+  await refreshAdminInventoryFromFirebase();
+
+  const order=
+    orders.find(
+      o=>String(o.id)===String(orderId)
+    );
+
+  await renderOrders(false);
+  renderInventory();
+
+  if(!order)return;
+
+  const missing=
+    getOrderMissingItems(order);
+
+  if(missing.length){
+    const details=
+      missing.map(item=>{
+        const pack=
+          findPack(
+            item.productId,
+            item.size,
+            item.name
+          );
+        const available=
+          pack
+          ? getPackStock(pack)
+          : 0;
+
+        return `${item.name} (${item.size}) — ${available} in stock, ${Number(item.qty||0)} required`;
+      }).join("\n");
+
+    alert(
+      "Current Firebase inventory is still insufficient for:\n\n"+
+      details
+    );
+  }else{
+    alert(
+      "✓ Inventory is sufficient for this order. You can now click Mark Ready."
+    );
+  }
+}
+
+async function renderOrders(refreshInventory=true){
+
+  if(refreshInventory){
+    await refreshAdminInventoryFromFirebase();
+  }
 
   refreshOrderStatuses();
 
@@ -5727,7 +5861,7 @@ function buildOrderCard(order){
 
       `<button
         class="btn btn-light"
-        onclick="renderInventory();alert('Please add the missing pack stock shown below.');"
+        onclick="checkOrderInventory('${escapeAttr(order.id)}')"
       >
         Check Inventory
       </button>`
