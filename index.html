@@ -3085,7 +3085,8 @@ JSON.parse(
   "Cold Pressed Oils",
   "Ghee",
   "Millet Corner",
-  "Grains & Daliya",
+  "Grains",
+  "Daliya",
   "Spices",
   "Jaggery",
   "Honey",
@@ -3097,11 +3098,15 @@ JSON.parse(
 ];
 
 function syncCategoriesWithProducts(){
-  const required=["Grains & Daliya"];
+  const required=["Grains","Daliya"];
 
   required.forEach(cat=>{
     if(!categories.includes(cat)) categories.push(cat);
   });
+
+  categories=(categories||[]).filter(cat=>
+    String(cat).trim().toLowerCase()!=="grains & daliya"
+  );
 
   (products||[]).forEach(product=>{
     const cat=String(product?.category||"").trim();
@@ -3116,6 +3121,90 @@ function syncCategoriesWithProducts(){
 
 
 
+
+function normalizeGrainAndDaliyaCategories(){
+
+  if(!Array.isArray(products))return;
+
+  const daliyaWords=[
+    "daliya",
+    "dalia",
+    "broken wheat",
+    "wheat daliya",
+    "wheat dalia",
+    "lapsi",
+    "bulgur"
+  ];
+
+  const grainWords=[
+    "rice",
+    "wheat",
+    "jowar",
+    "ragi",
+    "bajra",
+    "barley",
+    "grain"
+  ];
+
+  products.forEach(product=>{
+
+    const name=
+      String(product?.name||"")
+        .trim()
+        .toLowerCase();
+
+    const currentCategory=
+      String(product?.category||"")
+        .trim();
+
+    const isOldCombined=
+      currentCategory.toLowerCase()==="grains & daliya" ||
+      currentCategory.toLowerCase()==="grain & daliya" ||
+      currentCategory.toLowerCase()==="grains/daliya";
+
+    const isDaliya=
+      daliyaWords.some(word=>name.includes(word));
+
+    const isGrain=
+      grainWords.some(word=>name.includes(word));
+
+    if(isDaliya){
+      product.category="Daliya";
+      return;
+    }
+
+    if(isOldCombined || currentCategory.toLowerCase()==="grains"){
+      if(isGrain || !isDaliya){
+        product.category="Grains";
+      }
+    }
+  });
+
+  categories=
+    (categories||[])
+      .filter(cat=>
+        ![
+          "grains & daliya",
+          "grain & daliya",
+          "grains/daliya"
+        ].includes(String(cat).trim().toLowerCase())
+      );
+
+  if(!categories.includes("Grains"))categories.push("Grains");
+  if(!categories.includes("Daliya"))categories.push("Daliya");
+
+  localStorage.setItem(
+    "jayvik_products",
+    JSON.stringify(products)
+  );
+
+  localStorage.setItem(
+    "jayvik_categories",
+    JSON.stringify(categories)
+  );
+}
+
+
 /*
   VERIFIED JAYVIK CATALOGUE SAFETY NET
   Adds only products whose names/prices were previously confirmed.
@@ -3125,7 +3214,7 @@ const verifiedCatalogueProducts = [
   {
     id:20,
     name:"Organic Indrayani Rice",
-    category:"Grains & Daliya",
+    category:"Grains",
     image:placeholder("Organic Indrayani Rice"),
     packs:[
       {size:"1 kg",price:115,stock:0}
@@ -3135,7 +3224,7 @@ const verifiedCatalogueProducts = [
   {
     id:21,
     name:"Indrayani Rice Flour",
-    category:"Grains & Daliya",
+    category:"Grains",
     image:placeholder("Indrayani Rice Flour"),
     packs:[
       {size:"1 kg",price:125,stock:0}
@@ -3145,7 +3234,7 @@ const verifiedCatalogueProducts = [
   {
     id:22,
     name:"Organic Sharbati Wheat",
-    category:"Grains & Daliya",
+    category:"Grains",
     image:placeholder("Organic Sharbati Wheat"),
     packs:[
       {size:"1 kg",price:60,stock:0}
@@ -3191,6 +3280,7 @@ function syncVerifiedCatalogueProducts(){
     }
   });
 
+  normalizeGrainAndDaliyaCategories();
   syncCategoriesWithProducts();
 
   localStorage.setItem(
@@ -7425,10 +7515,72 @@ async function prepareProductImage(
 
   return await prepareImageForDatabase(
     file,
-    900,
-    0.68
+    720,
+    0.58
   );
 
+}
+
+
+
+async function saveSingleProductToFirebase(product){
+
+  if(
+    !firebaseReady ||
+    !db ||
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    throw new Error("Admin login or Firebase connection is not ready.");
+  }
+
+  const productIndex=
+    products.findIndex(
+      p=>String(p.id)===String(product.id)
+    );
+
+  if(productIndex<0){
+    throw new Error("Product could not be located in the catalogue.");
+  }
+
+  /*
+    Save ONLY this product and the current category list.
+    Do not resend every product/photo in the catalogue.
+  */
+  const savePromise=
+    db.ref().update({
+      [`store/public/products/${productIndex}`]:product,
+      "store/public/categories":categories
+    });
+
+  const timeoutPromise=
+    new Promise((_,reject)=>{
+      setTimeout(
+        ()=>reject(
+          new Error(
+            "Firebase save timed out. Please check your internet connection and try again."
+          )
+        ),
+        20000
+      );
+    });
+
+  await Promise.race([
+    savePromise,
+    timeoutPromise
+  ]);
+
+  localStorage.setItem(
+    "jayvik_products",
+    JSON.stringify(products)
+  );
+
+  localStorage.setItem(
+    "jayvik_categories",
+    JSON.stringify(categories)
+  );
+
+  return true;
 }
 
 
@@ -7722,19 +7874,18 @@ async function saveProduct(){
       Save entire public catalogue to Firebase.
     */
 
-    const saved=
-      await saveAll(
-        false
+    const currentProduct=
+      products.find(
+        p=>String(p.id)===String(productId)
       );
 
-
-    if(!saved){
-
-      throw new Error(
-        "Firebase Realtime Database could not save the catalogue."
-      );
-
+    if(!currentProduct){
+      throw new Error("Product could not be prepared for saving.");
     }
+
+    await saveSingleProductToFirebase(
+      currentProduct
+    );
 
 
     /*
@@ -7757,6 +7908,16 @@ async function saveProduct(){
     /*
       Final confirmation.
     */
+
+    if(photoStatus){
+      photoStatus.textContent=
+        finalImage &&
+        finalImage.startsWith("data:image/")
+        ? "✓ Product and photo saved successfully."
+        : "✓ Product saved successfully.";
+      photoStatus.style.display="block";
+      photoStatus.classList.remove("error");
+    }
 
     showSaveNotification(
       finalImage &&
