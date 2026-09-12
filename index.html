@@ -5206,10 +5206,7 @@ function getCartStockProblems(){
   return cart.map(item=>{
 
     const pack=
-      findPack(
-        item.productId,
-        item.size
-      );
+      findPack(item.productId,item.size,item.name);
 
     const available=
       pack
@@ -5342,7 +5339,7 @@ async function sendWhatsAppOrder(){
     /* Second in-memory safety check after Firebase refresh. */
     if(!orderHasStock(order)){
       const problems=getOrderMissingItems(order).map(item=>{
-        const pack=findPack(item.productId,item.size);
+        const pack=findPack(item.productId,item.size,item.name);
         return{
           name:item.name||"Product",
           size:item.size||"",
@@ -5456,24 +5453,69 @@ Order ID: ${order.id}`;
    ADMIN ORDERS
 ===================================================== */
 
+function normalizePackSize(value){
+  return String(value||"")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g," ")
+    .replace(/\bkilograms?\b/g,"kg")
+    .replace(/\bkgs?\b/g,"kg")
+    .replace(/\bgrams?\b/g,"g")
+    .replace(/\bgms?\b/g,"g")
+    .replace(/\blitres?\b/g,"l")
+    .replace(/\bliters?\b/g,"l")
+    .replace(/\bmls?\b/g,"ml")
+    .replace(/\s/g,"");
+}
+
 function findPack(
   productId,
-  size
+  size,
+  productName=""
 ){
 
-  const product=
+  /*
+    Orders can survive catalogue edits, category migrations and product
+    re-numbering. First try the stored product ID; if that no longer points
+    to the same product, fall back to the stored product name.
+  */
+  let product=
     products.find(
       p=>
         String(p.id)===
         String(productId)
     );
 
+  const wantedName=
+    String(productName||"")
+      .trim()
+      .toLowerCase();
+
+  if(
+    wantedName &&
+    product &&
+    String(product.name||"").trim().toLowerCase()!==wantedName
+  ){
+    product=null;
+  }
+
+  if(!product && wantedName){
+    product=
+      products.find(
+        p=>
+          String(p.name||"")
+            .trim()
+            .toLowerCase()===wantedName
+      );
+  }
+
   if(!product)return null;
 
-  return product.packs.find(
+  const wantedSize=normalizePackSize(size);
+
+  return (product.packs||[]).find(
     p=>
-      String(p.size)===
-      String(size)
+      normalizePackSize(p.size)===wantedSize
   ) || null;
 
 }
@@ -5485,10 +5527,7 @@ function getOrderMissingItems(order){
     item=>{
 
       const pack=
-        findPack(
-          item.productId,
-          item.size
-        );
+        findPack(item.productId,item.size,item.name);
 
       return (
         !pack ||
@@ -5641,10 +5680,7 @@ function buildOrderCard(order){
       item=>{
 
         const pack=
-          findPack(
-            item.productId,
-            item.size
-          );
+          findPack(item.productId,item.size,item.name);
 
         const available=
           pack
@@ -5883,10 +5919,7 @@ async function moveOrder(orderId,nextStatus){
     order.items.map(item=>{
 
       const p=
-        findPack(
-          item.productId,
-          item.size
-        );
+        findPack(item.productId,item.size,item.name);
 
       return{
         p,
@@ -5905,10 +5938,7 @@ async function moveOrder(orderId,nextStatus){
     order.items.forEach(item=>{
 
       const pack=
-        findPack(
-          item.productId,
-          item.size
-        );
+        findPack(item.productId,item.size,item.name);
 
       if(pack){
 
