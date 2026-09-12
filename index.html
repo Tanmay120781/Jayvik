@@ -2074,6 +2074,63 @@ footer{
 
       </div>
 
+      <!-- SEPARATE DISPATCHED ORDERS FOLDER -->
+      <div
+        class="admin-card"
+        id="dispatchedOrdersFolder"
+        style="border:2px solid #dfe9df"
+      >
+
+        <div class="section-title">
+
+          <div>
+            <h3 style="margin-bottom:5px">
+              📁 Dispatched Orders
+            </h3>
+
+            <div class="brand-sub">
+              Payment collection and completed-order records
+            </div>
+          </div>
+
+          <button
+            class="btn btn-light"
+            type="button"
+            onclick="renderDispatchedOrdersFolder()"
+          >
+            ↻ Refresh Folder
+          </button>
+
+        </div>
+
+        <div
+          style="
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            margin:12px 0 16px
+          "
+        >
+          <span class="notice" style="margin:0">
+            💳 Payment Pending
+          </span>
+
+          <span class="notice" style="margin:0">
+            💰 Payment Received
+          </span>
+
+          <span class="notice" style="margin:0">
+            🔒 Delete locked until payment is received
+          </span>
+        </div>
+
+        <div
+          id="dispatchedOrdersBoard"
+          class="order-columns"
+        ></div>
+
+      </div>
+
       <div class="admin-card">
 
         <h3>
@@ -5833,9 +5890,72 @@ async function renderOrders(refreshInventory=true){
     }
   );
 
+  renderDispatchedOrdersFolder();
   renderInventory();
   updateOrderStats();
 
+}
+
+
+
+function renderDispatchedOrdersFolder(){
+
+  const board=
+    document.getElementById(
+      "dispatchedOrdersBoard"
+    );
+
+  if(!board)return;
+
+  const historyOrders=
+    orders
+      .filter(
+        o=>o.status==="history"
+      )
+      .sort(
+        (a,b)=>
+          new Date(b.archivedAt||b.updatedAt||b.createdAt||0)-
+          new Date(a.archivedAt||a.updatedAt||a.createdAt||0)
+      );
+
+  board.innerHTML="";
+
+  const column=
+    document.createElement(
+      "div"
+    );
+
+  column.className="order-column";
+  column.style.minWidth="100%";
+
+  column.innerHTML=
+    `<h4>
+      📁 Dispatched Orders
+      <span class="brand-sub">
+        (${historyOrders.length})
+      </span>
+    </h4>`;
+
+  if(historyOrders.length===0){
+    column.innerHTML+=
+      `<div
+        class="empty"
+        style="padding:22px"
+      >
+        No orders saved in Dispatched Orders yet.
+        After an order reaches 🚚 Dispatched, click
+        <strong>📁 Save to Dispatched Orders</strong>.
+      </div>`;
+  }
+
+  historyOrders.forEach(
+    order=>
+      column.appendChild(
+        buildOrderCard(order)
+      )
+  );
+
+  board.appendChild(column);
 }
 
 
@@ -5854,6 +5974,17 @@ function buildOrderCard(order){
     getOrderMissingItems(
       order
     );
+
+  const paymentSummary=
+    order.status==="history"
+      ? `<div style="margin-top:8px">
+           ${
+             String(order.paymentStatus||"pending")==="received"
+               ? "💰 Payment Received"
+               : "💳 Payment Pending"
+           }
+         </div>`
+      : "";
 
   const itemHtml=
     order.items.map(
@@ -5921,6 +6052,75 @@ function buildOrderCard(order){
         Mark Ready
       </button>`;
 
+  }
+
+
+  if(
+    order.status==="dispatched"
+  ){
+    actions=
+      `<button
+        class="btn btn-light"
+        onclick="archiveDispatchedOrder('${escapeAttr(order.id)}')"
+      >
+        📁 Save to Dispatched Orders
+      </button>`;
+  }
+
+
+  if(
+    order.status==="history"
+  ){
+    const paymentReceived=
+      String(order.paymentStatus||"pending")==="received";
+
+    actions=
+      `
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div>
+          ${
+            paymentReceived
+            ? "💰 <strong>Payment Received</strong>"
+            : "💳 <strong>Payment Pending</strong>"
+          }
+        </div>
+
+        ${
+          paymentReceived
+          ? `
+            <button
+              class="btn btn-light"
+              disabled
+            >
+              💰 Payment Received
+            </button>
+
+            <button
+              class="btn btn-danger"
+              onclick="deletePaidDispatchedOrder('${escapeAttr(order.id)}')"
+            >
+              🗑 Delete Order
+            </button>
+          `
+          : `
+            <button
+              class="btn btn-green"
+              onclick="markPaymentReceived('${escapeAttr(order.id)}')"
+            >
+              💰 Payment Received
+            </button>
+
+            <button
+              class="btn btn-light"
+              disabled
+              title="Payment must be received before this order can be deleted."
+            >
+              🔒 Delete Locked
+            </button>
+          `
+        }
+      </div>
+      `;
   }
 
 
@@ -6000,7 +6200,7 @@ function buildOrderCard(order){
     </div>
 
     <div class="order-items">
-      ${itemHtml}
+      ${itemHtml}${paymentSummary}
     </div>
 
     <strong>
@@ -6033,6 +6233,254 @@ function buildOrderCard(order){
 
   return card;
 
+}
+
+
+
+async function archiveDispatchedOrder(orderId){
+
+  if(
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    alert("Admin login required.");
+    return;
+  }
+
+  const order=
+    orders.find(
+      o=>String(o.id)===String(orderId)
+    );
+
+  if(!order)return;
+
+  if(order.status!=="dispatched"){
+    alert("Only dispatched orders can be saved in Dispatched Orders.");
+    return;
+  }
+
+  if(
+    !confirm(
+      "Save Order "+order.id+" in the Dispatched Orders folder?"
+    )
+  ){
+    return;
+  }
+
+  const oldStatus=order.status;
+  const oldUpdatedAt=order.updatedAt;
+
+  order.status="history";
+  order.paymentStatus="pending";
+  order.paymentReceivedAt=null;
+  order.archivedAt=new Date().toISOString();
+  order.updatedAt=order.archivedAt;
+
+  try{
+
+    if(
+      !firebaseReady ||
+      !db
+    ){
+      throw new Error("Firebase is not ready.");
+    }
+
+    const statusData=
+      publicOrderStatusPayload({
+        ...order,
+        status:"dispatched"
+      });
+
+    await db.ref().update({
+      ["/orders/"+String(order.id)]:order,
+      ["/store/public/orderStatus/"+String(order.id)]:statusData
+    });
+
+    localStorage.setItem(
+      "jayvik_orders",
+      JSON.stringify(orders)
+    );
+
+    await renderOrders();
+
+    showSaveNotification(
+      "Order "+order.id+" saved in Dispatched Orders."
+    );
+
+  }catch(err){
+
+    order.status=oldStatus;
+    order.updatedAt=oldUpdatedAt;
+    delete order.archivedAt;
+    delete order.paymentStatus;
+    delete order.paymentReceivedAt;
+
+    await renderOrders();
+
+    showSaveNotification(
+      "Could not save dispatched order. "+
+      (err?.message||""),
+      true
+    );
+  }
+}
+
+
+
+async function markPaymentReceived(orderId){
+
+  if(
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    alert("Admin login required.");
+    return;
+  }
+
+  const order=
+    orders.find(
+      o=>String(o.id)===String(orderId)
+    );
+
+  if(!order)return;
+
+  if(order.status!=="history"){
+    alert("Payment can be marked received only for Dispatched Orders.");
+    return;
+  }
+
+  if(String(order.paymentStatus||"pending")==="received"){
+    alert("Payment is already marked as received.");
+    return;
+  }
+
+  const oldPaymentStatus=order.paymentStatus;
+  const oldPaymentReceivedAt=order.paymentReceivedAt;
+  const oldUpdatedAt=order.updatedAt;
+
+  const now=new Date().toISOString();
+
+  order.paymentStatus="received";
+  order.paymentReceivedAt=now;
+  order.updatedAt=now;
+
+  try{
+
+    if(
+      !firebaseReady ||
+      !db
+    ){
+      throw new Error("Firebase is not ready.");
+    }
+
+    await db
+      .ref("orders/"+String(order.id))
+      .update({
+        paymentStatus:"received",
+        paymentReceivedAt:now,
+        updatedAt:now
+      });
+
+    localStorage.setItem(
+      "jayvik_orders",
+      JSON.stringify(orders)
+    );
+
+    await renderOrders();
+
+    showSaveNotification(
+      "Payment received saved for Order "+order.id+". Delete Order is now active."
+    );
+
+  }catch(err){
+
+    order.paymentStatus=oldPaymentStatus;
+    order.paymentReceivedAt=oldPaymentReceivedAt;
+    order.updatedAt=oldUpdatedAt;
+
+    await renderOrders();
+
+    showSaveNotification(
+      "Payment status could not be saved to Firebase. "+
+      (err?.message||""),
+      true
+    );
+  }
+}
+
+
+async function deletePaidDispatchedOrder(orderId){
+
+  if(
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    alert("Admin login required.");
+    return;
+  }
+
+  const order=
+    orders.find(
+      o=>String(o.id)===String(orderId)
+    );
+
+  if(!order)return;
+
+  if(order.status!=="history"){
+    alert("Only orders in Dispatched Orders can be deleted.");
+    return;
+  }
+
+  if(String(order.paymentStatus||"pending")!=="received"){
+    alert("Delete Locked: Payment has not been received yet.");
+    return;
+  }
+
+  const ok=confirm(
+    "Are you sure you want to permanently delete Order "+order.id+"?\n\n"+
+    "This will remove the order from Firebase. This action cannot be undone."
+  );
+
+  if(!ok)return;
+
+  try{
+
+    if(
+      !firebaseReady ||
+      !db
+    ){
+      throw new Error("Firebase is not ready.");
+    }
+
+    await db.ref().update({
+      ["/orders/"+String(order.id)]:null,
+      ["/store/public/orderStatus/"+String(order.id)]:null
+    });
+
+    orders=
+      orders.filter(
+        o=>String(o.id)!==String(orderId)
+      );
+
+    localStorage.setItem(
+      "jayvik_orders",
+      JSON.stringify(orders)
+    );
+
+    await renderOrders();
+
+    showSaveNotification(
+      "Order "+order.id+" permanently deleted from Firebase."
+    );
+
+  }catch(err){
+
+    showSaveNotification(
+      "Order could not be deleted from Firebase. "+
+      (err?.message||""),
+      true
+    );
+  }
 }
 
 
