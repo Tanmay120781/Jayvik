@@ -5498,58 +5498,104 @@ function normalizePackSize(value){
     .replace(/\s/g,"");
 }
 
+function normalizeProductName(value){
+  return String(value||"")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g," and ")
+    .replace(/[^a-z0-9]+/g," ")
+    .replace(/\b(organic|natural|npop|certified)\b/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function productNamesCompatible(a,b){
+  const na=normalizeProductName(a);
+  const nb=normalizeProductName(b);
+
+  if(!na || !nb)return false;
+  if(na===nb)return true;
+
+  /*
+    Safe legacy-name compatibility:
+    "Ragi" can match "Ragi Flakes", but unrelated products such as
+    "Ragi Flour" and "Ragi Flakes" do not match each other merely
+    because both contain "Ragi".
+  */
+  const genericSuffixes=[
+    "flakes",
+    "seeds",
+    "grain",
+    "grains"
+  ];
+
+  const stripGeneric=name=>{
+    const parts=name.split(" ").filter(Boolean);
+    const filtered=parts.filter(x=>!genericSuffixes.includes(x));
+    return filtered.join(" ").trim();
+  };
+
+  const sa=stripGeneric(na);
+  const sb=stripGeneric(nb);
+
+  return !!sa && sa===sb;
+}
+
 function findPack(
   productId,
   size,
   productName=""
 ){
 
+  const wantedSize=normalizePackSize(size);
+  const wantedName=String(productName||"").trim();
+
   /*
-    Orders can survive catalogue edits, category migrations and product
-    re-numbering. First try the stored product ID; if that no longer points
-    to the same product, fall back to the stored product name.
+    1) Prefer product ID when the product name is compatible and
+       the requested pack size exists.
   */
   let product=
     products.find(
-      p=>
-        String(p.id)===
-        String(productId)
+      p=>String(p.id)===String(productId)
     );
 
-  const wantedName=
-    String(productName||"")
-      .trim()
-      .toLowerCase();
+  if(product){
+    const pack=(product.packs||[]).find(
+      p=>normalizePackSize(p.size)===wantedSize
+    );
 
-  if(
-    wantedName &&
-    product &&
-    String(product.name||"").trim().toLowerCase()!==wantedName
-  ){
-    product=null;
+    if(
+      pack &&
+      (
+        !wantedName ||
+        productNamesCompatible(product.name,wantedName)
+      )
+    ){
+      return pack;
+    }
   }
 
-  if(!product && wantedName){
-    product=
-      products.find(
-        p=>
-          String(p.name||"")
-            .trim()
-            .toLowerCase()===wantedName
-      );
+  /*
+    2) Fall back to exact/compatible product name + exact pack size.
+       This handles old orders created before catalogue IDs changed.
+  */
+  const candidates=
+    products.filter(p=>
+      productNamesCompatible(
+        p.name,
+        wantedName
+      )
+    );
+
+  for(const candidate of candidates){
+    const pack=(candidate.packs||[]).find(
+      p=>normalizePackSize(p.size)===wantedSize
+    );
+    if(pack)return pack;
   }
 
-  if(!product)return null;
-
-  const wantedSize=normalizePackSize(size);
-
-  return (product.packs||[]).find(
-    p=>
-      normalizePackSize(p.size)===wantedSize
-  ) || null;
-
+  return null;
 }
-
 
 function getOrderMissingItems(order){
 
@@ -6007,6 +6053,12 @@ async function moveOrder(orderId,nextStatus){
 
   if(!order)return;
 
+  /*
+    Always check the latest Firebase inventory at the moment
+    the Admin changes order status.
+  */
+  await refreshAdminInventoryFromFirebase();
+
   const sequence=[
     "pending",
     "ready",
@@ -6039,9 +6091,25 @@ async function moveOrder(orderId,nextStatus){
     ) &&
     !orderHasStock(order)
   ){
+    const missingNow=getOrderMissingItems(order);
+
+    const details=missingNow.map(item=>{
+      const pack=findPack(
+        item.productId,
+        item.size,
+        item.name
+      );
+      const available=
+        pack ? getPackStock(pack) : 0;
+
+      return `${item.name} (${item.size}) — ${available} in stock, ${Number(item.qty||0)} required`;
+    }).join("\n");
+
     alert(
-      "This order cannot move forward because one or more pack sizes do not have enough stock."
+      "This order cannot move forward because current Firebase stock is insufficient:\n\n"+
+      details
     );
+
     renderOrders();
     return;
   }
