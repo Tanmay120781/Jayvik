@@ -2085,7 +2085,18 @@ footer{
           Example: 500 g and 1 kg are different stock items.
         </p>
 
-        <div id="inventoryList"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 16px">
+  <button
+    id="add10AllInventoryBtn"
+    class="btn btn-green"
+    type="button"
+    onclick="add10ToAllInventory()"
+  >
+    +10 to ALL Inventory
+  </button>
+</div>
+
+<div id="inventoryList"></div>
 
       </div>
 
@@ -2309,10 +2320,7 @@ try{
 
         categories=data.categories;
 
-        localStorage.setItem(
-          "jayvik_categories",
-          JSON.stringify(categories)
-        );
+        syncCategoriesWithProducts();
 
       }
 
@@ -3077,6 +3085,7 @@ JSON.parse(
   "Cold Pressed Oils",
   "Ghee",
   "Millet Corner",
+  "Grains & Daliya",
   "Spices",
   "Jaggery",
   "Honey",
@@ -3087,6 +3096,108 @@ JSON.parse(
   "Others"
 ];
 
+function syncCategoriesWithProducts(){
+  const required=["Grains & Daliya"];
+
+  required.forEach(cat=>{
+    if(!categories.includes(cat)) categories.push(cat);
+  });
+
+  (products||[]).forEach(product=>{
+    const cat=String(product?.category||"").trim();
+    if(cat && !categories.includes(cat)) categories.push(cat);
+  });
+
+  localStorage.setItem(
+    "jayvik_categories",
+    JSON.stringify(categories)
+  );
+}
+
+
+
+/*
+  VERIFIED JAYVIK CATALOGUE SAFETY NET
+  Adds only products whose names/prices were previously confirmed.
+  Existing Firebase/Admin-edited versions are never overwritten.
+*/
+const verifiedCatalogueProducts = [
+  {
+    id:20,
+    name:"Organic Indrayani Rice",
+    category:"Grains & Daliya",
+    image:placeholder("Organic Indrayani Rice"),
+    packs:[
+      {size:"1 kg",price:115,stock:0}
+    ],
+    description:"Organic Indrayani rice."
+  },
+  {
+    id:21,
+    name:"Indrayani Rice Flour",
+    category:"Grains & Daliya",
+    image:placeholder("Indrayani Rice Flour"),
+    packs:[
+      {size:"1 kg",price:125,stock:0}
+    ],
+    description:"Fresh Indrayani rice flour."
+  },
+  {
+    id:22,
+    name:"Organic Sharbati Wheat",
+    category:"Grains & Daliya",
+    image:placeholder("Organic Sharbati Wheat"),
+    packs:[
+      {size:"1 kg",price:60,stock:0}
+    ],
+    description:"NPOP certified organic Sharbati wheat."
+  },
+  {
+    id:23,
+    name:"Organic Jaggery Powder",
+    category:"Jaggery",
+    image:placeholder("Organic Jaggery Powder"),
+    packs:[
+      {size:"1 kg",price:140,stock:0}
+    ],
+    description:"NPOP certified organic jaggery powder."
+  },
+  {
+    id:24,
+    name:"Jaggery Block",
+    category:"Jaggery",
+    image:placeholder("Jaggery Block"),
+    packs:[
+      {size:"1 kg",price:130,stock:0}
+    ],
+    description:"Traditional jaggery block."
+  }
+];
+
+function syncVerifiedCatalogueProducts(){
+  if(!Array.isArray(products)) products=[];
+
+  const names=new Set(
+    products
+      .map(p=>String(p?.name||"").trim().toLowerCase())
+      .filter(Boolean)
+  );
+
+  verifiedCatalogueProducts.forEach(item=>{
+    const key=String(item.name).trim().toLowerCase();
+    if(!names.has(key)){
+      products.push(JSON.parse(JSON.stringify(item)));
+      names.add(key);
+    }
+  });
+
+  syncCategoriesWithProducts();
+
+  localStorage.setItem(
+    "jayvik_products",
+    JSON.stringify(products)
+  );
+}
 
 /* =====================================================
    PRODUCTS
@@ -3322,6 +3433,8 @@ JSON.parse(
   }
 ];
 
+
+syncVerifiedCatalogueProducts();
 
 /* =====================================================
    STATE
@@ -3634,6 +3747,8 @@ async function loadFirebaseStore(){
         "jayvik_products",
         JSON.stringify(products)
       );
+
+      syncVerifiedCatalogueProducts();
 
       localStorage.setItem(
         "jayvik_categories",
@@ -4164,6 +4279,8 @@ async function saveWebsite(){
 ===================================================== */
 
 function renderCategories(){
+
+  syncCategoriesWithProducts();
 
   const box=
     document.getElementById(
@@ -5921,6 +6038,125 @@ function updateOrderStats(){
     totalStock
   );
 
+}
+
+
+
+async function add10ToAllInventory(){
+
+  if(
+    !firebaseReady ||
+    !db ||
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    showSaveNotification("Admin login is required to update inventory.",true);
+    return;
+  }
+
+  const button=document.getElementById("add10AllInventoryBtn");
+
+  if(!confirm("Add 10 units to EVERY pack in inventory?"))return;
+
+  if(button){
+    button.disabled=true;
+    button.textContent="Adding +10...";
+  }
+
+  try{
+
+    /*
+      IMPORTANT:
+      Read the latest Firebase catalogue first.
+      Each pack is then updated from its latest Firebase stock value.
+      This prevents stale browser values from depleting or overwriting stock.
+    */
+    const snap=await db.ref("store/public/products").once("value");
+    const raw=snap.val();
+
+    let latestProducts=[];
+    if(Array.isArray(raw)){
+      latestProducts=raw.filter(Boolean);
+    }else if(raw && typeof raw==="object"){
+      latestProducts=Object.values(raw).filter(Boolean);
+    }
+
+    const latestById=new Map(
+      latestProducts.map(p=>[String(p.id),p])
+    );
+
+    const updates={};
+
+    products.forEach((product,productIndex)=>{
+
+      const latestProduct=latestById.get(String(product.id));
+      const latestPacks=
+        latestProduct && Array.isArray(latestProduct.packs)
+          ? latestProduct.packs
+          : [];
+
+      (product.packs||[]).forEach((pack,packIndex)=>{
+
+        const latestPack=
+          latestPacks.find(
+            p=>String(p.size)===String(pack.size)
+          ) || latestPacks[packIndex];
+
+        const currentStock=
+          latestPack && Number.isFinite(Number(latestPack.stock))
+            ? Math.max(0,Number(latestPack.stock))
+            : Math.max(0,Number(pack.stock||0));
+
+        const newStock=currentStock+10;
+
+        /*
+          Products are stored as an array in the public catalogue.
+          Update only each pack's stock child, never replace the full catalogue.
+        */
+        updates[
+          `store/public/products/${productIndex}/packs/${packIndex}/stock`
+        ]=newStock;
+
+        pack.stock=newStock;
+      });
+    });
+
+    if(!Object.keys(updates).length){
+      throw new Error("No inventory packs were found.");
+    }
+
+    await db.ref().update(updates);
+
+    localStorage.setItem(
+      "jayvik_products",
+      JSON.stringify(products)
+    );
+
+    renderInventory();
+    renderAdminProducts();
+    if(typeof renderProducts==="function")renderProducts();
+    if(typeof updateOrderStats==="function")updateOrderStats();
+
+    showSaveNotification(
+      "+10 units added to every inventory pack successfully."
+    );
+
+  }catch(err){
+
+    console.error("Bulk +10 inventory update failed:",err);
+
+    showSaveNotification(
+      "Could not add +10 to all inventory. "+(err?.message||""),
+      true
+    );
+
+  }finally{
+
+    if(button){
+      button.disabled=false;
+      button.textContent="+10 to ALL Inventory";
+    }
+  }
 }
 
 
