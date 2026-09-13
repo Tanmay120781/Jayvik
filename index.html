@@ -8899,6 +8899,26 @@ function renderCategorySequenceManager(){
               border-radius:7px
             "
           >
+
+          <button
+            type="button"
+            class="btn btn-light"
+            onclick="moveCategorySequence('${escapeAttr(name)}',-1)"
+            ${index===0?"disabled":""}
+            title="Move category up"
+          >
+            ⬆️ Up
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-light"
+            onclick="moveCategorySequence('${escapeAttr(name)}',1)"
+            ${index===categories.length-1?"disabled":""}
+            title="Move category down"
+          >
+            ⬇️ Down
+          </button>
         </label>
       `;
 
@@ -8906,6 +8926,109 @@ function renderCategorySequenceManager(){
 
     }
   );
+
+}
+
+
+
+async function moveCategorySequence(
+  categoryName,
+  direction
+){
+
+  const currentIndex=
+    categories.findIndex(
+      category=>
+        categoryNameValue(category)===
+        categoryName
+    );
+
+  const targetIndex=
+    currentIndex+
+    Number(direction);
+
+  if(
+    currentIndex<0 ||
+    targetIndex<0 ||
+    targetIndex>=categories.length
+  ){
+    return;
+  }
+
+  const previousCategories=
+    JSON.parse(
+      JSON.stringify(categories)
+    );
+
+  [
+    categories[currentIndex],
+    categories[targetIndex]
+  ]=[
+    categories[targetIndex],
+    categories[currentIndex]
+  ];
+
+  renderCategorySequenceManager();
+  renderCategories();
+  renderProducts();
+  renderAdminProducts();
+
+  localStorage.setItem(
+    "jayvik_categories",
+    JSON.stringify(categories)
+  );
+
+  if(
+    !firebaseReady ||
+    !db ||
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    categories=
+      previousCategories;
+
+    renderCategorySequenceManager();
+    renderCategories();
+    renderProducts();
+    renderAdminProducts();
+
+    alert(
+      "Firebase/Admin login is not ready. Previous category sequence has been restored."
+    );
+
+    return;
+  }
+
+  try{
+
+    await db
+      .ref("store/public/categories")
+      .set(categories);
+
+    showSaveNotification(
+      "Category moved and sequence saved successfully."
+    );
+
+  }catch(err){
+
+    console.error(
+      "Category move failed:",
+      err
+    );
+
+    categories=
+      previousCategories;
+
+    renderCategorySequenceManager();
+    renderCategories();
+    renderProducts();
+    renderAdminProducts();
+
+    alert(
+      "Could not save category sequence to Firebase. Previous sequence has been restored."
+    );
+
+  }
 
 }
 
@@ -9208,6 +9331,26 @@ function renderAdminProducts(){
                 >
               </label>
 
+              <button
+                type="button"
+                class="btn btn-light"
+                onclick="moveProductInCategory(${product.id},-1)"
+                ${categoryIndex===0?"disabled":""}
+                title="Move product up"
+              >
+                ⬆️ Up
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-light"
+                onclick="moveProductInCategory(${product.id},1)"
+                ${categoryIndex===categoryProducts.length-1?"disabled":""}
+                title="Move product down"
+              >
+                ⬇️ Down
+              </button>
+
               <span class="small">
                 Enter 1–${categoryProducts.length}
               </span>
@@ -9421,6 +9564,95 @@ async function saveCategorySequence(
     categoryName+
     " product sequence saved successfully."
   );
+
+}
+
+
+
+async function moveProductInCategory(
+  productId,
+  direction
+){
+
+  const product=
+    products.find(
+      p=>
+        String(p.id)===
+        String(productId)
+    );
+
+  if(!product)return;
+
+  const sameCategory=
+    products.filter(
+      p=>p.category===product.category
+    );
+
+  const currentCategoryIndex=
+    sameCategory.findIndex(
+      p=>
+        String(p.id)===
+        String(productId)
+    );
+
+  const targetCategoryIndex=
+    currentCategoryIndex+
+    Number(direction);
+
+  if(
+    currentCategoryIndex<0 ||
+    targetCategoryIndex<0 ||
+    targetCategoryIndex>=sameCategory.length
+  ){
+    return;
+  }
+
+  const targetProduct=
+    sameCategory[targetCategoryIndex];
+
+  const currentGlobalIndex=
+    products.findIndex(
+      p=>String(p.id)===String(product.id)
+    );
+
+  const targetGlobalIndex=
+    products.findIndex(
+      p=>String(p.id)===String(targetProduct.id)
+    );
+
+  if(
+    currentGlobalIndex<0 ||
+    targetGlobalIndex<0
+  ){
+    return;
+  }
+
+  const previousProducts=
+    JSON.parse(JSON.stringify(products));
+
+  [
+    products[currentGlobalIndex],
+    products[targetGlobalIndex]
+  ]=[
+    products[targetGlobalIndex],
+    products[currentGlobalIndex]
+  ];
+
+  renderAdminProducts();
+  renderProducts();
+
+  const saved=
+    await saveProductSequence();
+
+  if(!saved){
+    products=previousProducts;
+    renderAdminProducts();
+    renderProducts();
+
+    alert(
+      "The product sequence could not be saved to Firebase. Previous sequence has been restored."
+    );
+  }
 
 }
 
