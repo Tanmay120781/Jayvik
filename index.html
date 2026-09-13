@@ -4871,6 +4871,162 @@ function renderCustomerOrderHistory(
 }
 
 
+
+let customerOrderHistoryDeletionRef=null;
+
+
+function removeDeletedOrdersFromLocalHistory(
+  deletedMap
+){
+
+  if(
+    !deletedMap ||
+    typeof deletedMap!=="object"
+  ){
+    return false;
+  }
+
+  const deletedIds=
+    new Set(
+      Object.entries(deletedMap)
+        .filter(
+          ([,value])=>
+            value===true ||
+            value?.deleted===true
+        )
+        .map(
+          ([orderId])=>
+            String(orderId)
+        )
+    );
+
+  if(!deletedIds.size){
+    return false;
+  }
+
+  const allHistory=
+    getCustomerOrderHistoryLocal();
+
+  let changed=false;
+
+  Object.keys(allHistory)
+    .forEach(phone=>{
+
+      const current=
+        Array.isArray(allHistory[phone])
+          ? allHistory[phone]
+          : [];
+
+      const filtered=
+        current.filter(
+          order=>
+            !deletedIds.has(
+              String(order.id||"")
+            )
+        );
+
+      if(
+        filtered.length!==
+        current.length
+      ){
+        allHistory[phone]=filtered;
+        changed=true;
+      }
+
+    });
+
+  if(changed){
+
+    localStorage.setItem(
+      "jayvik_customer_order_history",
+      JSON.stringify(allHistory)
+    );
+
+    try{
+
+      const cached=
+        JSON.parse(
+          localStorage.getItem(
+            "jayvik_last_order_status"
+          )||"null"
+        );
+
+      if(
+        cached &&
+        deletedIds.has(
+          String(cached.id||"")
+        )
+      ){
+        localStorage.removeItem(
+          "jayvik_last_order_status"
+        );
+
+        localStorage.removeItem(
+          "jayvik_last_order_id"
+        );
+
+        renderLiveOrderStatus(null);
+      }
+
+    }catch(_err){}
+
+  }
+
+  return changed;
+
+}
+
+
+function startCustomerOrderHistoryDeletionListener(){
+
+  if(
+    !firebaseReady ||
+    !db
+  ){
+    return;
+  }
+
+  if(
+    customerOrderHistoryDeletionRef
+  ){
+    customerOrderHistoryDeletionRef
+      .off("value");
+  }
+
+  customerOrderHistoryDeletionRef=
+    db.ref(
+      "store/public/orderHistoryDeleted"
+    );
+
+  customerOrderHistoryDeletionRef.on(
+    "value",
+    snap=>{
+
+      const deletedMap=
+        snap.val()||{};
+
+      const changed=
+        removeDeletedOrdersFromLocalHistory(
+          deletedMap
+        );
+
+      if(changed){
+        renderCustomerOrderHistory();
+      }
+
+    },
+    err=>{
+      console.error(
+        "Customer history deletion listener failed:",
+        err?.code||"",
+        err?.message||err
+      );
+    }
+  );
+
+}
+
+
 function restoreLastCustomerOnLoad(){
 
   const phone=
@@ -9565,6 +9721,20 @@ async function deleteArchivedHistoryOrder(orderId){
       String(order.id)
     ]=null;
 
+    /*
+      Publish only the order ID as a customer-history deletion marker.
+      No customer name, phone, address or price is exposed here.
+      Customer browsers use this marker to remove the matching order
+      from their locally stored My Order History.
+    */
+    updates[
+      "/store/public/orderHistoryDeleted/"+
+      String(order.id)
+    ]={
+      deleted:true,
+      deletedAt:new Date().toISOString()
+    };
+
     await db
       .ref()
       .update(updates);
@@ -12914,6 +13084,7 @@ if(document.readyState==="loading"){
     ()=>{
       restoreLastCustomerOnLoad();
       renderCustomerOrderHistory();
+      startCustomerOrderHistoryDeletionListener();
     }
   );
 
@@ -12921,6 +13092,7 @@ if(document.readyState==="loading"){
 
   restoreLastCustomerOnLoad();
   renderCustomerOrderHistory();
+  startCustomerOrderHistoryDeletionListener();
 
 }
 
