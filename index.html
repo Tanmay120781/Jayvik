@@ -6077,19 +6077,49 @@ function getProductDirectDiscountPrice(
   pack
 ){
 
-  const packKey=
+  const packSize=
     String(pack?.size||"");
 
-  const prices=
-    product?.discountPrices &&
-    typeof product.discountPrices==="object"
-      ? product.discountPrices
-      : {};
+  const saved=
+    product?.discountPrices;
 
-  const n=
-    Number(
-      prices[packKey]
-    );
+  let n=0;
+
+  /*
+    New safe format:
+    [
+      { size:"1 kg", price:100 },
+      { size:"500 g", price:55 }
+    ]
+
+    This avoids using pack-size text as Firebase object keys.
+  */
+  if(Array.isArray(saved)){
+
+    const row=
+      saved.find(
+        item=>
+          String(item?.size||"")===
+          packSize
+      );
+
+    n=
+      Number(row?.price||0);
+
+  }else if(
+    saved &&
+    typeof saved==="object"
+  ){
+
+    /*
+      Backward compatibility with earlier versions.
+    */
+    n=
+      Number(
+        saved[packSize]||0
+      );
+
+  }
 
   return (
     Number.isFinite(n) &&
@@ -6100,7 +6130,6 @@ function getProductDirectDiscountPrice(
     : 0;
 
 }
-
 
 function getProductDiscountPercent(product){
 
@@ -6544,170 +6573,141 @@ async function saveAllProductDiscounts(){
       JSON.stringify(products)
     );
 
-  const updates={};
+  try{
 
-  for(
-    let index=0;
-    index<products.length;
-    index++
-  ){
+    for(
+      let index=0;
+      index<products.length;
+      index++
+    ){
 
-    const product=
-      products[index];
+      const product=
+        products[index];
 
-    const modeSelect=
-      document.querySelector(
-        `[data-product-discount-mode="${CSS.escape(String(product.id))}"]`
-      );
-
-    const mode=
-      modeSelect
-        ? (
-            modeSelect.value==="price"
-              ?"price"
-              :"percent"
-          )
-        : getProductDiscountMode(
-            product
-          );
-
-    product.discountMode=
-      mode;
-
-    updates[
-      "store/public/products/"+
-      index+
-      "/discountMode"
-    ]=
-      mode;
-
-    if(mode==="percent"){
-
-      const input=
+      const modeSelect=
         document.querySelector(
-          `[data-product-discount-id="${CSS.escape(String(product.id))}"]`
+          `[data-product-discount-mode="${CSS.escape(String(product.id))}"]`
         );
 
-      const discount=
-        input
-          ? Number(input.value)
-          : getProductDiscountPercent(
+      const mode=
+        modeSelect
+          ? (
+              modeSelect.value==="price"
+                ?"price"
+                :"percent"
+            )
+          : getProductDiscountMode(
               product
             );
 
-      if(
-        !Number.isFinite(discount) ||
-        discount<0 ||
-        discount>90
-      ){
-        alert(
-          "Discount must be between 0% and 90% for "+
-          product.name+"."
-        );
-        return;
-      }
+      product.discountMode=
+        mode;
 
-      product.discountPercent=
-        Math.round(discount);
-
-      product.discountPrices={};
-
-      updates[
-        "store/public/products/"+
-        index+
-        "/discountPercent"
-      ]=
-        product.discountPercent;
-
-      updates[
-        "store/public/products/"+
-        index+
-        "/discountPrices"
-      ]=
-        null;
-
-    }else{
-
-      const directPrices={};
-
-      for(const pack of product.packs||[]){
+      if(mode==="percent"){
 
         const input=
           document.querySelector(
-            `[data-direct-discount-product="${CSS.escape(String(product.id))}"][data-direct-discount-pack="${CSS.escape(String(pack.size||""))}"]`
+            `[data-product-discount-id="${CSS.escape(String(product.id))}"]`
           );
 
-        const value=
-          input &&
-          String(input.value).trim()!==""
+        const discount=
+          input
             ? Number(input.value)
-            : 0;
+            : getProductDiscountPercent(
+                product
+              );
 
         if(
-          !Number.isFinite(value) ||
-          value<0
+          !Number.isFinite(discount) ||
+          discount<0 ||
+          discount>90
         ){
-          alert(
-            "Please enter a valid direct offer price for "+
-            product.name+
-            " "+pack.size+"."
+          throw new Error(
+            "Discount must be between 0% and 90% for "+
+            product.name+"."
           );
-          return;
         }
 
-        if(
-          value>=Number(pack.price||0) &&
-          value>0
-        ){
-          alert(
-            "Direct offer price for "+
-            product.name+
-            " "+pack.size+
-            " must be lower than the regular price ₹"+
-            Number(pack.price||0).toLocaleString("en-IN")+"."
-          );
-          return;
+        product.discountPercent=
+          Math.round(discount);
+
+        /*
+          Clear direct-price entries when percentage mode is used.
+        */
+        product.discountPrices=[];
+
+      }else{
+
+        const directPrices=[];
+
+        for(const pack of product.packs||[]){
+
+          const input=
+            document.querySelector(
+              `[data-direct-discount-product="${CSS.escape(String(product.id))}"][data-direct-discount-pack="${CSS.escape(String(pack.size||""))}"]`
+            );
+
+          const value=
+            input &&
+            String(input.value).trim()!==""
+              ? Number(input.value)
+              : 0;
+
+          if(
+            !Number.isFinite(value) ||
+            value<0
+          ){
+            throw new Error(
+              "Please enter a valid direct offer price for "+
+              product.name+
+              " "+pack.size+"."
+            );
+          }
+
+          if(
+            value>=Number(pack.price||0) &&
+            value>0
+          ){
+            throw new Error(
+              "Direct offer price for "+
+              product.name+
+              " "+pack.size+
+              " must be lower than the regular price ₹"+
+              Number(pack.price||0).toLocaleString("en-IN")+"."
+            );
+          }
+
+          if(value>0){
+
+            directPrices.push({
+              size:String(pack.size||""),
+              price:value
+            });
+
+          }
+
         }
 
-        if(value>0){
-          directPrices[
-            String(pack.size||"")
-          ]=
-            value;
-        }
+        product.discountPrices=
+          directPrices;
+
+        product.discountPercent=0;
 
       }
 
-      product.discountPrices=
-        directPrices;
-
-      product.discountPercent=0;
-
-      updates[
-        "store/public/products/"+
-        index+
-        "/discountPercent"
-      ]=
-        0;
-
-      updates[
-        "store/public/products/"+
-        index+
-        "/discountPrices"
-      ]=
-        Object.keys(directPrices).length
-          ? directPrices
-          : null;
-
     }
 
-  }
+    /*
+      Save through the same Firebase product path already used by
+      Jayvik's working product/category sequencing functions.
 
-  try{
-
+      Saving the complete products array also avoids multi-location
+      root updates and avoids invalid Firebase keys created from
+      pack-size text.
+    */
     await db
-      .ref()
-      .update(updates);
+      .ref("store/public/products")
+      .set(products);
 
     localStorage.setItem(
       "jayvik_products",
@@ -6726,6 +6726,8 @@ async function saveAllProductDiscounts(){
 
     console.error(
       "Product discount save failed:",
+      err?.code||"",
+      err?.message||err,
       err
     );
 
@@ -6737,7 +6739,8 @@ async function saveAllProductDiscounts(){
     renderProductDiscounts();
 
     alert(
-      "Could not save product discounts to Firebase. Previous values have been restored."
+      "Could not save product discounts. "+
+      (err?.message||"Please try again.")
     );
 
   }
