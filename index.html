@@ -7908,7 +7908,11 @@ function allOrdersForAnalytics(){
 
   const map=new Map();
 
-  allOrdersForAnalytics().forEach(order=>{
+  /*
+    Active/live orders first.
+    IMPORTANT: do not call allOrdersForAnalytics() from inside itself.
+  */
+  (orders||[]).forEach(order=>{
     if(order && order.id!=null){
       map.set(
         String(order.id),
@@ -7920,6 +7924,9 @@ function allOrdersForAnalytics(){
     }
   });
 
+  /*
+    Then add archived sales that are no longer present in active orders.
+  */
   (salesArchive||[]).forEach(order=>{
     if(order && order.id!=null && !map.has(String(order.id))){
       map.set(
@@ -7940,7 +7947,7 @@ function buildConsumptionRows(){
 
   const rows=[];
 
-  (orders||[]).forEach(order=>{
+  allOrdersForAnalytics().forEach(order=>{
 
     /*
       Exclude cancelled/invalid records if they ever exist.
@@ -8466,6 +8473,8 @@ function excelSafeDate(value){
 
 async function exportJayvikExcel(){
 
+  try{
+
   await loadSalesArchive();
 
   if(typeof XLSX==="undefined"){
@@ -8777,6 +8786,22 @@ async function exportJayvikExcel(){
   showSaveNotification(
     "Excel report exported successfully."
   );
+
+  }catch(err){
+
+    console.error(
+      "Jayvik Excel export failed:",
+      err
+    );
+
+    alert(
+      "Excel export failed: "+
+      (err?.message||"Unknown error")+
+      ". Please refresh the page and try again."
+    );
+
+  }
+
 }
 
 
