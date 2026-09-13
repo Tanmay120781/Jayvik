@@ -1463,6 +1463,13 @@ footer{
 
       <button
         class="admin-tab"
+        onclick="showAdminTab('discountsAdmin',this);renderProductDiscounts()"
+      >
+        🏷️ Product Discounts
+      </button>
+
+      <button
+        class="admin-tab"
         onclick="showAdminTab('categoriesAdmin',this);renderCategorySequenceManager()"
       >
         🗂️ Categories
@@ -1643,6 +1650,51 @@ footer{
         </div>
 
         <div id="adminProductsList"></div>
+
+      </div>
+
+    </div>
+
+
+    <!-- PRODUCT DISCOUNTS -->
+
+    <div
+      id="discountsAdmin"
+      class="admin-section"
+    >
+
+      <div class="admin-card">
+
+        <div class="section-title">
+
+          <div>
+            <h3 style="margin-bottom:5px">
+              🏷️ Product Discounts
+            </h3>
+
+            <div class="brand-sub">
+              For each selected product, choose either % Percentage discount or ₹ Direct Price.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-green"
+            onclick="saveAllProductDiscounts()"
+          >
+            💾 Save Discounts
+          </button>
+
+        </div>
+
+        <div class="notice" style="margin:12px 0">
+          You can use either a percentage discount or enter the final offer price directly for each pack. Only discounted products will change on the customer dashboard; all other products remain at normal price.
+        </div>
+
+        <div
+          id="productDiscountList"
+          style="display:grid;gap:12px"
+        ></div>
 
       </div>
 
@@ -2011,7 +2063,7 @@ footer{
               🗄 Sales Archive
             </h3>
             <div class="brand-sub">
-              Paid dispatched orders retained after deletion from active Order Management
+              Paid dispatched orders retained after deletion from active Order Management. Admin can permanently delete individual archived orders when required.
             </div>
           </div>
 
@@ -4226,10 +4278,31 @@ function publicOrderStatusPayload(order){
         order.status||"pending"
       ),
 
-    total:
-      Number(
-        order.total||0
+    createdAt:
+      String(
+        order.createdAt||""
       ),
+
+    /*
+      Customer-facing last-order details intentionally exclude:
+      • unit price
+      • line value
+      • order total
+    */
+    items:
+      Array.isArray(order.items)
+        ? order.items.map(item=>({
+            name:String(
+              item.name||"Product"
+            ),
+            size:String(
+              item.size||""
+            ),
+            qty:Number(
+              item.qty||0
+            )
+          }))
+        : [],
 
     itemCount:
       Array.isArray(order.items)
@@ -4253,15 +4326,221 @@ let customerOrderStatusRef=null;
 
 
 function renderLiveOrderStatus(data){
-  const box=document.getElementById("liveOrderStatus");
-  const section=document.getElementById("liveOrderStatusSection");
+
+  const box=
+    document.getElementById(
+      "liveOrderStatus"
+    );
+
+  const section=
+    document.getElementById(
+      "liveOrderStatusSection"
+    );
+
   if(!box||!section)return;
-  if(!data){section.style.display="none";box.innerHTML="";return;}
-  const steps=[["pending","🔴 Pending","Order received"],["ready","🟢 Ready","Order is ready for packing"],["packing","🟡 Packing","Your order is being packed"],["packed","📦 Packed","Your order has been packed"],["dispatched","🚚 Dispatched","Your order has been dispatched"]];
-  const current=steps.findIndex(s=>s[0]===data.status);
-  const statusText=steps[current]?.[1]||"📦 Status unavailable";
+
+  if(!data){
+    section.style.display="none";
+    box.innerHTML="";
+    return;
+  }
+
+  const steps=[
+    ["pending","🔴 Pending","Order received"],
+    ["ready","🟢 Ready","Order is ready for packing"],
+    ["packing","🟡 Packing","Your order is being packed"],
+    ["packed","📦 Packed","Your order has been packed"],
+    ["dispatched","🚚 Dispatched","Your order has been dispatched"]
+  ];
+
+  const current=
+    steps.findIndex(
+      s=>s[0]===data.status
+    );
+
+  const statusText=
+    steps[current]?.[1]||
+    "📦 Status unavailable";
+
+  const items=
+    Array.isArray(data.items)
+      ? data.items
+      : [];
+
+  const orderDate=
+    data.createdAt
+      ? new Date(
+          data.createdAt
+        ).toLocaleString(
+          "en-IN"
+        )
+      : "";
+
+  const itemsHtml=
+    items.length
+      ?`
+        <div
+          style="
+            margin-top:14px;
+            padding-top:12px;
+            border-top:1px solid #e5e7eb
+          "
+        >
+          <div
+            style="
+              font-size:16px;
+              font-weight:800;
+              color:var(--dark);
+              margin-bottom:8px
+            "
+          >
+            🧾 Last Order Details
+          </div>
+
+          <div
+            style="
+              display:grid;
+              gap:7px
+            "
+          >
+            ${
+              items.map(
+                (item,index)=>`
+                  <div
+                    style="
+                      display:flex;
+                      justify-content:space-between;
+                      gap:12px;
+                      padding:7px 0;
+                      border-bottom:1px dashed #e5e7eb
+                    "
+                  >
+                    <span>
+                      ${index+1}.
+                      <strong>
+                        ${escapeHtml(item.name||"Product")}
+                      </strong>
+                      ${
+                        item.size
+                          ?` — ${escapeHtml(item.size)}`
+                          :""
+                      }
+                    </span>
+
+                    <strong>
+                      Qty ${Number(item.qty||0)}
+                    </strong>
+                  </div>
+                `
+              ).join("")
+            }
+          </div>
+
+          <div
+            class="small"
+            style="margin-top:8px"
+          >
+            Prices are not displayed in Last Order Details.
+          </div>
+        </div>
+      `
+      :`
+        <div
+          class="small"
+          style="margin-top:12px"
+        >
+          Last order item details will appear here when available.
+        </div>
+      `;
+
   section.style.display="block";
-  box.innerHTML=`<div class="cart-box"><div style="font-size:18px;font-weight:800;color:var(--dark);margin-bottom:8px">Order ${escapeHtml(data.id||"")}</div><div class="notice" style="font-size:17px">Current Status: <strong>${escapeHtml(statusText)}</strong></div><div class="order-status-steps">${steps.map((step,index)=>`<div class="order-status-step ${index<current?"done":""} ${index===current?"current":""}">${step[1]}<br><small>${step[2]}</small></div>`).join("")}</div><div style="margin-top:12px;color:var(--muted)">Order Total: <strong style="color:var(--green)">₹${Number(data.total||0).toLocaleString("en-IN")}</strong></div><div style="margin-top:8px;color:var(--muted)">Items: <strong>${Number(data.itemCount||0)}</strong></div><div style="margin-top:12px;font-size:13px;color:var(--muted)">🔄 This status updates automatically when Jayvik updates your order.</div></div>`;
+
+  box.innerHTML=`
+    <div class="cart-box">
+
+      <div
+        style="
+          font-size:18px;
+          font-weight:800;
+          color:var(--dark);
+          margin-bottom:5px
+        "
+      >
+        Order ${escapeHtml(data.id||"")}
+      </div>
+
+      ${
+        orderDate
+          ?`
+            <div
+              class="small"
+              style="margin-bottom:8px"
+            >
+              Order Date: ${escapeHtml(orderDate)}
+            </div>
+          `
+          :""
+      }
+
+      <div
+        class="notice"
+        style="font-size:17px"
+      >
+        Current Status:
+        <strong>
+          ${escapeHtml(statusText)}
+        </strong>
+      </div>
+
+      <div class="order-status-steps">
+        ${
+          steps.map(
+            (step,index)=>`
+              <div
+                class="
+                  order-status-step
+                  ${index<current?"done":""}
+                  ${index===current?"current":""}
+                "
+              >
+                ${step[1]}
+                <br>
+                <small>
+                  ${step[2]}
+                </small>
+              </div>
+            `
+          ).join("")
+        }
+      </div>
+
+      ${itemsHtml}
+
+      <div
+        style="
+          margin-top:10px;
+          color:var(--muted)
+        "
+      >
+        Total Items:
+        <strong>
+          ${Number(data.itemCount||0)}
+        </strong>
+      </div>
+
+      <div
+        style="
+          margin-top:12px;
+          font-size:13px;
+          color:var(--muted)
+        "
+      >
+        🔄 This status updates automatically when Jayvik updates your order.
+      </div>
+
+    </div>
+  `;
+
 }
 
 function startCustomerOrderStatusListener(){
@@ -4304,11 +4583,43 @@ function startCustomerOrderStatusListener(){
       const data = snap.val();
 
       if(data){
+
+        /*
+          Older Firebase status records may not yet contain item details.
+          Preserve the customer's locally cached last-order items in that case.
+        */
+        const mergedData={
+          ...data,
+          createdAt:
+            data.createdAt ||
+            cachedStatus?.createdAt ||
+            "",
+          items:
+            Array.isArray(data.items) &&
+            data.items.length
+              ? data.items
+              : (
+                  Array.isArray(cachedStatus?.items)
+                    ? cachedStatus.items
+                    : []
+                ),
+          itemCount:
+            Number(data.itemCount||0) ||
+            Number(cachedStatus?.itemCount||0)
+        };
+
         localStorage.setItem(
           "jayvik_last_order_status",
-          JSON.stringify(data)
+          JSON.stringify(mergedData)
         );
-        renderLiveOrderStatus(data);
+
+        cachedStatus=
+          mergedData;
+
+        renderLiveOrderStatus(
+          mergedData
+        );
+
         return;
       }
 
@@ -4318,7 +4629,8 @@ function startCustomerOrderStatusListener(){
         renderLiveOrderStatus({
           id,
           status:"pending",
-          total:0,
+          createdAt:"",
+          items:[],
           itemCount:0
         });
       }
@@ -4951,6 +5263,690 @@ function attachProductImageFallback(img,product){
   },{once:true});
 }
 
+
+
+function getProductDiscountMode(product){
+
+  return product?.discountMode==="price"
+    ? "price"
+    : "percent";
+
+}
+
+
+function getProductDirectDiscountPrice(
+  product,
+  pack
+){
+
+  const packKey=
+    String(pack?.size||"");
+
+  const prices=
+    product?.discountPrices &&
+    typeof product.discountPrices==="object"
+      ? product.discountPrices
+      : {};
+
+  const n=
+    Number(
+      prices[packKey]
+    );
+
+  return (
+    Number.isFinite(n) &&
+    n>0 &&
+    n<Number(pack?.price||0)
+  )
+    ? n
+    : 0;
+
+}
+
+
+function getProductDiscountPercent(product){
+
+  const n=
+    Number(
+      product?.discountPercent||0
+    );
+
+  if(
+    !Number.isFinite(n) ||
+    n<=0
+  ){
+    return 0;
+  }
+
+  return Math.min(
+    90,
+    Math.max(
+      0,
+      Math.round(n)
+    )
+  );
+
+}
+
+
+function getDiscountedPrice(
+  product,
+  pack
+){
+
+  const original=
+    Number(pack?.price||0);
+
+  if(original<=0){
+    return original;
+  }
+
+  if(
+    getProductDiscountMode(
+      product
+    )==="price"
+  ){
+
+    const directPrice=
+      getProductDirectDiscountPrice(
+        product,
+        pack
+      );
+
+    return directPrice>0
+      ? directPrice
+      : original;
+
+  }
+
+  const discount=
+    getProductDiscountPercent(
+      product
+    );
+
+  if(discount<=0){
+    return original;
+  }
+
+  return Math.round(
+    original*
+    (100-discount)/
+    100
+  );
+
+}
+
+function productPriceHtml(
+  product,
+  pack
+){
+
+  const original=
+    Number(pack?.price||0);
+
+  const mode=
+    getProductDiscountMode(
+      product
+    );
+
+  const sellingPrice=
+    getDiscountedPrice(
+      product,
+      pack
+    );
+
+  if(
+    sellingPrice>=original ||
+    sellingPrice<=0
+  ){
+
+    return (
+      "₹"+
+      original.toLocaleString(
+        "en-IN"
+      )
+    );
+
+  }
+
+  let badge="SPECIAL PRICE";
+
+  if(mode==="percent"){
+
+    const discount=
+      getProductDiscountPercent(
+        product
+      );
+
+    badge=
+      discount+
+      "% OFF";
+
+  }
+
+  return `
+    <span
+      style="
+        text-decoration:line-through;
+        color:#6b7280;
+        font-size:.82em;
+        margin-right:7px
+      "
+    >
+      ₹${original.toLocaleString("en-IN")}
+    </span>
+
+    <span>
+      ₹${sellingPrice.toLocaleString("en-IN")}
+    </span>
+
+    <span
+      style="
+        display:inline-block;
+        margin-left:7px;
+        padding:3px 7px;
+        border-radius:999px;
+        background:#fff0d5;
+        color:#9a5a00;
+        font-size:12px;
+        font-weight:800
+      "
+    >
+      ${badge}
+    </span>
+  `;
+
+}
+
+function renderProductDiscounts(){
+
+  const box=
+    document.getElementById(
+      "productDiscountList"
+    );
+
+  if(!box)return;
+
+  box.innerHTML="";
+
+  const categoryNames=[
+    ...categories.map(c=>
+      typeof c==="string"
+        ?c
+        :c?.name
+    ).filter(Boolean),
+
+    ...products
+      .map(p=>p.category)
+      .filter(Boolean)
+  ].filter(
+    (name,index,array)=>
+      array.indexOf(name)===index
+  );
+
+  categoryNames.forEach(
+    categoryName=>{
+
+      const group=
+        products.filter(
+          p=>
+            p.category===
+            categoryName
+        );
+
+      if(!group.length)return;
+
+      const heading=
+        document.createElement(
+          "div"
+        );
+
+      heading.style.cssText=
+        "margin-top:10px;padding:10px 12px;background:#edf5ed;border-radius:10px;font-weight:800;color:#17351d";
+
+      heading.textContent=
+        "📂 "+categoryName;
+
+      box.appendChild(
+        heading
+      );
+
+      group.forEach(product=>{
+
+        const mode=
+          getProductDiscountMode(
+            product
+          );
+
+        const discount=
+          getProductDiscountPercent(
+            product
+          );
+
+        const row=
+          document.createElement(
+            "div"
+          );
+
+        row.style.cssText=
+          "display:grid;grid-template-columns:minmax(190px,1fr) minmax(280px,auto);gap:12px;align-items:center;padding:12px;border:1px solid #dfe9df;border-radius:10px;background:#fff";
+
+        row.innerHTML=`
+
+          <div>
+            <strong>
+              ${escapeHtml(product.name)}
+            </strong>
+
+            <div class="small">
+              ${escapeHtml(product.category)}
+            </div>
+
+            <div
+              class="small"
+              style="margin-top:5px"
+            >
+              ${
+                (product.packs||[])
+                  .map(pack=>{
+                    const original=
+                      Number(pack.price||0);
+
+                    const selling=
+                      getDiscountedPrice(
+                        product,
+                        pack
+                      );
+
+                    return selling<original
+                      ?`${escapeHtml(pack.size)}: ₹${original.toLocaleString("en-IN")} → ₹${selling.toLocaleString("en-IN")}`
+                      :`${escapeHtml(pack.size)}: ₹${original.toLocaleString("en-IN")}`;
+                  })
+                  .join(" &nbsp; | &nbsp; ")
+              }
+            </div>
+          </div>
+
+          <div
+            style="
+              display:grid;
+              gap:8px
+            "
+          >
+
+            <label
+              style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+                font-weight:700
+              "
+            >
+              Discount Type
+
+              <select
+                data-product-discount-mode="${escapeAttr(String(product.id))}"
+                onchange="renderProductDiscounts()"
+                style="
+                  padding:8px;
+                  border:1px solid #cbd8cb;
+                  border-radius:7px
+                "
+              >
+                <option
+                  value="percent"
+                  ${mode==="percent"?"selected":""}
+                >
+                  % Percentage
+                </option>
+
+                <option
+                  value="price"
+                  ${mode==="price"?"selected":""}
+                >
+                  ₹ Direct Price
+                </option>
+              </select>
+            </label>
+
+            ${
+              mode==="percent"
+              ?`
+                <label
+                  style="
+                    display:flex;
+                    align-items:center;
+                    gap:8px;
+                    font-weight:700
+                  "
+                >
+                  Discount
+
+                  <input
+                    type="number"
+                    min="0"
+                    max="90"
+                    step="1"
+                    value="${discount}"
+                    data-product-discount-id="${escapeAttr(String(product.id))}"
+                    style="
+                      width:80px;
+                      padding:8px;
+                      border:1px solid #cbd8cb;
+                      border-radius:7px
+                    "
+                  >
+
+                  %
+                </label>
+              `
+              :`
+                <div
+                  style="
+                    display:flex;
+                    gap:8px;
+                    flex-wrap:wrap
+                  "
+                >
+                  ${
+                    (product.packs||[])
+                      .map(pack=>{
+                        const current=
+                          getProductDirectDiscountPrice(
+                            product,
+                            pack
+                          );
+
+                        return `
+                          <label
+                            style="
+                              display:flex;
+                              align-items:center;
+                              gap:5px;
+                              font-weight:700
+                            "
+                          >
+                            ${escapeHtml(pack.size)} ₹
+
+                            <input
+                              type="number"
+                              min="0"
+                              step="1"
+                              placeholder="Offer price"
+                              value="${current||""}"
+                              data-direct-discount-product="${escapeAttr(String(product.id))}"
+                              data-direct-discount-pack="${escapeAttr(String(pack.size||""))}"
+                              style="
+                                width:95px;
+                                padding:8px;
+                                border:1px solid #cbd8cb;
+                                border-radius:7px
+                              "
+                            >
+                          </label>
+                        `;
+                      })
+                      .join("")
+                  }
+                </div>
+              `
+            }
+
+          </div>
+
+        `;
+
+        box.appendChild(
+          row
+        );
+
+        const modeSelect=
+          row.querySelector(
+            `[data-product-discount-mode="${CSS.escape(String(product.id))}"]`
+          );
+
+        if(modeSelect){
+
+          modeSelect.onchange=()=>{
+
+            product.discountMode=
+              modeSelect.value==="price"
+                ?"price"
+                :"percent";
+
+            renderProductDiscounts();
+
+          };
+
+        }
+
+      });
+
+    }
+  );
+
+}
+
+async function saveAllProductDiscounts(){
+
+  if(
+    !firebaseReady ||
+    !db ||
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    alert(
+      "Admin login/Firebase is not ready."
+    );
+    return;
+  }
+
+  const previousProducts=
+    JSON.parse(
+      JSON.stringify(products)
+    );
+
+  const updates={};
+
+  for(
+    let index=0;
+    index<products.length;
+    index++
+  ){
+
+    const product=
+      products[index];
+
+    const modeSelect=
+      document.querySelector(
+        `[data-product-discount-mode="${CSS.escape(String(product.id))}"]`
+      );
+
+    const mode=
+      modeSelect
+        ? (
+            modeSelect.value==="price"
+              ?"price"
+              :"percent"
+          )
+        : getProductDiscountMode(
+            product
+          );
+
+    product.discountMode=
+      mode;
+
+    updates[
+      "store/public/products/"+
+      index+
+      "/discountMode"
+    ]=
+      mode;
+
+    if(mode==="percent"){
+
+      const input=
+        document.querySelector(
+          `[data-product-discount-id="${CSS.escape(String(product.id))}"]`
+        );
+
+      const discount=
+        input
+          ? Number(input.value)
+          : getProductDiscountPercent(
+              product
+            );
+
+      if(
+        !Number.isFinite(discount) ||
+        discount<0 ||
+        discount>90
+      ){
+        alert(
+          "Discount must be between 0% and 90% for "+
+          product.name+"."
+        );
+        return;
+      }
+
+      product.discountPercent=
+        Math.round(discount);
+
+      product.discountPrices={};
+
+      updates[
+        "store/public/products/"+
+        index+
+        "/discountPercent"
+      ]=
+        product.discountPercent;
+
+      updates[
+        "store/public/products/"+
+        index+
+        "/discountPrices"
+      ]=
+        null;
+
+    }else{
+
+      const directPrices={};
+
+      for(const pack of product.packs||[]){
+
+        const input=
+          document.querySelector(
+            `[data-direct-discount-product="${CSS.escape(String(product.id))}"][data-direct-discount-pack="${CSS.escape(String(pack.size||""))}"]`
+          );
+
+        const value=
+          input &&
+          String(input.value).trim()!==""
+            ? Number(input.value)
+            : 0;
+
+        if(
+          !Number.isFinite(value) ||
+          value<0
+        ){
+          alert(
+            "Please enter a valid direct offer price for "+
+            product.name+
+            " "+pack.size+"."
+          );
+          return;
+        }
+
+        if(
+          value>=Number(pack.price||0) &&
+          value>0
+        ){
+          alert(
+            "Direct offer price for "+
+            product.name+
+            " "+pack.size+
+            " must be lower than the regular price ₹"+
+            Number(pack.price||0).toLocaleString("en-IN")+"."
+          );
+          return;
+        }
+
+        if(value>0){
+          directPrices[
+            String(pack.size||"")
+          ]=
+            value;
+        }
+
+      }
+
+      product.discountPrices=
+        directPrices;
+
+      product.discountPercent=0;
+
+      updates[
+        "store/public/products/"+
+        index+
+        "/discountPercent"
+      ]=
+        0;
+
+      updates[
+        "store/public/products/"+
+        index+
+        "/discountPrices"
+      ]=
+        Object.keys(directPrices).length
+          ? directPrices
+          : null;
+
+    }
+
+  }
+
+  try{
+
+    await db
+      .ref()
+      .update(updates);
+
+    localStorage.setItem(
+      "jayvik_products",
+      JSON.stringify(products)
+    );
+
+    renderProducts();
+    renderAdminProducts();
+    renderProductDiscounts();
+
+    showSaveNotification(
+      "Product discounts saved successfully."
+    );
+
+  }catch(err){
+
+    console.error(
+      "Product discount save failed:",
+      err
+    );
+
+    products=
+      previousProducts;
+
+    renderProducts();
+    renderAdminProducts();
+    renderProductDiscounts();
+
+    alert(
+      "Could not save product discounts to Firebase. Previous values have been restored."
+    );
+
+  }
+
+}
+
+
 function renderProducts(){
 
   const box=
@@ -5043,7 +6039,7 @@ function renderProducts(){
           class="product-price"
           id="price-${product.id}"
         >
-          ₹${Number(selectedPack?.price||0).toLocaleString("en-IN")}
+          ${productPriceHtml(product,selectedPack)}
         </div>
 
         <div
@@ -5127,12 +6123,10 @@ function renderProducts(){
 
           card.querySelector(
             "#price-"+product.id
-          ).textContent=
-            "₹"+
-            Number(
-              pack.price||0
-            ).toLocaleString(
-              "en-IN"
+          ).innerHTML=
+            productPriceHtml(
+              product,
+              pack
             );
 
           updateProductAvailability(
@@ -5215,6 +6209,22 @@ function addToCart(productId){
 
     }
 
+    existing.price=
+      getDiscountedPrice(
+        product,
+        pack
+      );
+
+    existing.originalPrice=
+      Number(
+        pack.price||0
+      );
+
+    existing.discountPercent=
+      getProductDiscountPercent(
+        product
+      );
+
     existing.qty++;
 
   }else{
@@ -5224,7 +6234,17 @@ function addToCart(productId){
       productId,
       name:product.name,
       size:pack.size,
-      price:pack.price,
+      price:getDiscountedPrice(
+        product,
+        pack
+      ),
+      originalPrice:Number(
+        pack.price||0
+      ),
+      discountPercent:
+        getProductDiscountPercent(
+          product
+        ),
       qty:1
 
     });
@@ -7782,7 +8802,16 @@ async function renderSalesArchive(){
           order.paymentReceivedAt
             ? new Date(order.paymentReceivedAt).toLocaleString("en-IN")
             : ""
-        )
+        ),
+        `
+          <button
+            type="button"
+            class="btn btn-danger"
+            onclick="deleteArchivedHistoryOrder('${escapeAttr(String(order.id||""))}')"
+          >
+            🗑️ Delete History
+          </button>
+        `
       ];
 
     });
@@ -7797,10 +8826,142 @@ async function renderSalesArchive(){
         "Products",
         "Order Value",
         "Payment",
-        "Payment Received At"
+        "Payment Received At",
+        "Action"
       ],
       rows
     );
+
+}
+
+
+async function deleteArchivedHistoryOrder(orderId){
+
+  if(
+    !firebaseReady ||
+    !db ||
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    alert(
+      "Admin login is required to delete order history."
+    );
+    return;
+  }
+
+  const order=
+    (salesArchive||[]).find(
+      item=>
+        String(item.id)===
+        String(orderId)
+    );
+
+  if(!order){
+    alert(
+      "Archived order not found. Please refresh Sales Archive."
+    );
+    return;
+  }
+
+  const customer=
+    order.customer||{};
+
+  const confirmed=
+    confirm(
+      "Permanently delete archived order "+
+      String(order.id||"")+
+      " for "+
+      String(customer.name||"this customer")+
+      "?\n\n"+
+      "This will remove this order from Sales Archive, Customer Consumption reports and future Excel exports."
+    );
+
+  if(!confirmed){
+    return;
+  }
+
+  try{
+
+    const updates={};
+
+    updates[
+      "/store/salesArchive/"+
+      String(order.id)
+    ]=null;
+
+    /*
+      If the customer-facing last-order mirror is still this same order,
+      remove it as well so deleted history is no longer shown.
+    */
+    updates[
+      "/store/public/orderStatus/"+
+      String(order.id)
+    ]=null;
+
+    await db
+      .ref()
+      .update(updates);
+
+    salesArchive=
+      (salesArchive||[]).filter(
+        item=>
+          String(item.id)!==
+          String(order.id)
+      );
+
+    /*
+      Clear local cached last-order status only if this browser
+      is holding the same deleted order.
+    */
+    try{
+
+      const cached=
+        JSON.parse(
+          localStorage.getItem(
+            "jayvik_last_order_status"
+          )||"null"
+        );
+
+      if(
+        cached &&
+        String(cached.id)===
+        String(order.id)
+      ){
+        localStorage.removeItem(
+          "jayvik_last_order_status"
+        );
+      }
+
+    }catch(_err){}
+
+    await renderSalesArchive();
+
+    if(
+      document.getElementById(
+        "consumptionAdmin"
+      )?.classList.contains(
+        "active"
+      )
+    ){
+      await renderConsumptionAnalytics();
+    }
+
+    showSaveNotification(
+      "Archived order history deleted successfully."
+    );
+
+  }catch(err){
+
+    console.error(
+      "Delete archived order history failed:",
+      err
+    );
+
+    alert(
+      "Could not delete archived order history from Firebase. Please try again."
+    );
+
+  }
 
 }
 
