@@ -8812,99 +8812,419 @@ function renderAdminProducts(){
 
   box.innerHTML="";
 
-  products.forEach(
-    product=>{
+  /*
+    Products are grouped category-wise.
+    Admin can enter exact sequence numbers and save the whole category once.
+  */
+  const categoryNames=[
+    ...categories.map(c=>
+      typeof c==="string"
+        ?c
+        :c?.name
+    ).filter(Boolean),
 
-      const div=
-        document.createElement(
-          "div"
+    ...products
+      .map(p=>p.category)
+      .filter(Boolean)
+  ].filter(
+    (name,index,array)=>
+      array.indexOf(name)===index
+  );
+
+  categoryNames.forEach(categoryName=>{
+
+    const categoryProducts=
+      products.filter(
+        p=>p.category===categoryName
+      );
+
+    if(!categoryProducts.length)return;
+
+    const categoryBlock=
+      document.createElement(
+        "div"
+      );
+
+    categoryBlock.style.cssText=
+      "margin:18px 0 24px;border:1px solid #dfe9df;border-radius:12px;padding:12px";
+
+    const heading=
+      document.createElement(
+        "div"
+      );
+
+    heading.style.cssText=
+      "display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;padding:10px 12px;background:#edf5ed;border-radius:10px;font-weight:800;color:#17351d";
+
+    heading.innerHTML=`
+      <div>
+        📂 ${escapeHtml(categoryName)}
+        <span class="small" style="font-weight:500">
+          — ${categoryProducts.length} products
+        </span>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-green"
+        onclick="saveCategorySequence('${escapeAttr(categoryName)}')"
+      >
+        💾 Save ${escapeHtml(categoryName)} Sequence
+      </button>
+    `;
+
+    categoryBlock.appendChild(
+      heading
+    );
+
+    categoryProducts.forEach(
+      (product,categoryIndex)=>{
+
+        const div=
+          document.createElement(
+            "div"
+          );
+
+        div.className=
+          "admin-product";
+
+        div.innerHTML=`
+
+          <img
+            src="${
+              product.image ||
+              placeholder(
+                product.name
+              )
+            }"
+            alt="${escapeHtml(
+              product.name
+            )}"
+          >
+
+          <div>
+
+            <strong>
+              ${escapeHtml(
+                product.name
+              )}
+            </strong>
+
+            <div class="small">
+              ${escapeHtml(
+                product.category
+              )}
+            </div>
+
+            <div
+              style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+                margin-top:8px;
+                flex-wrap:wrap
+              "
+            >
+              <label
+                style="
+                  display:flex;
+                  align-items:center;
+                  gap:6px;
+                  font-weight:700
+                "
+              >
+                Sequence
+
+                <input
+                  type="number"
+                  min="1"
+                  max="${categoryProducts.length}"
+                  step="1"
+                  value="${categoryIndex+1}"
+                  data-category-sequence="${escapeAttr(categoryName)}"
+                  data-product-id="${escapeAttr(String(product.id))}"
+                  style="
+                    width:72px;
+                    padding:7px;
+                    border:1px solid #cbd8cb;
+                    border-radius:7px
+                  "
+                >
+              </label>
+
+              <span class="small">
+                Enter 1–${categoryProducts.length}
+              </span>
+            </div>
+
+            <div
+              style="margin-top:7px"
+            >
+
+              ${
+                product.packs.map(
+                  p=>
+                    `<span
+                      style="
+                      display:inline-block;
+                      background:#edf5ed;
+                      padding:4px 7px;
+                      border-radius:6px;
+                      margin:2px;
+                      font-size:12px"
+                    >
+                      ${escapeHtml(p.size)}
+                      ₹${p.price}
+                      | Stock:
+                      ${Number(p.stock||0)}
+                    </span>`
+                ).join("")
+              }
+
+            </div>
+
+          </div>
+
+          <div class="admin-actions">
+
+            <button
+              class="btn btn-light"
+              onclick="editProduct(${product.id})"
+            >
+              ✏️ Edit
+            </button>
+
+            <button
+              class="btn btn-danger"
+              onclick="deleteProduct(${product.id})"
+            >
+              🗑️ Remove
+            </button>
+
+          </div>
+
+        `;
+
+        categoryBlock.appendChild(
+          div
         );
 
-      div.className=
-        "admin-product";
+      }
+    );
 
-      div.innerHTML=`
+    box.appendChild(
+      categoryBlock
+    );
 
-        <img
-          src="${
-            product.image ||
-            placeholder(
-              product.name
-            )
-          }"
-          alt="${escapeHtml(
-            product.name
-          )}"
-        >
+  });
 
-        <div>
+}
 
-          <strong>
-            ${escapeHtml(
-              product.name
-            )}
-          </strong>
 
-          <div class="small">
-            ${escapeHtml(
-              product.category
-            )}
-          </div>
+async function saveCategorySequence(
+  categoryName
+){
 
-          <div
-            style="margin-top:7px"
-          >
+  const inputs=
+    Array.from(
+      document.querySelectorAll(
+        '[data-category-sequence="'+
+        CSS.escape(categoryName)+
+        '"]'
+      )
+    );
 
-            ${
-              product.packs.map(
-                p=>
-                  `<span
-                    style="
-                    display:inline-block;
-                    background:#edf5ed;
-                    padding:4px 7px;
-                    border-radius:6px;
-                    margin:2px;
-                    font-size:12px"
-                  >
-                    ${escapeHtml(p.size)}
-                    ₹${p.price}
-                    | Stock:
-                    ${Number(p.stock||0)}
-                  </span>`
-              ).join("")
-            }
+  if(!inputs.length){
+    return;
+  }
 
-          </div>
+  const categoryProducts=
+    products.filter(
+      p=>p.category===categoryName
+    );
 
-        </div>
+  const expectedCount=
+    categoryProducts.length;
 
-        <div class="admin-actions">
+  const entered=
+    inputs.map(input=>({
+      id:String(
+        input.dataset.productId
+      ),
+      sequence:Number(
+        input.value
+      )
+    }));
 
-          <button
-            class="btn btn-light"
-            onclick="editProduct(${product.id})"
-          >
-            ✏️ Edit
-          </button>
+  const invalid=
+    entered.some(item=>
+      !Number.isInteger(item.sequence) ||
+      item.sequence<1 ||
+      item.sequence>expectedCount
+    );
 
-          <button
-            class="btn btn-danger"
-            onclick="deleteProduct(${product.id})"
-          >
-            🗑️ Remove
-          </button>
+  if(invalid){
+    alert(
+      "Please enter sequence numbers from 1 to "+
+      expectedCount+
+      " for "+categoryName+"."
+    );
+    return;
+  }
 
-        </div>
+  const uniqueSequences=
+    new Set(
+      entered.map(
+        item=>item.sequence
+      )
+    );
 
-      `;
+  if(
+    uniqueSequences.size!==
+    expectedCount
+  ){
+    alert(
+      "Each product must have a unique sequence number from 1 to "+
+      expectedCount+
+      ". Please remove duplicate sequence numbers."
+    );
+    return;
+  }
 
-      box.appendChild(div);
+  const previousProducts=
+    JSON.parse(
+      JSON.stringify(products)
+    );
 
-    }
+  const sortedCategoryProducts=
+    entered
+      .slice()
+      .sort(
+        (a,b)=>
+          a.sequence-b.sequence
+      )
+      .map(item=>
+        categoryProducts.find(
+          p=>
+            String(p.id)===
+            item.id
+        )
+      )
+      .filter(Boolean);
+
+  /*
+    Rebuild the global product array while changing ONLY
+    the order of products belonging to this category.
+  */
+  let categoryCursor=0;
+
+  products=
+    products.map(product=>{
+
+      if(
+        product.category!==
+        categoryName
+      ){
+        return product;
+      }
+
+      const nextProduct=
+        sortedCategoryProducts[
+          categoryCursor
+        ];
+
+      categoryCursor++;
+
+      return nextProduct;
+
+    });
+
+  renderAdminProducts();
+  renderProducts();
+
+  const saved=
+    await saveProductSequence();
+
+  if(!saved){
+
+    products=
+      previousProducts;
+
+    renderAdminProducts();
+    renderProducts();
+
+    alert(
+      "The "+categoryName+
+      " sequence could not be saved to Firebase. Previous sequence has been restored."
+    );
+
+    return;
+  }
+
+  showSaveNotification(
+    categoryName+
+    " product sequence saved successfully."
   );
 
 }
+
+
+async function saveProductSequence(){
+
+  localStorage.setItem(
+    "jayvik_products",
+    JSON.stringify(products)
+  );
+
+  if(
+    !firebaseReady ||
+    !db ||
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    showSaveNotification(
+      "Sequence changed locally, but Firebase/Admin login is not ready.",
+      true
+    );
+    return false;
+  }
+
+  try{
+
+    /*
+      Product array order is the display sequence.
+      Save only the products collection so unrelated website settings
+      and order-status data are not touched.
+    */
+    await db
+      .ref("store/public/products")
+      .set(products);
+
+    showSaveNotification(
+      "Product sequence saved successfully."
+    );
+
+    return true;
+
+  }catch(err){
+
+    console.error(
+      "Product sequence save failed:",
+      err
+    );
+
+    showSaveNotification(
+      "Could not save product sequence to Firebase.",
+      true
+    );
+
+    return false;
+
+  }
+
+}
+
+
 
 
 async function deleteProduct(id){
