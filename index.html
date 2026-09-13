@@ -936,6 +936,7 @@ footer{
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
@@ -1497,6 +1498,20 @@ footer{
 
       <button
         class="admin-tab"
+        onclick="showAdminTab('consumptionAdmin',this);renderConsumptionAnalytics()"
+      >
+        📈 Customer Consumption
+      </button>
+
+      <button
+        class="admin-tab"
+        onclick="showAdminTab('salesArchiveAdmin',this);renderSalesArchive()"
+      >
+        🗄 Sales Archive
+      </button>
+
+      <button
+        class="admin-tab"
         onclick="showAdminTab('credentialsAdmin',this);loadCredentials()"
       >
         🔐 Login Credentials
@@ -1958,6 +1973,219 @@ footer{
     </div>
 
 
+    <!-- SALES ARCHIVE -->
+
+    <div
+      id="salesArchiveAdmin"
+      class="admin-section"
+    >
+
+      <div class="admin-card">
+
+        <div class="section-title">
+          <div>
+            <h3 style="margin-bottom:5px">
+              🗄 Sales Archive
+            </h3>
+            <div class="brand-sub">
+              Paid dispatched orders retained after deletion from active Order Management
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button
+              type="button"
+              class="btn btn-light"
+              onclick="renderSalesArchive()"
+            >
+              ↻ Refresh Archive
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-green"
+              onclick="exportJayvikExcel()"
+            >
+              📥 Export Excel
+            </button>
+          </div>
+        </div>
+
+        <div class="notice" style="margin:12px 0">
+          These are historical sales records preserved after paid dispatched orders are deleted from the active Orders area.
+          They continue to be used for Customer Consumption reports and Excel export.
+        </div>
+
+        <div class="order-summary-grid">
+          <div class="order-stat">
+            <strong>Archived Orders</strong>
+            <b id="salesArchiveOrderCount">0</b>
+          </div>
+
+          <div class="order-stat">
+            <strong>Archived Sales Value</strong>
+            <b id="salesArchiveSalesValue">₹0</b>
+          </div>
+
+          <div class="order-stat">
+            <strong>Customers</strong>
+            <b id="salesArchiveCustomerCount">0</b>
+          </div>
+
+          <div class="order-stat">
+            <strong>Units / Packs</strong>
+            <b id="salesArchiveItemCount">0</b>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="admin-card">
+        <h3>📁 Archived Sales Orders</h3>
+        <div
+          id="salesArchiveTable"
+          style="overflow:auto;margin-top:12px"
+        ></div>
+      </div>
+
+    </div>
+
+
+
+    <!-- CUSTOMER CONSUMPTION ANALYTICS -->
+
+    <div
+      id="consumptionAdmin"
+      class="admin-section"
+    >
+
+      <div class="admin-card">
+
+        <div class="section-title">
+          <div>
+            <h3 style="margin-bottom:5px">
+              📈 Customer Consumption Pattern
+            </h3>
+            <div class="brand-sub">
+              Customer-wise, month-wise and product-wise purchase analysis
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button
+              type="button"
+              class="btn btn-light"
+              onclick="renderConsumptionAnalytics()"
+            >
+              ↻ Refresh
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-green"
+              onclick="exportJayvikExcel()"
+            >
+              📥 Export Excel
+            </button>
+          </div>
+        </div>
+
+        <div class="notice" style="margin:12px 0">
+          Analysis includes active orders plus the protected Sales Archive.
+          When a paid dispatched order is deleted, its sales history is retained automatically for reports and Excel export.
+        </div>
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+            gap:12px;
+            margin-bottom:16px
+          "
+        >
+          <label>
+            Customer
+            <select
+              id="consumptionCustomerFilter"
+              onchange="renderConsumptionAnalytics(false)"
+            >
+              <option value="all">All Customers</option>
+            </select>
+          </label>
+
+          <label>
+            Month
+            <select
+              id="consumptionMonthFilter"
+              onchange="renderConsumptionAnalytics(false)"
+            >
+              <option value="all">All Months</option>
+            </select>
+          </label>
+
+          <label>
+            Product
+            <select
+              id="consumptionProductFilter"
+              onchange="renderConsumptionAnalytics(false)"
+            >
+              <option value="all">All Products</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="order-summary-grid">
+          <div class="order-stat">
+            <strong>Customers</strong>
+            <b id="consumptionStatCustomers">0</b>
+          </div>
+
+          <div class="order-stat">
+            <strong>Orders</strong>
+            <b id="consumptionStatOrders">0</b>
+          </div>
+
+          <div class="order-stat">
+            <strong>Units / Packs</strong>
+            <b id="consumptionStatQty">0</b>
+          </div>
+
+          <div class="order-stat">
+            <strong>Purchase Value</strong>
+            <b id="consumptionStatValue">₹0</b>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="admin-card">
+        <h3>👤 Customer-wise Monthly Summary</h3>
+        <div
+          id="consumptionCustomerMonthlyTable"
+          style="overflow:auto;margin-top:12px"
+        ></div>
+      </div>
+
+      <div class="admin-card">
+        <h3>📦 Product-wise Consumption</h3>
+        <div
+          id="consumptionProductTable"
+          style="overflow:auto;margin-top:12px"
+        ></div>
+      </div>
+
+      <div class="admin-card">
+        <h3>🧾 Detailed Consumption</h3>
+        <div
+          id="consumptionDetailTable"
+          style="overflow:auto;margin-top:12px"
+        ></div>
+      </div>
+
+    </div>
+
+
+
     <!-- ORDERS -->
 
     <div
@@ -2012,12 +2240,22 @@ footer{
             🧾 Order Management
           </h3>
 
-          <button
-            class="btn btn-light"
-            onclick="renderOrders()"
-          >
-            ↻ Refresh
-          </button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button
+              class="btn btn-light"
+              onclick="renderOrders()"
+            >
+              ↻ Refresh
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-green"
+              onclick="exportJayvikExcel()"
+            >
+              📥 Export Excel
+            </button>
+          </div>
 
         </div>
 
@@ -3655,6 +3893,8 @@ let orders=
       "jayvik_orders"
     )
   ) || [];
+
+let salesArchive=[];
 
 let orderFilter="all";
 
@@ -6452,10 +6692,30 @@ async function deletePaidDispatchedOrder(orderId){
       throw new Error("Firebase is not ready.");
     }
 
+    const archiveRecord={
+      ...order,
+      archivedForAnalyticsAt:new Date().toISOString(),
+      originalFinalStatus:"dispatched"
+    };
+
+    /*
+      Atomic Firebase update:
+      1. Save permanent sales history under admin-only store archive.
+      2. Remove active order.
+      3. Remove public live-status record.
+    */
     await db.ref().update({
+      ["/store/salesArchive/"+String(order.id)]:archiveRecord,
       ["/orders/"+String(order.id)]:null,
       ["/store/public/orderStatus/"+String(order.id)]:null
     });
+
+    salesArchive=
+      salesArchive.filter(
+        o=>String(o.id)!==String(order.id)
+      );
+
+    salesArchive.push(archiveRecord);
 
     orders=
       orders.filter(
@@ -6470,8 +6730,20 @@ async function deletePaidDispatchedOrder(orderId){
     await renderOrders();
 
     showSaveNotification(
-      "Order "+order.id+" permanently deleted from Firebase."
+      "Order "+order.id+" removed from active orders and archived for future consumption reports."
     );
+
+    const archiveSection=
+      document.getElementById(
+        "salesArchiveAdmin"
+      );
+
+    if(
+      archiveSection &&
+      archiveSection.classList.contains("active")
+    ){
+      await renderSalesArchive();
+    }
 
   }catch(err){
 
@@ -7380,6 +7652,1165 @@ function closeAdmin(){
     "adminOverlay"
   ).style.display="none";
 
+}
+
+
+
+
+async function renderSalesArchive(){
+
+  await loadSalesArchive();
+
+  const table=
+    document.getElementById(
+      "salesArchiveTable"
+    );
+
+  if(!table)return;
+
+  const archive=
+    (salesArchive||[])
+      .slice()
+      .sort(
+        (a,b)=>
+          new Date(
+            b.archivedForAnalyticsAt||
+            b.archivedAt||
+            b.updatedAt||
+            b.createdAt||
+            0
+          )-
+          new Date(
+            a.archivedForAnalyticsAt||
+            a.archivedAt||
+            a.updatedAt||
+            a.createdAt||
+            0
+          )
+      );
+
+  const orderCount=
+    archive.length;
+
+  const salesValue=
+    archive.reduce(
+      (sum,order)=>
+        sum+Number(order.total||0),
+      0
+    );
+
+  const customers=
+    new Set(
+      archive.map(
+        order=>
+          consumptionCustomerKey(order)
+      )
+    ).size;
+
+  const itemCount=
+    archive.reduce(
+      (sum,order)=>
+        sum+
+        (order.items||[]).reduce(
+          (s,item)=>
+            s+Number(item.qty||0),
+          0
+        ),
+      0
+    );
+
+  const countEl=
+    document.getElementById(
+      "salesArchiveOrderCount"
+    );
+
+  const valueEl=
+    document.getElementById(
+      "salesArchiveSalesValue"
+    );
+
+  const customerEl=
+    document.getElementById(
+      "salesArchiveCustomerCount"
+    );
+
+  const itemEl=
+    document.getElementById(
+      "salesArchiveItemCount"
+    );
+
+  if(countEl){
+    countEl.textContent=
+      orderCount;
+  }
+
+  if(valueEl){
+    valueEl.textContent=
+      "₹"+
+      salesValue.toLocaleString(
+        "en-IN",
+        {maximumFractionDigits:2}
+      );
+  }
+
+  if(customerEl){
+    customerEl.textContent=
+      customers;
+  }
+
+  if(itemEl){
+    itemEl.textContent=
+      itemCount;
+  }
+
+  if(!archive.length){
+    table.innerHTML=
+      `<div class="empty" style="padding:22px">
+        No archived sales orders yet.
+        Paid dispatched orders will appear here after they are deleted from the active Dispatched Orders folder.
+      </div>`;
+    return;
+  }
+
+  const rows=
+    archive.map(order=>{
+
+      const customer=
+        order.customer||{};
+
+      const products=
+        (order.items||[])
+          .map(item=>
+            `${escapeHtml(item.name||"")} (${escapeHtml(item.size||"")}) × ${Number(item.qty||0)}`
+          )
+          .join("<br>");
+
+      const payment=
+        String(order.paymentStatus||"pending")==="received"
+          ?"💰 Payment Received"
+          :"💳 Payment Pending";
+
+      const archiveDate=
+        order.archivedForAnalyticsAt||
+        order.archivedAt||
+        order.updatedAt||
+        "";
+
+      return [
+        escapeHtml(String(order.id||"")),
+        escapeHtml(
+          archiveDate
+            ? new Date(archiveDate).toLocaleString("en-IN")
+            : ""
+        ),
+        escapeHtml(String(customer.name||"")),
+        escapeHtml(String(customer.phone||"")),
+        products,
+        "₹"+
+          Number(order.total||0).toLocaleString(
+            "en-IN",
+            {maximumFractionDigits:2}
+          ),
+        payment,
+        escapeHtml(
+          order.paymentReceivedAt
+            ? new Date(order.paymentReceivedAt).toLocaleString("en-IN")
+            : ""
+        )
+      ];
+
+    });
+
+  table.innerHTML=
+    consumptionTable(
+      [
+        "Order ID",
+        "Archived At",
+        "Customer",
+        "Mobile",
+        "Products",
+        "Order Value",
+        "Payment",
+        "Payment Received At"
+      ],
+      rows
+    );
+
+}
+
+
+function consumptionMonthKey(dateValue){
+  const d=new Date(dateValue);
+  if(Number.isNaN(d.getTime()))return "Unknown";
+  return (
+    d.getFullYear()+
+    "-"+
+    String(d.getMonth()+1).padStart(2,"0")
+  );
+}
+
+
+function consumptionMonthLabel(key){
+  if(key==="Unknown")return "Unknown";
+  const parts=String(key).split("-");
+  const d=new Date(
+    Number(parts[0]),
+    Number(parts[1])-1,
+    1
+  );
+  return d.toLocaleDateString(
+    "en-IN",
+    {
+      month:"short",
+      year:"numeric"
+    }
+  );
+}
+
+
+function consumptionCustomerKey(order){
+  const phone=
+    String(order?.customer?.phone||"")
+      .replace(/\D/g,"");
+
+  const name=
+    String(order?.customer?.name||"Unknown Customer")
+      .trim();
+
+  /*
+    Mobile number is the primary customer key because names can vary.
+    If mobile is absent, fall back to the customer name.
+  */
+  return phone
+    ? "phone:"+phone
+    : "name:"+name.toLowerCase();
+}
+
+
+function consumptionCustomerLabel(order){
+  const name=
+    String(order?.customer?.name||"Unknown Customer")
+      .trim();
+
+  const phone=
+    String(order?.customer?.phone||"")
+      .trim();
+
+  return phone
+    ? `${name} — ${phone}`
+    : name;
+}
+
+
+
+async function loadSalesArchive(){
+
+  if(
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com" ||
+    !firebaseReady ||
+    !db
+  ){
+    return salesArchive;
+  }
+
+  try{
+    const snap=
+      await db
+        .ref("store/salesArchive")
+        .once("value");
+
+    const raw=snap.val();
+
+    if(!raw){
+      salesArchive=[];
+    }else if(Array.isArray(raw)){
+      salesArchive=raw.filter(Boolean);
+    }else if(typeof raw==="object"){
+      salesArchive=Object.values(raw).filter(Boolean);
+    }
+
+  }catch(err){
+    console.error("Sales archive load failed:",err);
+  }
+
+  return salesArchive;
+}
+
+
+function allOrdersForAnalytics(){
+
+  const map=new Map();
+
+  allOrdersForAnalytics().forEach(order=>{
+    if(order && order.id!=null){
+      map.set(
+        String(order.id),
+        {
+          ...order,
+          archiveSource:"live"
+        }
+      );
+    }
+  });
+
+  (salesArchive||[]).forEach(order=>{
+    if(order && order.id!=null && !map.has(String(order.id))){
+      map.set(
+        String(order.id),
+        {
+          ...order,
+          archiveSource:"archive"
+        }
+      );
+    }
+  });
+
+  return Array.from(map.values());
+}
+
+
+function buildConsumptionRows(){
+
+  const rows=[];
+
+  (orders||[]).forEach(order=>{
+
+    /*
+      Exclude cancelled/invalid records if they ever exist.
+      All current Jayvik workflow statuses are included.
+    */
+    if(!order || !Array.isArray(order.items))return;
+
+    const month=
+      consumptionMonthKey(
+        order.createdAt
+      );
+
+    const customerKey=
+      consumptionCustomerKey(order);
+
+    const customer=
+      consumptionCustomerLabel(order);
+
+    order.items.forEach(item=>{
+
+      const qty=
+        Number(item.qty||0);
+
+      const price=
+        Number(item.price||0);
+
+      rows.push({
+        orderId:String(order.id||""),
+        createdAt:order.createdAt||"",
+        month,
+        customerKey,
+        customer,
+        customerName:
+          String(order?.customer?.name||"Unknown Customer"),
+        phone:
+          String(order?.customer?.phone||""),
+        product:
+          String(item.name||"Unknown Product"),
+        size:
+          String(item.size||""),
+        qty,
+        price,
+        value:qty*price,
+        status:String(order.status||"")
+      });
+
+    });
+
+  });
+
+  return rows;
+}
+
+
+function consumptionTable(headers,rows){
+
+  if(!rows.length){
+    return `
+      <div class="empty" style="padding:20px">
+        No consumption data found for the selected filters.
+      </div>
+    `;
+  }
+
+  return `
+    <table
+      style="
+        width:100%;
+        border-collapse:collapse;
+        min-width:760px
+      "
+    >
+      <thead>
+        <tr>
+          ${headers.map(
+            h=>`
+              <th
+                style="
+                  text-align:left;
+                  padding:10px;
+                  border-bottom:2px solid #dfe9df;
+                  white-space:nowrap
+                "
+              >
+                ${escapeHtml(h)}
+              </th>
+            `
+          ).join("")}
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(
+          cells=>`
+            <tr>
+              ${cells.map(
+                cell=>`
+                  <td
+                    style="
+                      padding:10px;
+                      border-bottom:1px solid #edf2ed;
+                      vertical-align:top
+                    "
+                  >
+                    ${cell}
+                  </td>
+                `
+              ).join("")}
+            </tr>
+          `
+        ).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+
+async function renderConsumptionAnalytics(rebuildFilters=true){
+
+  await loadSalesArchive();
+
+  const allRows=
+    buildConsumptionRows();
+
+  const customerSelect=
+    document.getElementById(
+      "consumptionCustomerFilter"
+    );
+
+  const monthSelect=
+    document.getElementById(
+      "consumptionMonthFilter"
+    );
+
+  const productSelect=
+    document.getElementById(
+      "consumptionProductFilter"
+    );
+
+  if(
+    !customerSelect ||
+    !monthSelect ||
+    !productSelect
+  ){
+    return;
+  }
+
+  const previousCustomer=
+    customerSelect.value||"all";
+
+  const previousMonth=
+    monthSelect.value||"all";
+
+  const previousProduct=
+    productSelect.value||"all";
+
+  if(rebuildFilters){
+
+    const customers=
+      Array.from(
+        new Map(
+          allRows.map(
+            row=>[
+              row.customerKey,
+              row.customer
+            ]
+          )
+        ).entries()
+      ).sort(
+        (a,b)=>
+          a[1].localeCompare(b[1])
+      );
+
+    const months=
+      Array.from(
+        new Set(
+          allRows.map(
+            row=>row.month
+          )
+        )
+      ).sort().reverse();
+
+    const productsList=
+      Array.from(
+        new Set(
+          allRows.map(
+            row=>row.product
+          )
+        )
+      ).sort(
+        (a,b)=>
+          a.localeCompare(b)
+      );
+
+    customerSelect.innerHTML=
+      `<option value="all">All Customers</option>`+
+      customers.map(
+        ([key,label])=>
+          `<option value="${escapeAttr(key)}">${escapeHtml(label)}</option>`
+      ).join("");
+
+    monthSelect.innerHTML=
+      `<option value="all">All Months</option>`+
+      months.map(
+        month=>
+          `<option value="${escapeAttr(month)}">${escapeHtml(consumptionMonthLabel(month))}</option>`
+      ).join("");
+
+    productSelect.innerHTML=
+      `<option value="all">All Products</option>`+
+      productsList.map(
+        product=>
+          `<option value="${escapeAttr(product)}">${escapeHtml(product)}</option>`
+      ).join("");
+
+    if(
+      Array.from(customerSelect.options)
+        .some(o=>o.value===previousCustomer)
+    ){
+      customerSelect.value=
+        previousCustomer;
+    }
+
+    if(
+      Array.from(monthSelect.options)
+        .some(o=>o.value===previousMonth)
+    ){
+      monthSelect.value=
+        previousMonth;
+    }
+
+    if(
+      Array.from(productSelect.options)
+        .some(o=>o.value===previousProduct)
+    ){
+      productSelect.value=
+        previousProduct;
+    }
+  }
+
+  const customerFilter=
+    customerSelect.value||"all";
+
+  const monthFilter=
+    monthSelect.value||"all";
+
+  const productFilter=
+    productSelect.value||"all";
+
+  const rows=
+    allRows.filter(row=>
+      (
+        customerFilter==="all" ||
+        row.customerKey===customerFilter
+      ) &&
+      (
+        monthFilter==="all" ||
+        row.month===monthFilter
+      ) &&
+      (
+        productFilter==="all" ||
+        row.product===productFilter
+      )
+    );
+
+  const uniqueCustomers=
+    new Set(
+      rows.map(r=>r.customerKey)
+    ).size;
+
+  const uniqueOrders=
+    new Set(
+      rows.map(r=>r.orderId)
+    ).size;
+
+  const totalQty=
+    rows.reduce(
+      (sum,r)=>sum+Number(r.qty||0),
+      0
+    );
+
+  const totalValue=
+    rows.reduce(
+      (sum,r)=>sum+Number(r.value||0),
+      0
+    );
+
+  document.getElementById(
+    "consumptionStatCustomers"
+  ).textContent=uniqueCustomers;
+
+  document.getElementById(
+    "consumptionStatOrders"
+  ).textContent=uniqueOrders;
+
+  document.getElementById(
+    "consumptionStatQty"
+  ).textContent=totalQty;
+
+  document.getElementById(
+    "consumptionStatValue"
+  ).textContent=
+    "₹"+
+    totalValue.toLocaleString(
+      "en-IN",
+      {maximumFractionDigits:2}
+    );
+
+  /*
+    Customer + month summary.
+  */
+  const customerMonthMap=
+    new Map();
+
+  rows.forEach(row=>{
+
+    const key=
+      row.customerKey+
+      "||"+
+      row.month;
+
+    if(!customerMonthMap.has(key)){
+      customerMonthMap.set(
+        key,
+        {
+          customer:row.customer,
+          month:row.month,
+          orders:new Set(),
+          qty:0,
+          value:0
+        }
+      );
+    }
+
+    const entry=
+      customerMonthMap.get(key);
+
+    entry.orders.add(
+      row.orderId
+    );
+
+    entry.qty+=
+      Number(row.qty||0);
+
+    entry.value+=
+      Number(row.value||0);
+
+  });
+
+  const customerMonthRows=
+    Array.from(
+      customerMonthMap.values()
+    )
+    .sort(
+      (a,b)=>
+        String(b.month).localeCompare(String(a.month)) ||
+        a.customer.localeCompare(b.customer)
+    )
+    .map(entry=>[
+      escapeHtml(entry.customer),
+      escapeHtml(consumptionMonthLabel(entry.month)),
+      String(entry.orders.size),
+      String(entry.qty),
+      "₹"+
+        entry.value.toLocaleString(
+          "en-IN",
+          {maximumFractionDigits:2}
+        )
+    ]);
+
+  document.getElementById(
+    "consumptionCustomerMonthlyTable"
+  ).innerHTML=
+    consumptionTable(
+      [
+        "Customer",
+        "Month",
+        "Orders",
+        "Units / Packs",
+        "Purchase Value"
+      ],
+      customerMonthRows
+    );
+
+  /*
+    Product summary within the selected customer/month filters.
+  */
+  const productMap=
+    new Map();
+
+  rows.forEach(row=>{
+
+    const key=
+      row.product+
+      "||"+
+      row.size;
+
+    if(!productMap.has(key)){
+      productMap.set(
+        key,
+        {
+          product:row.product,
+          size:row.size,
+          customers:new Set(),
+          orders:new Set(),
+          qty:0,
+          value:0
+        }
+      );
+    }
+
+    const entry=
+      productMap.get(key);
+
+    entry.customers.add(
+      row.customerKey
+    );
+
+    entry.orders.add(
+      row.orderId
+    );
+
+    entry.qty+=
+      Number(row.qty||0);
+
+    entry.value+=
+      Number(row.value||0);
+
+  });
+
+  const productRows=
+    Array.from(
+      productMap.values()
+    )
+    .sort(
+      (a,b)=>
+        b.qty-a.qty ||
+        a.product.localeCompare(b.product)
+    )
+    .map(entry=>[
+      escapeHtml(entry.product),
+      escapeHtml(entry.size),
+      String(entry.qty),
+      String(entry.orders.size),
+      String(entry.customers.size),
+      "₹"+
+        entry.value.toLocaleString(
+          "en-IN",
+          {maximumFractionDigits:2}
+        )
+    ]);
+
+  document.getElementById(
+    "consumptionProductTable"
+  ).innerHTML=
+    consumptionTable(
+      [
+        "Product",
+        "Pack Size",
+        "Qty Consumed",
+        "Orders",
+        "Customers",
+        "Purchase Value"
+      ],
+      productRows
+    );
+
+  /*
+    Detailed row-level view.
+  */
+  const detailRows=
+    rows
+      .slice()
+      .sort(
+        (a,b)=>
+          new Date(b.createdAt)-
+          new Date(a.createdAt)
+      )
+      .map(row=>[
+        escapeHtml(
+          row.createdAt
+            ? new Date(row.createdAt).toLocaleDateString("en-IN")
+            : ""
+        ),
+        escapeHtml(row.customer),
+        escapeHtml(row.product),
+        escapeHtml(row.size),
+        String(row.qty),
+        "₹"+
+          Number(row.value||0).toLocaleString(
+            "en-IN",
+            {maximumFractionDigits:2}
+          ),
+        escapeHtml(row.status)
+      ]);
+
+  document.getElementById(
+    "consumptionDetailTable"
+  ).innerHTML=
+    consumptionTable(
+      [
+        "Date",
+        "Customer",
+        "Product",
+        "Pack",
+        "Qty",
+        "Value",
+        "Order Status"
+      ],
+      detailRows
+    );
+
+}
+
+
+
+function excelSafeDate(value){
+  if(!value)return "";
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime()))return String(value);
+  return d.toLocaleString("en-IN");
+}
+
+
+async function exportJayvikExcel(){
+
+  await loadSalesArchive();
+
+  if(typeof XLSX==="undefined"){
+    alert(
+      "Excel export library is not loaded. Please check your internet connection and try again."
+    );
+    return;
+  }
+
+  const allOrders=
+    allOrdersForAnalytics();
+
+  if(!allOrders.length){
+    alert("No order data is available to export.");
+    return;
+  }
+
+  /*
+    SHEET 1: ORDER DETAILS
+    One row per ordered product/pack.
+  */
+  const orderDetails=[];
+
+  allOrders.forEach(order=>{
+
+    const customer=
+      order.customer||{};
+
+    (order.items||[]).forEach(item=>{
+
+      orderDetails.push({
+        "Order ID":String(order.id||""),
+        "Order Date":excelSafeDate(order.createdAt),
+        "Customer Name":String(customer.name||""),
+        "Mobile":String(customer.phone||""),
+        "Address":String(customer.address||""),
+        "Product":String(item.name||""),
+        "Pack Size":String(item.size||""),
+        "Quantity":Number(item.qty||0),
+        "Unit Price":Number(item.price||0),
+        "Line Value":
+          Number(item.qty||0)*
+          Number(item.price||0),
+        "Order Total":Number(order.total||0),
+        "Order Status":String(order.status||""),
+        "Payment Status":
+          String(order.paymentStatus||""),
+        "Updated At":excelSafeDate(order.updatedAt),
+        "Record Source":order.archiveSource==="archive"?"Sales Archive":"Active Orders"
+      });
+
+    });
+
+  });
+
+
+  /*
+    SHEET 2: DISPATCHED ORDERS
+    Includes currently dispatched and archived/history orders.
+  */
+  const dispatchedOrders=
+    allOrders
+      .filter(order=>
+        order.status==="dispatched" ||
+        order.status==="history"
+      )
+      .map(order=>{
+
+        const customer=
+          order.customer||{};
+
+        return {
+          "Order ID":String(order.id||""),
+          "Order Date":excelSafeDate(order.createdAt),
+          "Customer Name":String(customer.name||""),
+          "Mobile":String(customer.phone||""),
+          "Address":String(customer.address||""),
+          "Order Total":Number(order.total||0),
+          "Admin Status":
+            order.status==="history"
+              ?"Dispatched Orders"
+              :"Dispatched",
+          "Payment Status":
+            String(order.paymentStatus||"pending")==="received"
+              ?"Payment Received"
+              :"Payment Pending",
+          "Payment Received At":
+            excelSafeDate(order.paymentReceivedAt),
+          "Dispatched / Archived At":
+            excelSafeDate(
+              order.archivedAt||
+              order.updatedAt
+            ),
+          "Record Source":order.archiveSource==="archive"?"Sales Archive":"Active Orders",
+          "Products":
+            (order.items||[])
+              .map(item=>
+                `${item.name} (${item.size}) x ${Number(item.qty||0)}`
+              )
+              .join("; ")
+        };
+
+      });
+
+
+  /*
+    SHEET 3: CONSUMPTION PATTERN
+    Customer + month + product + pack aggregation.
+  */
+  const consumptionRows=
+    buildConsumptionRows();
+
+  const consumptionMap=
+    new Map();
+
+  consumptionRows.forEach(row=>{
+
+    const key=[
+      row.customerKey,
+      row.month,
+      row.product,
+      row.size
+    ].join("||");
+
+    if(!consumptionMap.has(key)){
+      consumptionMap.set(
+        key,
+        {
+          customer:row.customer,
+          month:row.month,
+          product:row.product,
+          size:row.size,
+          orders:new Set(),
+          qty:0,
+          value:0
+        }
+      );
+    }
+
+    const entry=
+      consumptionMap.get(key);
+
+    entry.orders.add(row.orderId);
+    entry.qty+=Number(row.qty||0);
+    entry.value+=Number(row.value||0);
+
+  });
+
+  const consumptionExport=
+    Array.from(consumptionMap.values())
+      .sort(
+        (a,b)=>
+          String(b.month).localeCompare(String(a.month)) ||
+          a.customer.localeCompare(b.customer) ||
+          a.product.localeCompare(b.product)
+      )
+      .map(entry=>({
+        "Customer":entry.customer,
+        "Month":consumptionMonthLabel(entry.month),
+        "Product":entry.product,
+        "Pack Size":entry.size,
+        "Orders":entry.orders.size,
+        "Quantity Consumed":entry.qty,
+        "Purchase Value":entry.value
+      }));
+
+
+  /*
+    SHEET 4: CUSTOMER MONTHLY SUMMARY
+  */
+  const monthlyMap=
+    new Map();
+
+  consumptionRows.forEach(row=>{
+
+    const key=
+      row.customerKey+"||"+row.month;
+
+    if(!monthlyMap.has(key)){
+      monthlyMap.set(
+        key,
+        {
+          customer:row.customer,
+          month:row.month,
+          orders:new Set(),
+          qty:0,
+          value:0
+        }
+      );
+    }
+
+    const entry=
+      monthlyMap.get(key);
+
+    entry.orders.add(row.orderId);
+    entry.qty+=Number(row.qty||0);
+    entry.value+=Number(row.value||0);
+
+  });
+
+  const monthlyExport=
+    Array.from(monthlyMap.values())
+      .sort(
+        (a,b)=>
+          String(b.month).localeCompare(String(a.month)) ||
+          a.customer.localeCompare(b.customer)
+      )
+      .map(entry=>({
+        "Customer":entry.customer,
+        "Month":consumptionMonthLabel(entry.month),
+        "Number of Orders":entry.orders.size,
+        "Units / Packs":entry.qty,
+        "Purchase Value":entry.value
+      }));
+
+
+  const workbook=
+    XLSX.utils.book_new();
+
+  const wsOrders=
+    XLSX.utils.json_to_sheet(
+      orderDetails.length
+        ? orderDetails
+        : [{"No Data":"No order details available"}]
+    );
+
+  const wsDispatched=
+    XLSX.utils.json_to_sheet(
+      dispatchedOrders.length
+        ? dispatchedOrders
+        : [{"No Data":"No dispatched orders available"}]
+    );
+
+  const wsConsumption=
+    XLSX.utils.json_to_sheet(
+      consumptionExport.length
+        ? consumptionExport
+        : [{"No Data":"No consumption data available"}]
+    );
+
+  const wsMonthly=
+    XLSX.utils.json_to_sheet(
+      monthlyExport.length
+        ? monthlyExport
+        : [{"No Data":"No monthly consumption data available"}]
+    );
+
+  /*
+    Practical Excel column widths.
+  */
+  wsOrders["!cols"]=[
+    {wch:18},{wch:22},{wch:24},{wch:16},{wch:36},
+    {wch:28},{wch:14},{wch:10},{wch:12},{wch:14},
+    {wch:14},{wch:16},{wch:18},{wch:22}
+  ];
+
+  wsDispatched["!cols"]=[
+    {wch:18},{wch:22},{wch:24},{wch:16},{wch:36},
+    {wch:14},{wch:18},{wch:20},{wch:22},{wch:24},{wch:55}
+  ];
+
+  wsConsumption["!cols"]=[
+    {wch:32},{wch:14},{wch:28},{wch:14},
+    {wch:10},{wch:18},{wch:16}
+  ];
+
+  wsMonthly["!cols"]=[
+    {wch:32},{wch:14},{wch:16},{wch:14},{wch:16}
+  ];
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    wsOrders,
+    "Order Details"
+  );
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    wsDispatched,
+    "Dispatched Orders"
+  );
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    wsConsumption,
+    "Consumption Pattern"
+  );
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    wsMonthly,
+    "Customer Monthly"
+  );
+
+  const now=new Date();
+
+  const fileDate=
+    now.getFullYear()+
+    "-"+
+    String(now.getMonth()+1).padStart(2,"0")+
+    "-"+
+    String(now.getDate()).padStart(2,"0");
+
+  XLSX.writeFile(
+    workbook,
+    `Jayvik_Order_Consumption_${fileDate}.xlsx`
+  );
+
+  showSaveNotification(
+    "Excel report exported successfully."
+  );
 }
 
 
