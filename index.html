@@ -3523,80 +3523,23 @@ function normalizeGrainAndDaliyaCategories(){
 
 
 /*
-  VERIFIED JAYVIK CATALOGUE SAFETY NET
-  Adds only products whose names/prices were previously confirmed.
-  Existing Firebase/Admin-edited versions are never overwritten.
+  CATALOGUE SYNC
+  IMPORTANT:
+  Do NOT auto-restore products that Admin has deleted.
+  Firebase/Admin catalogue is the source of truth.
 */
-const verifiedCatalogueProducts = [
-  {
-    id:20,
-    name:"Organic Indrayani Rice",
-    category:"Grains",
-    image:placeholder("Organic Indrayani Rice"),
-    packs:[
-      {size:"1 kg",price:115,stock:0}
-    ],
-    description:"Organic Indrayani rice."
-  },
-  {
-    id:21,
-    name:"Indrayani Rice Flour",
-    category:"Grains",
-    image:placeholder("Indrayani Rice Flour"),
-    packs:[
-      {size:"1 kg",price:125,stock:0}
-    ],
-    description:"Fresh Indrayani rice flour."
-  },
-  {
-    id:22,
-    name:"Organic Sharbati Wheat",
-    category:"Grains",
-    image:placeholder("Organic Sharbati Wheat"),
-    packs:[
-      {size:"1 kg",price:60,stock:0}
-    ],
-    description:"NPOP certified organic Sharbati wheat."
-  },
-  {
-    id:23,
-    name:"Organic Jaggery Powder",
-    category:"Jaggery",
-    image:placeholder("Organic Jaggery Powder"),
-    packs:[
-      {size:"1 kg",price:140,stock:0}
-    ],
-    description:"NPOP certified organic jaggery powder."
-  },
-  {
-    id:24,
-    name:"Jaggery Block",
-    category:"Jaggery",
-    image:placeholder("Jaggery Block"),
-    packs:[
-      {size:"1 kg",price:130,stock:0}
-    ],
-    description:"Traditional jaggery block."
-  }
-];
+const verifiedCatalogueProducts = [];
 
 function syncVerifiedCatalogueProducts(){
-  if(!Array.isArray(products)) products=[];
 
-  const names=new Set(
-    products
-      .map(p=>String(p?.name||"").trim().toLowerCase())
-      .filter(Boolean)
-  );
+  if(!Array.isArray(products)){
+    products=[];
+  }
 
-  verifiedCatalogueProducts.forEach(item=>{
-    const key=String(item.name).trim().toLowerCase();
-    if(!names.has(key)){
-      products.push(JSON.parse(JSON.stringify(item)));
-      names.add(key);
-    }
-  });
-
+  /*
+    Keep category normalization only.
+    No product is added automatically here.
+  */
   normalizeGrainAndDaliyaCategories();
   syncCategoriesWithProducts();
 
@@ -8977,8 +8920,22 @@ async function deleteProduct(id){
     !confirm(
       "Remove "+product.name+"?"
     )
-  )
+  ){
     return;
+  }
+
+  /*
+    Keep a copy so the UI can be restored if Firebase save fails.
+  */
+  const previousProducts=
+    JSON.parse(
+      JSON.stringify(products)
+    );
+
+  const previousCart=
+    JSON.parse(
+      JSON.stringify(cart)
+    );
 
   products=
     products.filter(
@@ -8997,8 +8954,30 @@ async function deleteProduct(id){
       "Product removed and catalogue saved successfully."
     );
 
-  if(!saved)return;
+  if(!saved){
 
+    products=
+      previousProducts;
+
+    cart=
+      previousCart;
+
+    renderProducts();
+    renderCart();
+    renderAdminProducts();
+    updateStats();
+
+    alert(
+      "Product could not be removed from Firebase. Catalogue has been restored. Please try again."
+    );
+
+    return;
+  }
+
+  /*
+    The deleted product will NOT be auto-added again.
+    Firebase/Admin catalogue remains the source of truth.
+  */
   renderProducts();
   renderCart();
   renderAdminProducts();
