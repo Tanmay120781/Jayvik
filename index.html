@@ -1543,7 +1543,7 @@ footer{
 
       <button
         class="admin-tab"
-        onclick="showAdminTab('ordersAdmin',this);renderOrders()"
+        onclick="showAdminTab('ordersAdmin',this);renderOrders();loadOrderHistoryTimingEditor()"
       >
         🧾 Orders
       </button>
@@ -2348,6 +2348,46 @@ footer{
         <div class="order-stat">
           <strong>Stock Items</strong>
           <b id="orderStatStock">0</b>
+        </div>
+
+      </div>
+
+      <div class="admin-card">
+
+        <div class="section-title">
+          <div>
+            <h3 style="margin-bottom:5px">⏱️ Customer Order History Timing</h3>
+            <div class="brand-sub">
+              Set how long a dispatched order stays in Live Order Status before moving to 📜 My Order History.
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-form" style="max-width:540px">
+          <label>Move dispatched order to history after</label>
+
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input
+              id="orderHistoryDelayMinutes"
+              type="number"
+              min="0"
+              step="1"
+              style="max-width:140px"
+            >
+            <strong>minutes</strong>
+
+            <button
+              type="button"
+              class="btn btn-green"
+              onclick="saveOrderHistoryTiming()"
+            >
+              💾 Save Timing
+            </button>
+          </div>
+
+          <div class="notice" style="margin-top:10px">
+            0 = immediately, 60 = 1 hour, 1440 = 24 hours.
+          </div>
         </div>
 
       </div>
@@ -3939,13 +3979,17 @@ let website=
   saleTitle:"Special Offers",
   saleHeadline:"Fresh & Healthy Offers",
   saleText:"Check our latest offers, seasonal products and special deals at Jayvik.",
-  salePhoto:""
+  salePhoto:"",
+  orderHistoryDelayMinutes:60
 };
 
 if(!website.saleTitle)website.saleTitle="Special Offers";
 if(typeof website.saleHeadline!=="string")website.saleHeadline="Fresh & Healthy Offers";
 if(typeof website.saleText!=="string")website.saleText="Check our latest offers, seasonal products and special deals at Jayvik.";
 if(typeof website.salePhoto!=="string")website.salePhoto="";
+if(!Number.isFinite(Number(website.orderHistoryDelayMinutes)) || Number(website.orderHistoryDelayMinutes)<0){
+  website.orderHistoryDelayMinutes=60;
+}
 
 let pendingSalePhotoFile=null;
 let selectedPacks={};
@@ -4558,6 +4602,9 @@ function saveCustomerOrderHistoryLocal(
     status:String(
       order.status||"pending"
     ),
+    dispatchedAt:String(
+      order.dispatchedAt||""
+    ),
     customer:{
       name:String(
         order?.customer?.name||""
@@ -4621,55 +4668,33 @@ function saveCustomerOrderHistoryLocal(
 
 function updateCustomerOrderHistoryStatusLocal(
   orderId,
-  status
+  status,
+  dispatchedAt=""
 ){
-
-  const allHistory=
-    getCustomerOrderHistoryLocal();
-
+  const allHistory=getCustomerOrderHistoryLocal();
   let changed=false;
 
-  Object.keys(allHistory)
-    .forEach(phone=>{
+  Object.keys(allHistory).forEach(phone=>{
+    const list=Array.isArray(allHistory[phone]) ? allHistory[phone] : [];
 
-      const list=
-        Array.isArray(
-          allHistory[phone]
-        )
-          ? allHistory[phone]
-          : [];
-
-      list.forEach(order=>{
-
-        if(
-          String(order.id)===
-          String(orderId)
-        ){
-
-          order.status=
-            String(
-              status||order.status||"pending"
-            );
-
-          changed=true;
-
+    list.forEach(order=>{
+      if(String(order.id)===String(orderId)){
+        order.status=String(status||order.status||"pending");
+        if(dispatchedAt){
+          order.dispatchedAt=String(dispatchedAt);
         }
-
-      });
-
+        changed=true;
+      }
     });
+  });
 
   if(changed){
-
     localStorage.setItem(
       "jayvik_customer_order_history",
       JSON.stringify(allHistory)
     );
-
   }
-
 }
-
 
 function customerStatusLabel(status){
 
@@ -4735,25 +4760,47 @@ function renderCustomerOrderHistory(
   const allHistory=
     getCustomerOrderHistoryLocal();
 
-  const ordersForPhone=
+  const rawOrdersForPhone=
     Array.isArray(
       allHistory[phone]
     )
       ? allHistory[phone]
       : [];
 
-  section.style.display="block";
+  const delayMs=
+    getOrderHistoryDelayMinutes()*60*1000;
+
+  const now=Date.now();
+
+  const ordersForPhone=
+    rawOrdersForPhone.filter(order=>{
+
+      if(String(order.status)!=="dispatched"){
+        return false;
+      }
+
+      const dispatchedAt=
+        new Date(
+          order.dispatchedAt||
+          order.updatedAt||
+          order.createdAt||
+          0
+        ).getTime();
+
+      if(!Number.isFinite(dispatchedAt)){
+        return false;
+      }
+
+      return now-dispatchedAt>=delayMs;
+    });
+
+  section.style.display=
+    ordersForPhone.length
+      ?"block"
+      :"none";
 
   if(!ordersForPhone.length){
-
-    box.innerHTML=`
-      <div class="cart-box">
-        <div class="empty">
-          No previous orders are saved on this device for this mobile number.
-        </div>
-      </div>
-    `;
-
+    box.innerHTML="";
     return;
   }
 
@@ -5074,6 +5121,11 @@ function publicOrderStatusPayload(order){
         order.createdAt||""
       ),
 
+    dispatchedAt:
+      String(
+        order.dispatchedAt||""
+      ),
+
     /*
       Customer-facing last-order details intentionally exclude:
       • unit price
@@ -5133,6 +5185,13 @@ function renderLiveOrderStatus(data){
   if(!data){
     section.style.display="none";
     box.innerHTML="";
+    return;
+  }
+
+  if(customerOrderShouldMoveToHistory(data)){
+    section.style.display="none";
+    box.innerHTML="";
+    renderCustomerOrderHistory();
     return;
   }
 
@@ -5227,12 +5286,6 @@ function renderLiveOrderStatus(data){
             }
           </div>
 
-          <div
-            class="small"
-            style="margin-top:8px"
-          >
-            Prices are not displayed in Last Order Details.
-          </div>
         </div>
       `
       :`
@@ -5332,6 +5385,83 @@ function renderLiveOrderStatus(data){
     </div>
   `;
 
+  scheduleCustomerHistoryMove(data);
+
+}
+
+
+let customerHistoryMoveTimer=null;
+
+function customerOrderShouldMoveToHistory(data){
+
+  if(!data || String(data.status)!=="dispatched"){
+    return false;
+  }
+
+  const dispatchedAt=
+    new Date(
+      data.dispatchedAt||
+      data.updatedAt||
+      data.createdAt||
+      0
+    ).getTime();
+
+  if(!Number.isFinite(dispatchedAt)){
+    return false;
+  }
+
+  const delayMs=
+    getOrderHistoryDelayMinutes()*60*1000;
+
+  return Date.now()-dispatchedAt>=delayMs;
+}
+
+function scheduleCustomerHistoryMove(data=null){
+
+  clearTimeout(customerHistoryMoveTimer);
+
+  let current=data;
+
+  if(!current){
+    try{
+      current=JSON.parse(
+        localStorage.getItem("jayvik_last_order_status")||"null"
+      );
+    }catch(_err){
+      current=null;
+    }
+  }
+
+  if(!current || String(current.status)!=="dispatched"){
+    return;
+  }
+
+  const dispatchedAt=
+    new Date(
+      current.dispatchedAt||
+      current.updatedAt||
+      current.createdAt||
+      0
+    ).getTime();
+
+  if(!Number.isFinite(dispatchedAt)){
+    return;
+  }
+
+  const remaining=Math.max(
+    0,
+    dispatchedAt+
+    getOrderHistoryDelayMinutes()*60*1000-
+    Date.now()
+  );
+
+  customerHistoryMoveTimer=setTimeout(
+    ()=>{
+      renderLiveOrderStatus(current);
+      renderCustomerOrderHistory();
+    },
+    Math.min(remaining+250,2147483000)
+  );
 }
 
 function startCustomerOrderStatusListener(){
@@ -5385,6 +5515,10 @@ function startCustomerOrderStatusListener(){
             data.createdAt ||
             cachedStatus?.createdAt ||
             "",
+          dispatchedAt:
+            data.dispatchedAt ||
+            cachedStatus?.dispatchedAt ||
+            "",
           items:
             Array.isArray(data.items) &&
             data.items.length
@@ -5406,7 +5540,8 @@ function startCustomerOrderStatusListener(){
 
         updateCustomerOrderHistoryStatusLocal(
           mergedData.id,
-          mergedData.status
+          mergedData.status,
+          mergedData.dispatchedAt||""
         );
 
         renderCustomerOrderHistory();
@@ -5690,6 +5825,9 @@ function applyWebsite(){
     }
     saleSection.style.display=(website.saleHeadline||website.saleText||website.salePhoto)?"block":"none";
   }
+
+  renderCustomerOrderHistory();
+  scheduleCustomerHistoryMove();
 
 }
 
@@ -7588,6 +7726,45 @@ Order ID: ${order.id}`;
   }
 }
 
+
+function getOrderHistoryDelayMinutes(){
+  const n=Number(website?.orderHistoryDelayMinutes);
+  return Number.isFinite(n) && n>=0 ? n : 60;
+}
+
+function loadOrderHistoryTimingEditor(){
+  const input=document.getElementById("orderHistoryDelayMinutes");
+  if(input) input.value=getOrderHistoryDelayMinutes();
+}
+
+async function saveOrderHistoryTiming(){
+  if(!auth?.currentUser || auth.currentUser.email!=="jayvik.india@gmail.com"){
+    alert("Admin login required.");
+    return;
+  }
+
+  const input=document.getElementById("orderHistoryDelayMinutes");
+  const value=Number(input?.value);
+
+  if(!Number.isFinite(value) || value<0){
+    alert("Please enter a valid number of minutes.");
+    return;
+  }
+
+  website.orderHistoryDelayMinutes=Math.round(value);
+
+  const saved=await saveAll(
+    true,
+    "Customer order-history timing saved successfully."
+  );
+
+  if(!saved)return;
+
+  loadOrderHistoryTimingEditor();
+  renderCustomerOrderHistory();
+  scheduleCustomerHistoryMove();
+}
+
 /* =====================================================
    ADMIN ORDERS
 ===================================================== */
@@ -8690,6 +8867,10 @@ async function moveOrder(orderId,nextStatus){
 
   order.status=nextStatus;
   order.updatedAt=new Date().toISOString();
+
+  if(nextStatus==="dispatched" && !order.dispatchedAt){
+    order.dispatchedAt=order.updatedAt;
+  }
 
   try{
 
