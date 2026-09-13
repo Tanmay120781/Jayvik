@@ -1127,6 +1127,35 @@ footer{
 
 </section>
 
+<!-- CUSTOMER ORDER HISTORY -->
+
+<section
+  class="container"
+  id="customerOrderHistorySection"
+  style="display:none"
+>
+
+  <div class="section-title">
+
+    <div>
+      <h2 style="margin-bottom:5px">
+        📜 My Order History
+      </h2>
+
+      <div class="brand-sub">
+        Previous orders placed from this device are shown without prices.
+      </div>
+    </div>
+
+  </div>
+
+  <div id="customerOrderHistory"></div>
+
+</section>
+
+<!-- END CUSTOMER ORDER HISTORY -->
+
+
 <!-- LIVE ORDER STATUS -->
 
 <section
@@ -1192,8 +1221,24 @@ footer{
       <input
         id="customerPhone"
         type="tel"
+        inputmode="numeric"
+        autocomplete="tel"
         placeholder="Contact Number"
+        oninput="customerPhoneChanged()"
+        onblur="customerPhoneChanged(true)"
       >
+
+      <div
+        id="customerProfileMessage"
+        class="small"
+        style="
+          display:none;
+          margin-top:-4px;
+          margin-bottom:8px;
+          color:var(--green);
+          font-weight:700
+        "
+      ></div>
 
       <textarea
         id="customerAddress"
@@ -4267,6 +4312,603 @@ async function saveOrderToFirebase(order){
   }
 }
 
+
+function normalizeCustomerPhone(value){
+
+  const digits=
+    String(value||"")
+      .replace(/\D/g,"");
+
+  if(
+    digits.length===12 &&
+    digits.startsWith("91")
+  ){
+    return digits.slice(2);
+  }
+
+  if(
+    digits.length===11 &&
+    digits.startsWith("0")
+  ){
+    return digits.slice(1);
+  }
+
+  return digits.slice(-10);
+
+}
+
+
+function getCustomerProfilesLocal(){
+
+  try{
+
+    const value=
+      JSON.parse(
+        localStorage.getItem(
+          "jayvik_customer_profiles"
+        )||"{}"
+      );
+
+    return (
+      value &&
+      typeof value==="object"
+    )
+      ? value
+      : {};
+
+  }catch(_err){
+    return {};
+  }
+
+}
+
+
+function saveCustomerProfileLocal(
+  phone,
+  name,
+  address
+){
+
+  const key=
+    normalizeCustomerPhone(
+      phone
+    );
+
+  if(key.length!==10)return;
+
+  const profiles=
+    getCustomerProfilesLocal();
+
+  profiles[key]={
+    phone:key,
+    name:String(name||"").trim(),
+    address:String(address||"").trim(),
+    updatedAt:new Date().toISOString()
+  };
+
+  localStorage.setItem(
+    "jayvik_customer_profiles",
+    JSON.stringify(profiles)
+  );
+
+}
+
+
+function customerPhoneChanged(showMessage=false){
+
+  const phoneInput=
+    document.getElementById(
+      "customerPhone"
+    );
+
+  const nameInput=
+    document.getElementById(
+      "customerName"
+    );
+
+  const addressInput=
+    document.getElementById(
+      "customerAddress"
+    );
+
+  const message=
+    document.getElementById(
+      "customerProfileMessage"
+    );
+
+  if(
+    !phoneInput ||
+    !nameInput ||
+    !addressInput
+  ){
+    return;
+  }
+
+  const key=
+    normalizeCustomerPhone(
+      phoneInput.value
+    );
+
+  if(key.length!==10){
+
+    if(message){
+      message.style.display="none";
+      message.textContent="";
+    }
+
+    renderCustomerOrderHistory(
+      key
+    );
+
+    return;
+  }
+
+  const profiles=
+    getCustomerProfilesLocal();
+
+  const profile=
+    profiles[key];
+
+  if(profile){
+
+    /*
+      Fill previous details only when the corresponding box is empty.
+      The customer can freely change the name or address afterward.
+    */
+    if(
+      !String(
+        nameInput.value||""
+      ).trim()
+    ){
+      nameInput.value=
+        String(
+          profile.name||""
+        );
+    }
+
+    if(
+      !String(
+        addressInput.value||""
+      ).trim()
+    ){
+      addressInput.value=
+        String(
+          profile.address||""
+        );
+    }
+
+    if(message){
+      message.style.display="block";
+      message.textContent=
+        "✓ Previous customer details loaded. You can change the name or address before placing the order.";
+    }
+
+  }else if(message){
+
+    message.style.display=
+      showMessage
+        ?"block"
+        :"none";
+
+    message.textContent=
+      showMessage
+        ?"New mobile number. Enter customer name and delivery address."
+        :"";
+
+  }
+
+  renderCustomerOrderHistory(
+    key
+  );
+
+}
+
+
+function getCustomerOrderHistoryLocal(){
+
+  try{
+
+    const value=
+      JSON.parse(
+        localStorage.getItem(
+          "jayvik_customer_order_history"
+        )||"{}"
+      );
+
+    return (
+      value &&
+      typeof value==="object"
+    )
+      ? value
+      : {};
+
+  }catch(_err){
+    return {};
+  }
+
+}
+
+
+function saveCustomerOrderHistoryLocal(
+  order
+){
+
+  const phone=
+    normalizeCustomerPhone(
+      order?.customer?.phone
+    );
+
+  if(phone.length!==10)return;
+
+  const allHistory=
+    getCustomerOrderHistoryLocal();
+
+  const list=
+    Array.isArray(
+      allHistory[phone]
+    )
+      ? allHistory[phone]
+      : [];
+
+  const priceFreeOrder={
+    id:String(order.id||""),
+    createdAt:String(
+      order.createdAt||""
+    ),
+    status:String(
+      order.status||"pending"
+    ),
+    customer:{
+      name:String(
+        order?.customer?.name||""
+      ),
+      phone,
+      address:String(
+        order?.customer?.address||""
+      )
+    },
+    items:
+      Array.isArray(order.items)
+        ? order.items.map(item=>({
+            name:String(
+              item.name||"Product"
+            ),
+            size:String(
+              item.size||""
+            ),
+            qty:Number(
+              item.qty||0
+            )
+          }))
+        : []
+  };
+
+  const existingIndex=
+    list.findIndex(
+      item=>
+        String(item.id)===
+        String(priceFreeOrder.id)
+    );
+
+  if(existingIndex>=0){
+    list[existingIndex]=
+      priceFreeOrder;
+  }else{
+    list.unshift(
+      priceFreeOrder
+    );
+  }
+
+  allHistory[phone]=
+    list
+      .sort(
+        (a,b)=>
+          new Date(
+            b.createdAt||0
+          )-
+          new Date(
+            a.createdAt||0
+          )
+      );
+
+  localStorage.setItem(
+    "jayvik_customer_order_history",
+    JSON.stringify(allHistory)
+  );
+
+}
+
+
+function updateCustomerOrderHistoryStatusLocal(
+  orderId,
+  status
+){
+
+  const allHistory=
+    getCustomerOrderHistoryLocal();
+
+  let changed=false;
+
+  Object.keys(allHistory)
+    .forEach(phone=>{
+
+      const list=
+        Array.isArray(
+          allHistory[phone]
+        )
+          ? allHistory[phone]
+          : [];
+
+      list.forEach(order=>{
+
+        if(
+          String(order.id)===
+          String(orderId)
+        ){
+
+          order.status=
+            String(
+              status||order.status||"pending"
+            );
+
+          changed=true;
+
+        }
+
+      });
+
+    });
+
+  if(changed){
+
+    localStorage.setItem(
+      "jayvik_customer_order_history",
+      JSON.stringify(allHistory)
+    );
+
+  }
+
+}
+
+
+function customerStatusLabel(status){
+
+  const map={
+    pending:"🔴 Pending",
+    ready:"🟢 Ready",
+    packing:"🟡 Packing",
+    packed:"📦 Packed",
+    dispatched:"🚚 Dispatched"
+  };
+
+  return (
+    map[
+      String(status||"").toLowerCase()
+    ]||
+    "📦 "+String(status||"Pending")
+  );
+
+}
+
+
+function renderCustomerOrderHistory(
+  phoneValue=null
+){
+
+  const section=
+    document.getElementById(
+      "customerOrderHistorySection"
+    );
+
+  const box=
+    document.getElementById(
+      "customerOrderHistory"
+    );
+
+  if(!section||!box)return;
+
+  const phoneInput=
+    document.getElementById(
+      "customerPhone"
+    );
+
+  const phone=
+    normalizeCustomerPhone(
+      phoneValue!==null
+        ? phoneValue
+        : (
+            phoneInput?.value||
+            localStorage.getItem(
+              "jayvik_last_customer_phone"
+            )||
+            ""
+          )
+    );
+
+  if(phone.length!==10){
+
+    section.style.display="none";
+    box.innerHTML="";
+    return;
+  }
+
+  const allHistory=
+    getCustomerOrderHistoryLocal();
+
+  const ordersForPhone=
+    Array.isArray(
+      allHistory[phone]
+    )
+      ? allHistory[phone]
+      : [];
+
+  section.style.display="block";
+
+  if(!ordersForPhone.length){
+
+    box.innerHTML=`
+      <div class="cart-box">
+        <div class="empty">
+          No previous orders are saved on this device for this mobile number.
+        </div>
+      </div>
+    `;
+
+    return;
+  }
+
+  box.innerHTML=
+    ordersForPhone
+      .map(order=>{
+
+        const date=
+          order.createdAt
+            ? new Date(
+                order.createdAt
+              ).toLocaleString(
+                "en-IN"
+              )
+            : "";
+
+        const items=
+          Array.isArray(order.items)
+            ? order.items
+            : [];
+
+        return `
+          <div
+            class="cart-box"
+            style="margin-bottom:12px"
+          >
+
+            <div
+              style="
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-start;
+                gap:12px;
+                flex-wrap:wrap
+              "
+            >
+
+              <div>
+                <strong
+                  style="
+                    font-size:17px;
+                    color:var(--dark)
+                  "
+                >
+                  Order ${escapeHtml(order.id||"")}
+                </strong>
+
+                ${
+                  date
+                    ?`
+                      <div class="small">
+                        ${escapeHtml(date)}
+                      </div>
+                    `
+                    :""
+                }
+              </div>
+
+              <strong>
+                ${escapeHtml(
+                  customerStatusLabel(
+                    order.status
+                  )
+                )}
+              </strong>
+
+            </div>
+
+            <div
+              style="
+                margin-top:10px;
+                display:grid;
+                gap:6px
+              "
+            >
+              ${
+                items.map(
+                  (item,index)=>`
+                    <div
+                      style="
+                        display:flex;
+                        justify-content:space-between;
+                        gap:12px;
+                        border-bottom:1px dashed #e5e7eb;
+                        padding:6px 0
+                      "
+                    >
+                      <span>
+                        ${index+1}.
+                        <strong>
+                          ${escapeHtml(item.name||"Product")}
+                        </strong>
+                        ${
+                          item.size
+                            ?` — ${escapeHtml(item.size)}`
+                            :""
+                        }
+                      </span>
+
+                      <strong>
+                        Qty ${Number(item.qty||0)}
+                      </strong>
+                    </div>
+                  `
+                ).join("")
+              }
+            </div>
+
+            <div
+              class="small"
+              style="margin-top:8px"
+            >
+              Prices are not displayed in My Order History.
+            </div>
+
+          </div>
+        `;
+
+      })
+      .join("");
+
+}
+
+
+function restoreLastCustomerOnLoad(){
+
+  const phone=
+    String(
+      localStorage.getItem(
+        "jayvik_last_customer_phone"
+      )||""
+    );
+
+  if(!phone)return;
+
+  const phoneInput=
+    document.getElementById(
+      "customerPhone"
+    );
+
+  if(
+    phoneInput &&
+    !String(
+      phoneInput.value||""
+    ).trim()
+  ){
+    phoneInput.value=
+      phone;
+  }
+
+  customerPhoneChanged();
+
+}
+
+
 function publicOrderStatusPayload(order){
 
   return{
@@ -4612,6 +5254,13 @@ function startCustomerOrderStatusListener(){
           "jayvik_last_order_status",
           JSON.stringify(mergedData)
         );
+
+        updateCustomerOrderHistoryStatusLocal(
+          mergedData.id,
+          mergedData.status
+        );
+
+        renderCustomerOrderHistory();
 
         cachedStatus=
           mergedData;
@@ -6713,6 +7362,31 @@ Order ID: ${order.id}`;
     localStorage.setItem(
       "jayvik_last_order_status",
       JSON.stringify(initialStatus)
+    );
+
+    /*
+      Customer convenience:
+      remember the latest details for this mobile number on this device.
+      The same mobile number can later use a different name/address;
+      the latest confirmed order replaces the saved profile details.
+    */
+    saveCustomerProfileLocal(
+      phone,
+      name,
+      address
+    );
+
+    localStorage.setItem(
+      "jayvik_last_customer_phone",
+      normalizeCustomerPhone(phone)
+    );
+
+    saveCustomerOrderHistoryLocal(
+      order
+    );
+
+    renderCustomerOrderHistory(
+      phone
     );
 
     cart=[];
@@ -12233,6 +12907,29 @@ document.addEventListener(
 
   }
 );
+
+
+
+/* =====================================================
+   CUSTOMER PROFILE + ORDER HISTORY INITIALIZATION
+===================================================== */
+
+if(document.readyState==="loading"){
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    ()=>{
+      restoreLastCustomerOnLoad();
+      renderCustomerOrderHistory();
+    }
+  );
+
+}else{
+
+  restoreLastCustomerOnLoad();
+  renderCustomerOrderHistory();
+
+}
 
 </script>
 
