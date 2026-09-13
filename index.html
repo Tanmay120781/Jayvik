@@ -1658,9 +1658,31 @@ footer{
 
       <div class="admin-card">
 
-        <h3>
-          🗂️ Category Management
-        </h3>
+        <div
+          style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+            flex-wrap:wrap
+          "
+        >
+          <h3 style="margin:0">
+            🗂️ Category Management
+          </h3>
+
+          <button
+            type="button"
+            class="btn btn-green"
+            onclick="saveCategoryDisplaySequence()"
+          >
+            💾 Save Category Sequence
+          </button>
+        </div>
+
+        <div class="notice" style="margin:12px 0">
+          Change category order using the sequence number or the ⬆️ Up / ⬇️ Down buttons.
+        </div>
 
         <div style="display:flex;gap:8px;margin-bottom:20px">
 
@@ -1684,38 +1706,6 @@ footer{
 
       </div>
 
-
-      <div class="admin-card">
-
-        <div class="section-title">
-          <div>
-            <h3 style="margin-bottom:5px">
-              ↕️ Category Sequence
-            </h3>
-            <div class="brand-sub">
-              Set the order in which categories appear on the customer dashboard
-            </div>
-          </div>
-
-          <button
-            type="button"
-            class="btn btn-green"
-            onclick="saveCategoryDisplaySequence()"
-          >
-            💾 Save Category Sequence
-          </button>
-        </div>
-
-        <div class="notice" style="margin:12px 0">
-          Enter a unique sequence number for each category, starting from 1.
-        </div>
-
-        <div
-          id="categorySequenceList"
-          style="display:grid;gap:10px"
-        ></div>
-
-      </div>
 
     </div>
 
@@ -8843,90 +8833,7 @@ function categoryNameValue(category){
 
 
 function renderCategorySequenceManager(){
-
-  const box=
-    document.getElementById(
-      "categorySequenceList"
-    );
-
-  if(!box)return;
-
-  box.innerHTML="";
-
-  categories.forEach(
-    (category,index)=>{
-
-      const name=
-        categoryNameValue(category);
-
-      if(!name)return;
-
-      const row=
-        document.createElement(
-          "div"
-        );
-
-      row.style.cssText=
-        "display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid #dfe9df;border-radius:10px;background:#fff";
-
-      row.innerHTML=`
-        <div>
-          <strong>${escapeHtml(name)}</strong>
-          <div class="small">Current sequence ${index+1}</div>
-        </div>
-
-        <label
-          style="
-            display:flex;
-            align-items:center;
-            gap:8px;
-            font-weight:700
-          "
-        >
-          Sequence
-
-          <input
-            type="number"
-            min="1"
-            max="${categories.length}"
-            step="1"
-            value="${index+1}"
-            data-category-order="${escapeAttr(name)}"
-            style="
-              width:74px;
-              padding:7px;
-              border:1px solid #cbd8cb;
-              border-radius:7px
-            "
-          >
-
-          <button
-            type="button"
-            class="btn btn-light"
-            onclick="moveCategorySequenceByIndex(${index},-1)"
-            ${index===0?"disabled":""}
-            title="Move category up"
-          >
-            ⬆️ Up
-          </button>
-
-          <button
-            type="button"
-            class="btn btn-light"
-            onclick="moveCategorySequenceByIndex(${index},1)"
-            ${index===categories.length-1?"disabled":""}
-            title="Move category down"
-          >
-            ⬇️ Down
-          </button>
-        </label>
-      `;
-
-      box.appendChild(row);
-
-    }
-  );
-
+  renderAdminCategories();
 }
 
 
@@ -10884,7 +10791,12 @@ function renderAdminCategories(){
   box.innerHTML="";
 
   categories.forEach(
-    category=>{
+    (category,index)=>{
+
+      const name=
+        categoryNameValue(category);
+
+      if(!name)return;
 
       const row=
         document.createElement(
@@ -10892,22 +10804,80 @@ function renderAdminCategories(){
         );
 
       row.style.cssText=
-        "display:flex;justify-content:space-between;"+
-        "align-items:center;padding:12px 0;"+
-        "border-bottom:1px solid #eee";
+        "display:grid;grid-template-columns:minmax(180px,1fr) auto;gap:12px;align-items:center;padding:12px;border:1px solid #dfe9df;border-radius:10px;margin-bottom:10px;background:#fff";
 
       row.innerHTML=`
 
-        <strong>
-          ${escapeHtml(category)}
-        </strong>
+        <div>
+          <strong>
+            ${escapeHtml(name)}
+          </strong>
 
-        <button
-          class="btn btn-danger"
-          onclick="removeCategory('${escapeAttr(category)}')"
+          <div class="small">
+            Current sequence ${index+1}
+          </div>
+        </div>
+
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            gap:8px;
+            flex-wrap:wrap;
+            justify-content:flex-end
+          "
         >
-          🗑️ Remove
-        </button>
+          <label
+            style="
+              display:flex;
+              align-items:center;
+              gap:6px;
+              font-weight:700
+            "
+          >
+            Sequence
+
+            <input
+              type="number"
+              min="1"
+              max="${categories.length}"
+              step="1"
+              value="${index+1}"
+              data-category-order="${escapeAttr(name)}"
+              style="
+                width:70px;
+                padding:7px;
+                border:1px solid #cbd8cb;
+                border-radius:7px
+              "
+            >
+          </label>
+
+          <button
+            type="button"
+            class="btn btn-light"
+            onclick="moveCategorySequenceByIndex(${index},-1)"
+            ${index===0?"disabled":""}
+          >
+            ⬆️ Up
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-light"
+            onclick="moveCategorySequenceByIndex(${index},1)"
+            ${index===categories.length-1?"disabled":""}
+          >
+            ⬇️ Down
+          </button>
+
+          <button
+            class="btn btn-danger"
+            onclick="removeCategory('${escapeAttr(name)}')"
+          >
+            🗑️ Remove
+          </button>
+        </div>
 
       `;
 
@@ -10916,11 +10886,7 @@ function renderAdminCategories(){
     }
   );
 
-
-
-  renderCategorySequenceManager();
 }
-
 
 /* =====================================================
    STATS
