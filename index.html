@@ -1463,7 +1463,7 @@ footer{
 
       <button
         class="admin-tab"
-        onclick="showAdminTab('categoriesAdmin',this)"
+        onclick="showAdminTab('categoriesAdmin',this);renderCategorySequenceManager()"
       >
         🗂️ Categories
       </button>
@@ -1685,6 +1685,39 @@ footer{
       </div>
 
     </div>
+
+
+      <div class="admin-card">
+
+        <div class="section-title">
+          <div>
+            <h3 style="margin-bottom:5px">
+              ↕️ Category Sequence
+            </h3>
+            <div class="brand-sub">
+              Set the order in which categories appear on the customer dashboard
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-green"
+            onclick="saveCategoryDisplaySequence()"
+          >
+            💾 Save Category Sequence
+          </button>
+        </div>
+
+        <div class="notice" style="margin:12px 0">
+          Enter a unique sequence number for each category, starting from 1.
+        </div>
+
+        <div
+          id="categorySequenceList"
+          style="display:grid;gap:10px"
+        ></div>
+
+      </div>
 
 
     <!-- WEBSITE -->
@@ -8800,6 +8833,229 @@ function showAdminTab(
 /* =====================================================
    ADMIN PRODUCTS
 ===================================================== */
+
+
+function categoryNameValue(category){
+  return typeof category==="string"
+    ? category
+    : String(category?.name||"");
+}
+
+
+function renderCategorySequenceManager(){
+
+  const box=
+    document.getElementById(
+      "categorySequenceList"
+    );
+
+  if(!box)return;
+
+  box.innerHTML="";
+
+  categories.forEach(
+    (category,index)=>{
+
+      const name=
+        categoryNameValue(category);
+
+      if(!name)return;
+
+      const row=
+        document.createElement(
+          "div"
+        );
+
+      row.style.cssText=
+        "display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid #dfe9df;border-radius:10px;background:#fff";
+
+      row.innerHTML=`
+        <div>
+          <strong>${escapeHtml(name)}</strong>
+          <div class="small">Current sequence ${index+1}</div>
+        </div>
+
+        <label
+          style="
+            display:flex;
+            align-items:center;
+            gap:8px;
+            font-weight:700
+          "
+        >
+          Sequence
+
+          <input
+            type="number"
+            min="1"
+            max="${categories.length}"
+            step="1"
+            value="${index+1}"
+            data-category-order="${escapeAttr(name)}"
+            style="
+              width:74px;
+              padding:7px;
+              border:1px solid #cbd8cb;
+              border-radius:7px
+            "
+          >
+        </label>
+      `;
+
+      box.appendChild(row);
+
+    }
+  );
+
+}
+
+
+async function saveCategoryDisplaySequence(){
+
+  const inputs=
+    Array.from(
+      document.querySelectorAll(
+        "[data-category-order]"
+      )
+    );
+
+  if(!inputs.length){
+    return;
+  }
+
+  const count=
+    categories.length;
+
+  const entered=
+    inputs.map(input=>({
+      name:String(
+        input.dataset.categoryOrder||""
+      ),
+      sequence:Number(
+        input.value
+      )
+    }));
+
+  const invalid=
+    entered.some(item=>
+      !Number.isInteger(item.sequence) ||
+      item.sequence<1 ||
+      item.sequence>count
+    );
+
+  if(invalid){
+    alert(
+      "Please enter category sequence numbers from 1 to "+
+      count+"."
+    );
+    return;
+  }
+
+  const unique=
+    new Set(
+      entered.map(
+        item=>item.sequence
+      )
+    );
+
+  if(unique.size!==count){
+    alert(
+      "Each category must have a unique sequence number from 1 to "+
+      count+"."
+    );
+    return;
+  }
+
+  const previousCategories=
+    JSON.parse(
+      JSON.stringify(categories)
+    );
+
+  const byName=
+    new Map(
+      categories.map(category=>[
+        categoryNameValue(category),
+        category
+      ])
+    );
+
+  categories=
+    entered
+      .slice()
+      .sort(
+        (a,b)=>
+          a.sequence-b.sequence
+      )
+      .map(
+        item=>
+          byName.get(item.name)
+      )
+      .filter(Boolean);
+
+  renderCategorySequenceManager();
+  renderCategories();
+  renderProducts();
+  renderAdminProducts();
+
+  localStorage.setItem(
+    "jayvik_categories",
+    JSON.stringify(categories)
+  );
+
+  if(
+    !firebaseReady ||
+    !db ||
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    categories=
+      previousCategories;
+
+    renderCategorySequenceManager();
+    renderCategories();
+    renderProducts();
+    renderAdminProducts();
+
+    alert(
+      "Firebase/Admin login is not ready. Previous category sequence has been restored."
+    );
+
+    return;
+  }
+
+  try{
+
+    await db
+      .ref("store/public/categories")
+      .set(categories);
+
+    showSaveNotification(
+      "Category sequence saved successfully."
+    );
+
+  }catch(err){
+
+    console.error(
+      "Category sequence save failed:",
+      err
+    );
+
+    categories=
+      previousCategories;
+
+    renderCategorySequenceManager();
+    renderCategories();
+    renderProducts();
+    renderAdminProducts();
+
+    alert(
+      "Could not save category sequence to Firebase. Previous sequence has been restored."
+    );
+
+  }
+
+}
+
 
 function renderAdminProducts(){
 
