@@ -1684,8 +1684,6 @@ footer{
 
       </div>
 
-    </div>
-
 
       <div class="admin-card">
 
@@ -1718,6 +1716,8 @@ footer{
         ></div>
 
       </div>
+
+    </div>
 
 
     <!-- WEBSITE -->
@@ -8903,7 +8903,7 @@ function renderCategorySequenceManager(){
           <button
             type="button"
             class="btn btn-light"
-            onclick="moveCategorySequence('${escapeAttr(name)}',-1)"
+            onclick="moveCategorySequenceByIndex(${index},-1)"
             ${index===0?"disabled":""}
             title="Move category up"
           >
@@ -8913,7 +8913,7 @@ function renderCategorySequenceManager(){
           <button
             type="button"
             class="btn btn-light"
-            onclick="moveCategorySequence('${escapeAttr(name)}',1)"
+            onclick="moveCategorySequenceByIndex(${index},1)"
             ${index===categories.length-1?"disabled":""}
             title="Move category down"
           >
@@ -8931,23 +8931,20 @@ function renderCategorySequenceManager(){
 
 
 
-async function moveCategorySequence(
-  categoryName,
+async function moveCategorySequenceByIndex(
+  currentIndex,
   direction
 ){
 
-  const currentIndex=
-    categories.findIndex(
-      category=>
-        categoryNameValue(category)===
-        categoryName
-    );
+  currentIndex=
+    Number(currentIndex);
 
   const targetIndex=
     currentIndex+
     Number(direction);
 
   if(
+    !Number.isInteger(currentIndex) ||
     currentIndex<0 ||
     targetIndex<0 ||
     targetIndex>=categories.length
@@ -8968,6 +8965,9 @@ async function moveCategorySequence(
     categories[currentIndex]
   ];
 
+  /*
+    Update Admin and customer category buttons immediately.
+  */
   renderCategorySequenceManager();
   renderCategories();
   renderProducts();
@@ -9031,7 +9031,6 @@ async function moveCategorySequence(
   }
 
 }
-
 
 async function saveCategoryDisplaySequence(){
 
@@ -10917,6 +10916,9 @@ function renderAdminCategories(){
     }
   );
 
+
+
+  renderCategorySequenceManager();
 }
 
 
