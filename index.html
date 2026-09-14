@@ -937,6 +937,8 @@ footer{
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
@@ -4627,7 +4629,25 @@ function saveCustomerOrderHistoryLocal(
               item.qty||0
             )
           }))
-        : []
+        : [],
+
+    /* Private device-local invoice data; never shown in history list or public status. */
+    invoiceData:{
+      customer:{
+        name:String(order?.customer?.name||""),
+        phone,
+        address:String(order?.customer?.address||"")
+      },
+      items:Array.isArray(order.items)
+        ? order.items.map(item=>({
+            name:String(item.name||"Product"),
+            size:String(item.size||""),
+            qty:Number(item.qty||0),
+            price:Number(item.price||0)
+          }))
+        : [],
+      total:Number(order.total||0)
+    }
   };
 
   const existingIndex=
@@ -4715,6 +4735,150 @@ function customerStatusLabel(status){
 
 }
 
+
+const JAYVIK_PAYTM_UPI_ID="paytmqr6gugbu@ptys";
+const JAYVIK_UPI_PAYEE_NAME="Jayvik The Complete Health Store";
+
+function getJayvikInvoiceNumber(orderOrId){
+  const id=String(
+    typeof orderOrId==="object" ? orderOrId?.id||"" : orderOrId||""
+  ).replace(/[^A-Za-z0-9]/g,"");
+  return "JY-INV-"+(id||Date.now());
+}
+
+function getCustomerInvoiceOrder(orderId){
+  const id=String(orderId||"");
+  const live=(orders||[]).find(order=>String(order?.id||"")===id);
+  if(live && Number(live.total||0)>0){
+    return {...live,invoiceNumber:live.invoiceNumber||getJayvikInvoiceNumber(live)};
+  }
+
+  const allHistory=getCustomerOrderHistoryLocal();
+  for(const list of Object.values(allHistory)){
+    const h=(Array.isArray(list)?list:[]).find(order=>String(order?.id||"")===id);
+    if(h?.invoiceData){
+      return {
+        id:h.id,createdAt:h.createdAt,dispatchedAt:h.dispatchedAt,status:h.status,
+        customer:h.invoiceData.customer||h.customer||{},
+        items:Array.isArray(h.invoiceData.items)?h.invoiceData.items:[],
+        total:Number(h.invoiceData.total||0),
+        invoiceNumber:getJayvikInvoiceNumber(h.id)
+      };
+    }
+  }
+  return null;
+}
+
+function buildJayvikUpiPaymentUri(order){
+  const amount=Number(order?.total||0);
+  if(!Number.isFinite(amount)||amount<=0)return "";
+  const invoiceNumber=order?.invoiceNumber||getJayvikInvoiceNumber(order);
+  const params=new URLSearchParams({
+    pa:JAYVIK_PAYTM_UPI_ID,
+    pn:JAYVIK_UPI_PAYEE_NAME,
+    am:amount.toFixed(2),
+    cu:"INR",
+    tn:"Jayvik "+invoiceNumber
+  });
+  return "upi://pay?"+params.toString();
+}
+
+function renderExactAmountPaymentQr(orderId,elementId){
+  const order=getCustomerInvoiceOrder(orderId);
+  const element=document.getElementById(elementId);
+  if(!order||!element)return;
+  const uri=buildJayvikUpiPaymentUri(order);
+  if(!uri)return;
+  element.innerHTML="";
+  if(typeof QRCode==="undefined"){
+    element.innerHTML='<div class="small">QR library could not be loaded.</div>';
+    return;
+  }
+  new QRCode(element,{text:uri,width:190,height:190,correctLevel:QRCode.CorrectLevel.M});
+}
+
+function getInvoiceQrDataUrl(order){
+  return new Promise((resolve,reject)=>{
+    try{
+      if(typeof QRCode==="undefined")throw new Error("QR library is not loaded.");
+      const holder=document.createElement("div");
+      holder.style.position="fixed";holder.style.left="-9999px";holder.style.top="-9999px";
+      document.body.appendChild(holder);
+      new QRCode(holder,{text:buildJayvikUpiPaymentUri(order),width:260,height:260,correctLevel:QRCode.CorrectLevel.M});
+      setTimeout(()=>{
+        try{
+          const canvas=holder.querySelector("canvas");
+          const img=holder.querySelector("img");
+          const dataUrl=canvas?canvas.toDataURL("image/png"):img?.src;
+          holder.remove();
+          if(!dataUrl)throw new Error("QR image could not be created.");
+          resolve(dataUrl);
+        }catch(err){holder.remove();reject(err);}
+      },80);
+    }catch(err){reject(err);}
+  });
+}
+
+async function downloadCustomerInvoicePdf(orderId){
+  const order=getCustomerInvoiceOrder(orderId);
+  if(!order){alert("Invoice details are not available on this device for this order.");return;}
+  if(Number(order.total||0)<=0){alert("Invoice amount is unavailable for this order.");return;}
+  if(!window.jspdf?.jsPDF){alert("PDF library could not be loaded. Please refresh and try again.");return;}
+  try{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({unit:"mm",format:"a4"});
+    const invoiceNumber=order.invoiceNumber||getJayvikInvoiceNumber(order);
+    const amount=Number(order.total||0);
+    const customer=order.customer||{};
+    const items=Array.isArray(order.items)?order.items:[];
+    const qrDataUrl=await getInvoiceQrDataUrl(order);
+
+    doc.setFont("helvetica","bold");doc.setFontSize(18);
+    doc.text("JAYVIK - THE COMPLETE HEALTH STORE",15,18);
+    doc.setFontSize(14);doc.text("INVOICE",15,28);
+    doc.setFont("helvetica","normal");doc.setFontSize(9);
+    doc.text("Invoice No: "+invoiceNumber,15,36);
+    doc.text("Order ID: "+String(order.id||""),15,42);
+    doc.text("Invoice Date: "+new Date(order.dispatchedAt||order.updatedAt||Date.now()).toLocaleString("en-IN"),15,48);
+    doc.setFont("helvetica","bold");doc.text("Bill To",15,59);
+    doc.setFont("helvetica","normal");
+    doc.text("Name: "+String(customer.name||""),15,65);
+    doc.text("Mobile: "+String(customer.phone||""),15,71);
+    const addressLines=doc.splitTextToSize("Address: "+String(customer.address||""),112);
+    doc.text(addressLines,15,77);
+    let y=77+(addressLines.length*5)+7;
+    doc.setFont("helvetica","bold");
+    doc.text("Product",15,y);doc.text("Pack",92,y);doc.text("Qty",124,y,{align:"right"});doc.text("Rate",153,y,{align:"right"});doc.text("Amount",195,y,{align:"right"});
+    y+=4;doc.line(15,y,195,y);y+=6;doc.setFont("helvetica","normal");
+    for(const item of items){
+      if(y>235){doc.addPage();y=20;}
+      const qty=Number(item.qty||0),rate=Number(item.price||0),lineAmount=qty*rate;
+      const productLines=doc.splitTextToSize(String(item.name||"Product"),70);
+      doc.text(productLines,15,y);doc.text(String(item.size||""),92,y);doc.text(String(qty),124,y,{align:"right"});
+      doc.text("Rs. "+rate.toFixed(2),153,y,{align:"right"});doc.text("Rs. "+lineAmount.toFixed(2),195,y,{align:"right"});
+      y+=Math.max(7,productLines.length*5);
+    }
+    y+=3;doc.line(120,y,195,y);y+=8;doc.setFont("helvetica","bold");doc.setFontSize(12);
+    doc.text("Total Payable",120,y);doc.text("Rs. "+amount.toFixed(2),195,y,{align:"right"});
+    y+=10;doc.setFontSize(10);doc.text("Scan to Pay Exact Amount",15,y);doc.addImage(qrDataUrl,"PNG",15,y+4,42,42);
+    doc.setFont("helvetica","normal");doc.setFontSize(9);
+    doc.text("UPI ID: "+JAYVIK_PAYTM_UPI_ID,62,y+14);
+    doc.text("Amount: Rs. "+amount.toFixed(2),62,y+20);
+    doc.text("Reference: "+invoiceNumber,62,y+26);
+    doc.text("Pay using Paytm or any compatible UPI app.",62,y+32);
+    doc.setFontSize(8);doc.text("Payment is treated as received only after confirmation by Jayvik Admin.",15,287);
+    doc.save(invoiceNumber+".pdf");
+  }catch(err){
+    console.error("Invoice PDF failed:",err);
+    alert("Invoice PDF could not be generated. "+(err?.message||""));
+  }
+}
+
+function customerInvoiceActionHtml(orderId){
+  const order=getCustomerInvoiceOrder(orderId);
+  if(!order||Number(order.total||0)<=0)return "";
+  return `<div style="margin-top:12px"><button type="button" class="btn btn-green" onclick="downloadCustomerInvoicePdf('${escapeAttr(orderId)}')">🧾 Download Invoice PDF</button></div>`;
+}
 
 function renderCustomerOrderHistory(
   phoneValue=null
@@ -4908,6 +5072,8 @@ function renderCustomerOrderHistory(
                 ).join("")
               }
             </div>
+
+            ${customerInvoiceActionHtml(order.id)}
 
           </div>
         `;
@@ -5360,6 +5526,26 @@ function renderLiveOrderStatus(data){
 
       ${itemsHtml}
 
+      ${
+        String(data.status||"")==="dispatched"
+          ? (()=>{
+              const invoiceOrder=getCustomerInvoiceOrder(data.id);
+              if(!invoiceOrder || Number(invoiceOrder.total||0)<=0){
+                return `<div class="notice" style="margin-top:14px">🧾 Invoice will be available on the device used to place this order.</div>`;
+              }
+              const qrId="customerPayQr_"+String(data.id||"").replace(/[^A-Za-z0-9_-]/g,"_");
+              return `
+                <div class="cart-box" style="margin-top:16px;background:#fbfffb">
+                  <div style="font-size:17px;font-weight:800;color:var(--dark);margin-bottom:8px">🧾 Invoice & Payment</div>
+                  <div style="font-size:16px;margin-bottom:10px">Exact Amount Payable: <strong>₹${Number(invoiceOrder.total||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></div>
+                  <div id="${qrId}" style="width:190px;min-height:190px;background:white;margin:8px 0"></div>
+                  <div class="small" style="margin:8px 0">Scan with Paytm or any compatible UPI app. The exact invoice amount is pre-filled.</div>
+                  <button type="button" class="btn btn-green" onclick="downloadCustomerInvoicePdf('${escapeAttr(data.id||"")}')">🧾 Download Invoice PDF</button>
+                </div>`;
+            })()
+          : ""
+      }
+
       <div
         style="
           margin-top:10px;
@@ -5384,6 +5570,14 @@ function renderLiveOrderStatus(data){
 
     </div>
   `;
+
+  if(String(data.status||"")==="dispatched"){
+    const invoiceOrder=getCustomerInvoiceOrder(data.id);
+    if(invoiceOrder && Number(invoiceOrder.total||0)>0){
+      const qrId="customerPayQr_"+String(data.id||"").replace(/[^A-Za-z0-9_-]/g,"_");
+      setTimeout(()=>renderExactAmountPaymentQr(data.id,qrId),0);
+    }
+  }
 
   scheduleCustomerHistoryMove(data);
 
@@ -8392,6 +8586,15 @@ function buildOrderCard(order){
   }
 
 
+  if(order.status==="dispatched" || order.status==="history"){
+    actions+=`
+      <button type="button" class="btn btn-light" onclick="downloadCustomerInvoicePdf('${escapeAttr(order.id)}')">
+        🧾 Invoice PDF
+      </button>
+    `;
+  }
+
+
   card.innerHTML=`
 
     <strong>
@@ -8870,6 +9073,10 @@ async function moveOrder(orderId,nextStatus){
 
   if(nextStatus==="dispatched" && !order.dispatchedAt){
     order.dispatchedAt=order.updatedAt;
+  }
+
+  if(nextStatus==="dispatched" && !order.invoiceNumber){
+    order.invoiceNumber=getJayvikInvoiceNumber(order);
   }
 
   try{
