@@ -8851,11 +8851,7 @@ async function deletePaidDispatchedOrder(orderId){
     return;
   }
 
-  const order=
-    orders.find(
-      o=>String(o.id)===String(orderId)
-    );
-
+  const order=orders.find(o=>String(o.id)===String(orderId));
   if(!order)return;
 
   if(order.status!=="history"){
@@ -8870,83 +8866,63 @@ async function deletePaidDispatchedOrder(orderId){
 
   const ok=confirm(
     "Are you sure you want to permanently delete Order "+order.id+"?\n\n"+
-    "This will remove the order from Firebase. This action cannot be undone."
+    "The order will first be safely saved in Sales Archive before it is removed from active orders."
   );
-
   if(!ok)return;
 
   try{
-
-    if(
-      !firebaseReady ||
-      !db
-    ){
+    if(!firebaseReady || !db){
       throw new Error("Firebase is not ready.");
     }
 
-    const archiveRecord={
+    const archiveRecord=JSON.parse(JSON.stringify({
       ...order,
       archivedForAnalyticsAt:new Date().toISOString(),
+      archiveSource:"archive",
       originalFinalStatus:"dispatched"
-    };
+    }));
 
-    /*
-      Atomic Firebase update:
-      1. Save permanent sales history under admin-only store archive.
-      2. Remove active order.
-      3. Remove public live-status record.
-    */
+    const archiveRef=db.ref("store/salesArchive/"+String(order.id));
+
+    /* Save archive first */
+    await archiveRef.set(archiveRecord);
+
+    /* Verify archive before deleting active order */
+    const verifySnap=await archiveRef.once("value");
+    if(!verifySnap.exists()){
+      throw new Error("Sales Archive verification failed. Order was not deleted.");
+    }
+
+    /* Delete only active records after successful verified archive */
     await db.ref().update({
-      ["/store/salesArchive/"+String(order.id)]:archiveRecord,
       ["/orders/"+String(order.id)]:null,
       ["/store/public/orderStatus/"+String(order.id)]:null
     });
 
-    salesArchive=
-      salesArchive.filter(
-        o=>String(o.id)!==String(order.id)
-      );
-
+    salesArchive=(salesArchive||[]).filter(o=>String(o.id)!==String(order.id));
     salesArchive.push(archiveRecord);
 
-    orders=
-      orders.filter(
-        o=>String(o.id)!==String(orderId)
-      );
-
-    localStorage.setItem(
-      "jayvik_orders",
-      JSON.stringify(orders)
-    );
+    orders=orders.filter(o=>String(o.id)!==String(orderId));
+    localStorage.setItem("jayvik_orders",JSON.stringify(orders));
 
     await renderOrders();
+    await renderSalesArchive();
+    await renderConsumptionAnalytics();
 
     showSaveNotification(
-      "Order "+order.id+" removed from active orders and archived for future consumption reports."
+      "Order "+order.id+
+      " archived successfully. Sales Archive, Consumption and Excel records are preserved."
     );
 
-    const archiveSection=
-      document.getElementById(
-        "salesArchiveAdmin"
-      );
-
-    if(
-      archiveSection &&
-      archiveSection.classList.contains("active")
-    ){
-      await renderSalesArchive();
-    }
-
   }catch(err){
-
+    console.error("Safe archive/delete failed:",err?.code||"",err?.message||err,err);
     showSaveNotification(
-      "Order could not be deleted from Firebase. "+
-      (err?.message||""),
+      "Order was NOT deleted because Sales Archive could not be confirmed. "+
+      (err?.message||"Please try again."),
       true
     );
   }
 }
-
 
 async function moveOrder(orderId,nextStatus){
 
