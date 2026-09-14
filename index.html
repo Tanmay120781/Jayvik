@@ -1788,7 +1788,7 @@ footer{
         </div>
 
         <div class="notice" style="margin:12px 0">
-          Change category order using the sequence number or the ⬆️ Up / ⬇️ Down buttons.
+          Edit a category name with ✏️ Rename. Products assigned to that category are updated automatically. You can also change category order using the sequence number or the ⬆️ Up / ⬇️ Down buttons.
         </div>
 
         <div style="display:flex;gap:8px;margin-bottom:20px">
@@ -6235,6 +6235,136 @@ async function addCategory(){
   renderAdminCategories();
   updateStats();
 
+}
+
+
+async function renameCategory(oldCategory){
+
+  if(
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    alert("Admin login required.");
+    return;
+  }
+
+  const input=
+    document.querySelector(
+      `[data-category-name="${CSS.escape(String(oldCategory))}"]`
+    );
+
+  if(!input)return;
+
+  const newCategory=
+    input.value.trim();
+
+  if(!newCategory){
+    alert("Category name cannot be blank.");
+    input.value=oldCategory;
+    return;
+  }
+
+  if(newCategory===oldCategory){
+    showSaveNotification("No category name change required.");
+    return;
+  }
+
+  const duplicate=
+    categories.some(
+      c=>
+        categoryNameValue(c).toLowerCase()===
+          newCategory.toLowerCase() &&
+        categoryNameValue(c)!==oldCategory
+    );
+
+  if(duplicate){
+    alert("Another category with this name already exists.");
+    input.value=oldCategory;
+    return;
+  }
+
+  const previousCategories=
+    JSON.parse(JSON.stringify(categories));
+
+  const previousProducts=
+    JSON.parse(JSON.stringify(products));
+
+  const previousSelectedCategory=
+    selectedCategory;
+
+  categories=
+    categories.map(c=>
+      categoryNameValue(c)===oldCategory
+        ? newCategory
+        : c
+    );
+
+  products.forEach(product=>{
+    if(String(product.category||"")===oldCategory){
+      product.category=newCategory;
+    }
+  });
+
+  if(selectedCategory===oldCategory){
+    selectedCategory=newCategory;
+  }
+
+  try{
+
+    if(!firebaseReady || !db){
+      throw new Error("Firebase is not ready.");
+    }
+
+    /*
+      Save categories and affected product assignments together.
+      This keeps customer category filters and product categories in sync.
+    */
+    await db.ref("store/public").update({
+      categories:categories,
+      products:products
+    });
+
+    localStorage.setItem(
+      "jayvik_categories",
+      JSON.stringify(categories)
+    );
+
+    localStorage.setItem(
+      "jayvik_products",
+      JSON.stringify(products)
+    );
+
+    renderAdminCategories();
+    renderCategories();
+    renderProducts();
+    renderAdminProducts();
+    fillCategorySelect();
+    updateStats();
+
+    showSaveNotification(
+      `Category renamed from "${oldCategory}" to "${newCategory}" successfully.`
+    );
+
+  }catch(err){
+
+    console.error("Category rename failed:",err);
+
+    categories=previousCategories;
+    products=previousProducts;
+    selectedCategory=previousSelectedCategory;
+
+    renderAdminCategories();
+    renderCategories();
+    renderProducts();
+    renderAdminProducts();
+    fillCategorySelect();
+    updateStats();
+
+    alert(
+      "Could not rename category in Firebase. Previous category name has been restored. "+
+      (err?.message||"")
+    );
+  }
 }
 
 
@@ -13229,11 +13359,47 @@ function renderAdminCategories(){
       row.innerHTML=`
 
         <div>
-          <strong>
-            ${escapeHtml(name)}
-          </strong>
+          <label
+            style="
+              display:block;
+              font-weight:800;
+              margin-bottom:6px
+            "
+          >
+            Category Name
+          </label>
 
-          <div class="small">
+          <div
+            style="
+              display:flex;
+              gap:8px;
+              align-items:center;
+              flex-wrap:wrap
+            "
+          >
+            <input
+              type="text"
+              value="${escapeAttr(name)}"
+              data-category-name="${escapeAttr(name)}"
+              style="
+                flex:1;
+                min-width:180px;
+                padding:9px 10px;
+                border:1px solid #cbd8cb;
+                border-radius:7px
+              "
+            >
+
+            <button
+              type="button"
+              class="btn btn-green"
+              onclick="renameCategory('${escapeAttr(name)}')"
+            >
+              ✏️ Rename
+            </button>
+          </div>
+
+          <div class="small" style="margin-top:6px">
             Current sequence ${index+1}
           </div>
         </div>
