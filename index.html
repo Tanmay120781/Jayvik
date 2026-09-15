@@ -308,6 +308,25 @@ header{
   margin-bottom:12px;
 }
 
+.product-customer-note{
+  margin:4px 0 12px;
+  padding:9px 11px;
+  border-radius:9px;
+  background:#fff8e8;
+  border:1px solid #efd99c;
+  font-size:13px;
+  line-height:1.45;
+  color:#5b4510;
+  font-weight:650;
+}
+
+.product-customer-note .note-date{
+  display:block;
+  margin-top:3px;
+  font-weight:800;
+  color:#267a35;
+}
+
 .add-btn{
   width:100%;
   border:0;
@@ -2681,6 +2700,43 @@ footer{
         <textarea
           id="editProductDescription"
         ></textarea>
+
+        <hr style="margin:18px 0;border:0;border-top:1px solid #e5ece5">
+
+        <h3 style="margin-bottom:8px">
+          📅 Customer Availability Note
+        </h3>
+
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <input
+            type="checkbox"
+            id="editAvailabilityNoteEnabled"
+            style="width:auto"
+          >
+          Show this note below the product on customer dashboard
+        </label>
+
+        <label>
+          Available From Date (optional)
+        </label>
+
+        <input
+          type="date"
+          id="editAvailabilityDate"
+        >
+
+        <label>
+          Note / Message (optional)
+        </label>
+
+        <textarea
+          id="editAvailabilityNote"
+          placeholder="Example: Fresh stock arriving soon. Pre-orders accepted."
+        ></textarea>
+
+        <div class="small" style="margin:6px 0 14px">
+          Example shown to customer: 📅 Available from 20 September 2026 — Fresh stock arriving soon.
+        </div>
 
         <button
           id="saveProductButton"
@@ -7240,6 +7296,43 @@ async function saveAllProductDiscounts(){
 }
 
 
+function formatProductAvailabilityDate(value){
+  if(!value)return "";
+  const parts=String(value).split("-");
+  if(parts.length!==3)return String(value);
+  const date=new Date(
+    Number(parts[0]),
+    Number(parts[1])-1,
+    Number(parts[2])
+  );
+  if(Number.isNaN(date.getTime()))return String(value);
+  return date.toLocaleDateString(
+    "en-IN",
+    {day:"numeric",month:"long",year:"numeric"}
+  );
+}
+
+function productAvailabilityNoteHtml(product){
+  if(!product?.availabilityNoteEnabled)return "";
+
+  const note=String(product?.availabilityNote||"").trim();
+  const date=String(product?.availabilityDate||"").trim();
+
+  if(!note && !date)return "";
+
+  return `
+    <div class="product-customer-note">
+      ${note ? `📝 ${escapeHtml(note)}` : ""}
+      ${
+        date
+        ? `<span class="note-date">📅 Available from ${escapeHtml(formatProductAvailabilityDate(date))}</span>`
+        : ""
+      }
+    </div>
+  `;
+}
+
+
 function renderProducts(){
 
   const box=
@@ -7339,6 +7432,8 @@ function renderProducts(){
           class="availability"
           aria-live="polite"
         ></div>
+
+        ${productAvailabilityNoteHtml(product)}
 
         <button
           class="add-btn"
@@ -12280,6 +12375,18 @@ function openAddProduct(){
     "editProductDescription"
   ).value="";
 
+  document.getElementById(
+    "editAvailabilityNoteEnabled"
+  ).checked=false;
+
+  document.getElementById(
+    "editAvailabilityDate"
+  ).value="";
+
+  document.getElementById(
+    "editAvailabilityNote"
+  ).value="";
+
   const photoInput=
     document.getElementById(
       "productPhotoFile"
@@ -12388,6 +12495,23 @@ function editProduct(id){
     "editProductDescription"
   ).value=
     product.description ||
+    "";
+
+  document.getElementById(
+    "editAvailabilityNoteEnabled"
+  ).checked=
+    product.availabilityNoteEnabled===true;
+
+  document.getElementById(
+    "editAvailabilityDate"
+  ).value=
+    product.availabilityDate ||
+    "";
+
+  document.getElementById(
+    "editAvailabilityNote"
+  ).value=
+    product.availabilityNote ||
     "";
 
   fillCategorySelect();
@@ -12966,6 +13090,21 @@ async function saveProduct(){
       "editProductDescription"
     ).value.trim();
 
+  const availabilityNoteEnabled=
+    document.getElementById(
+      "editAvailabilityNoteEnabled"
+    ).checked;
+
+  const availabilityDate=
+    document.getElementById(
+      "editAvailabilityDate"
+    ).value || "";
+
+  const availabilityNote=
+    document.getElementById(
+      "editAvailabilityNote"
+    ).value.trim();
+
   if(!name){
 
     alert(
@@ -13187,6 +13326,15 @@ async function saveProduct(){
       product.description=
         description;
 
+      product.availabilityNoteEnabled=
+        availabilityNoteEnabled;
+
+      product.availabilityDate=
+        availabilityDate;
+
+      product.availabilityNote=
+        availabilityNote;
+
       product.packs=
         packs;
 
@@ -13216,7 +13364,11 @@ async function saveProduct(){
 
         packs,
 
-        description
+        description,
+
+        availabilityNoteEnabled,
+        availabilityDate,
+        availabilityNote
 
       });
 
