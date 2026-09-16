@@ -9691,302 +9691,80 @@ async function dispatchPartialReadyItems(orderId){
 
 
 async function movePartialReadyItems(orderId,nextStage){
-  if(!auth?.currentUser||auth.currentUser.email!=="jayvik.india@gmail.com"){alert("Admin login required.");return;}
-  const order=orders.find(o=>String(o.id)===String(orderId));
-  if(!order||order.status!=="partial"){alert("Partial order not found.");return;}
-  const current=order.readyStage||"ready";
-  if(partialReadyNextStage(current)!==nextStage){alert("Please move Ready items step by step.");return;}
-  try{
-    order.readyStage=nextStage;
-    order.readyStageUpdatedAt=new Date().toISOString();
-    if(nextStage==="dispatched")order.readyBatchDispatchedAt=new Date().toISOString();
-    order.updatedAt=new Date().toISOString();
-    await db.ref().update({
-      ["/orders/"+String(order.id)]:order,
-      ["/store/public/orderStatus/"+String(order.id)]:publicOrderStatusPayload(order)
-    });
-    localStorage.setItem("jayvik_orders",JSON.stringify(orders));
-    renderOrders();
-    alert("Ready items moved to "+partialReadyStageLabel(nextStage)+".");
-  }catch(err){
-    console.error(err);
-    alert("Could not update Ready items. "+(err?.message||""));
-  }
-}
-
-
-async function refreshPartialOrderAvailability(orderId){
-
   if(!auth?.currentUser || auth.currentUser.email!=="jayvik.india@gmail.com"){
     alert("Admin login required.");
     return;
   }
 
   const order=orders.find(o=>String(o.id)===String(orderId));
-  if(!order)return;
+  if(!order || order.status!=="partial"){
+    alert("Partial order not found.");
+    return;
+  }
+
+  const currentStage=order.readyStage||"ready";
+  const expectedStage=partialReadyNextStage(currentStage);
+
+  if(nextStage!==expectedStage){
+    alert("Ready items must move step by step: Ready → Packing → Packed → Dispatched.");
+    return;
+  }
+
+  const oldStage=order.readyStage||"ready";
+  const oldUpdatedAt=order.updatedAt||"";
+  const oldReadyUpdatedAt=order.readyStageUpdatedAt||"";
 
   try{
-    await refreshAdminInventoryFromFirebase();
-
-    const oldStatus=order.status;
-    applyOrderFulfillment(order);
-    order.updatedAt=new Date().toISOString();
+    const now=new Date().toISOString();
 
     /*
-      If all pending quantities are now available, return the order to
-      Pending so Admin can deliberately start the normal Ready workflow.
+      Partial Order remains "partial".
+      Only the available batch moves through its own workflow.
+      The normal whole-order stock gate must NOT run here because it sees
+      the pending item and would incorrectly block Packing -> Packed.
     */
-    if(Number(order.pendingItemQty||0)===0){
-      order.status="pending";
-      order.isPartial=false;
+    order.readyStage=nextStage;
+    order.readyStageUpdatedAt=now;
+    order.updatedAt=now;
+
+    if(nextStage==="dispatched"){
+      order.readyBatchDispatchedAt=now;
     }
 
-    await db.ref().update({
-      ["/orders/"+String(order.id)]:order,
-      ["/store/public/orderStatus/"+String(order.id)]:publicOrderStatusPayload(order)
+    await db.ref("orders/"+String(order.id)).update({
+      readyStage:order.readyStage,
+      readyStageUpdatedAt:order.readyStageUpdatedAt,
+      readyBatchDispatchedAt:order.readyBatchDispatchedAt||null,
+      updatedAt:order.updatedAt
     });
+
+    try{
+      await db.ref("store/public/orderStatus/"+String(order.id))
+        .set(publicOrderStatusPayload(order));
+    }catch(mirrorErr){
+      console.error("Customer partial-order status mirror failed:",mirrorErr);
+    }
 
     localStorage.setItem("jayvik_orders",JSON.stringify(orders));
-    await renderOrders();
-
-    if(order.status==="pending" && Number(order.pendingItemQty||0)===0){
-      alert("All items are now available. The order can be moved to Ready.");
-    }else{
-      alert("Partial-order quantities refreshed from current inventory.");
-    }
-  }catch(err){
-    console.error("Partial order refresh failed:",err);
-    alert("Could not refresh the partial order. "+(err?.message||""));
-  }
-}
-
-
-async function moveOrder(orderId,nextStatus){
-
-  if(
-    !auth?.currentUser ||
-    auth.currentUser.email!=="jayvik.india@gmail.com"
-  ){
-    alert("Admin login required.");
-    return;
-  }
-
-  const order=
-    orders.find(
-      o=>String(o.id)===String(orderId)
-    );
-
-  if(!order)return;
-
-  /*
-    Always check the latest Firebase inventory at the moment
-    the Admin changes order status.
-  */
-  await refreshAdminInventoryFromFirebase();
-
-  const sequence=[
-    "pending",
-    "ready",
-    "packing",
-    "packed",
-    "dispatched"
-  ];
-
-  const currentIndex=
-    sequence.indexOf(order.status);
-
-  const nextIndex=
-    sequence.indexOf(nextStatus);
-
-  if(
-    currentIndex<0 ||
-    nextIndex!==currentIndex+1
-  ){
-    alert(
-      "Order must move step-by-step: Pending → Ready → Packing → Packed → Dispatched."
-    );
-    return;
-  }
-
-  if(
-    (
-      nextStatus==="ready" ||
-      nextStatus==="packing" ||
-      nextStatus==="packed"
-    ) &&
-    !orderHasStock(order)
-  ){
-    const missingNow=getOrderMissingItems(order);
-
-    const details=missingNow.map(item=>{
-      const pack=findPack(
-        item.productId,
-        item.size,
-        item.name
-      );
-      const available=
-        pack ? getPackStock(pack) : 0;
-
-      return `${item.name} (${item.size}) — ${available} in stock, ${Number(item.qty||0)} required`;
-    }).join("\n");
+    renderOrders();
 
     alert(
-      "This order cannot move forward because current Firebase stock is insufficient:\n\n"+
-      details
-    );
-
-    renderOrders();
-    return;
-  }
-
-  const oldStatus=order.status;
-  const oldDeducted=!!order.stockDeducted;
-
-  const oldStock=
-    order.items.map(item=>{
-
-      const p=
-        findPack(item.productId,item.size,item.name);
-
-      return{
-        p,
-        stock:
-          p
-            ?Number(p.stock||0)
-            :null
-      };
-    });
-
-  if(
-    nextStatus==="packed" &&
-    !order.stockDeducted
-  ){
-
-    order.items.forEach(item=>{
-
-      const pack=
-        findPack(item.productId,item.size,item.name);
-
-      if(pack){
-
-        pack.stock=
-          Math.max(
-            0,
-            Number(pack.stock||0)-
-            Number(item.qty||0)
-          );
-      }
-    });
-
-    order.stockDeducted=true;
-  }
-
-  order.status=nextStatus;
-  order.updatedAt=new Date().toISOString();
-
-  if(nextStatus==="dispatched" && !order.dispatchedAt){
-    order.dispatchedAt=order.updatedAt;
-  }
-
-  if(nextStatus==="dispatched" && !order.invoiceNumber){
-    order.invoiceNumber=getJayvikInvoiceNumber(order);
-  }
-
-  try{
-
-    if(
-      !firebaseReady ||
-      !db
-    ){
-      throw new Error(
-        "Firebase is not ready. The order status was not saved."
-      );
-    }
-
-    const statusData=
-      publicOrderStatusPayload(order);
-
-    const updates={};
-
-    /* Full order for Admin */
-    updates[
-      "/orders/" + String(order.id)
-    ]=order;
-
-    /* Live customer-facing order status */
-    updates[
-      "/store/public/orderStatus/" + String(order.id)
-    ]=statusData;
-
-    /*
-      When an order is packed, update catalogue/inventory
-      children individually. Do NOT replace /store/public,
-      otherwise customer live order-status data would be deleted.
-    */
-    if(
-      nextStatus==="packed" &&
-      !oldDeducted
-    ){
-
-      updates[
-        "/store/public/products"
-      ]=products;
-
-      updates[
-        "/store/public/categories"
-      ]=categories;
-
-      updates[
-        "/store/public/logo"
-      ]=logo;
-
-      updates[
-        "/store/public/website"
-      ]=website;
-    }
-
-    await db.ref().update(updates);
-
-    localStorage.setItem(
-      "jayvik_orders",
-      JSON.stringify(orders)
-    );
-
-    renderOrders();
-    renderAdminProducts();
-
-    showSaveNotification(
-      "Order " +
-      order.id +
-      " updated to " +
-      nextStatus +
-      " and saved to Firebase."
+      nextStage==="packing"
+        ? "Ready items moved to Packing."
+        : nextStage==="packed"
+        ? "Ready items marked Packed."
+        : "Ready items dispatched."
     );
 
   }catch(err){
+    order.readyStage=oldStage;
+    order.readyStageUpdatedAt=oldReadyUpdatedAt;
+    order.updatedAt=oldUpdatedAt;
 
-    console.error(
-      "Order status save failed:",
-      err
-    );
-
-    order.status=oldStatus;
-    order.stockDeducted=oldDeducted;
-
-    oldStock.forEach(x=>{
-
-      if(x.p)
-        x.p.stock=x.stock;
-
-    });
-
-    renderOrders();
-    renderAdminProducts();
-
-    showSaveNotification(
-      "Order status could not be saved to Firebase. " +
-      (err?.message||""),
-      true
+    console.error("Partial Ready-items stage update failed:",err);
+    alert(
+      "Could not move Ready items to "+partialReadyStageLabel(nextStage)+
+      ". "+(err?.message||"Please try again.")
     );
   }
 }
