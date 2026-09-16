@@ -6675,8 +6675,7 @@ function updateProductAvailability(
 
   if(addBtn){
 
-    addBtn.disabled=
-      info.stock<=0;
+    addBtn.disabled=false;
 
     addBtn.style.opacity=
       info.stock<=0
@@ -6688,10 +6687,7 @@ function updateProductAvailability(
       ?"not-allowed"
       :"pointer";
 
-    addBtn.textContent=
-      info.stock<=0
-      ?"🚫 Not Available"
-      :"🛒 Add to Cart";
+    addBtn.textContent="🛒 Add to Cart";
 
     addBtn.title=
       info.stock<=0
@@ -6700,6 +6696,20 @@ function updateProductAvailability(
 
   }
 
+
+  /*
+    Unavailable products remain orderable.
+    Stock 0 is handled as a Pending Item / Partial Order at checkout.
+  */
+  const pendingOrderButton=card?.querySelector(".add-btn");
+  if(pendingOrderButton){
+    pendingOrderButton.disabled=false;
+    pendingOrderButton.removeAttribute("disabled");
+    pendingOrderButton.textContent="🛒 Add to Cart";
+    pendingOrderButton.style.pointerEvents="auto";
+    pendingOrderButton.style.opacity="1";
+    pendingOrderButton.style.cursor="pointer";
+  }
 }
 
 
