@@ -7746,20 +7746,7 @@ function addToCart(productId){
   saveCartLocal();
   renderCart();
 
-  const stock=getPackStock(pack);
-  if(stock<=0){
-    alert(
-      product.name+" ("+pack.size+") added as a PENDING item. "+
-      "It is currently out of stock."
-    );
-  }else if((existing?.qty||1)>stock){
-    alert(
-      product.name+" ("+pack.size+") added. "+
-      stock+" pack(s) are currently ready; the balance will remain PENDING."
-    );
-  }else{
-    alert(product.name+" ("+pack.size+") added to cart.");
-  }
+  alert("Added to cart.");
 }
 
 
@@ -8156,7 +8143,19 @@ async function sendWhatsAppOrder(){
       Re-read the latest product stock directly from Firebase
       immediately before accepting the order.
     */
-    await refreshProductsForOrderStockCheck();
+    try{
+      await refreshProductsForOrderStockCheck();
+    }catch(stockErr){
+      /*
+        Do not block checkout in Partial Order mode.
+        If the latest stock refresh fails, use the catalogue stock already
+        loaded on the customer page. Zero/insufficient quantities become Pending.
+      */
+      console.warn(
+        "Latest stock refresh failed; continuing with currently loaded stock.",
+        stockErr
+      );
+    }
 
     /* Out-of-stock quantities are accepted as pending items. */
 
@@ -8305,7 +8304,8 @@ Order ID: ${order.id}`;
     );
 
     alert(
-      "Order could not be confirmed because the latest stock could not be checked. Please try again."
+      "Order could not be saved. Please check your internet connection and try again. " +
+      (err?.message ? "\n\nDetails: "+err.message : "")
     );
 
   }finally{
