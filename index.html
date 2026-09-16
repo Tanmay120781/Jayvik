@@ -1024,37 +1024,74 @@ footer{
 <!-- Firebase: Realtime Database + Authentication ONLY -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
 
-/* ===== Jayvik branded replacement for browser alert() =====
-   Removes "<domain> says" from customer/admin informational popups.
+/* ===== Jayvik branded replacement for browser alert()/await jayvikConfirm() =====
+   Prevents browser-generated "<domain> says" dialogs.
 */
 window.jayvikNativeAlert = window.alert.bind(window);
+window.jayvikNativeConfirm = window.confirm.bind(window);
 
-window.alert = function(message){
+function jayvikDialog(message, options={}){
   const overlay=document.getElementById("jayvikNoticeOverlay");
   const messageEl=document.getElementById("jayvikNoticeMessage");
   const ok=document.getElementById("jayvikNoticeOk");
+  const cancel=document.getElementById("jayvikNoticeCancel");
+  const title=document.getElementById("jayvikNoticeTitle");
 
-  /* Very early calls before page HTML is ready fall back safely. */
-  if(!overlay || !messageEl || !ok){
-    window.jayvikNativeAlert(String(message ?? ""));
-    return;
+  if(!overlay || !messageEl || !ok || !cancel || !title){
+    return Promise.resolve(true);
   }
 
+  const isConfirm=options.confirm===true;
+
+  title.textContent=options.title||"Jayvik";
   messageEl.textContent=String(message ?? "");
+  ok.textContent=isConfirm ? (options.okText||"Confirm") : "OK";
+  cancel.textContent=options.cancelText||"Cancel";
+  cancel.style.display=isConfirm ? "" : "none";
+
   overlay.classList.add("show");
   overlay.setAttribute("aria-hidden","false");
 
-  const close=()=>{
-    overlay.classList.remove("show");
-    overlay.setAttribute("aria-hidden","true");
-  };
+  return new Promise(resolve=>{
+    let finished=false;
 
-  ok.onclick=close;
-  overlay.onclick=(event)=>{
-    if(event.target===overlay)close();
-  };
+    const close=(result)=>{
+      if(finished)return;
+      finished=true;
+      overlay.classList.remove("show");
+      overlay.setAttribute("aria-hidden","true");
+      ok.onclick=null;
+      cancel.onclick=null;
+      overlay.onclick=null;
+      resolve(result);
+    };
 
-  setTimeout(()=>ok.focus(),0);
+    ok.onclick=()=>close(true);
+    cancel.onclick=()=>close(false);
+
+    overlay.onclick=(event)=>{
+      if(event.target===overlay && !isConfirm)close(true);
+    };
+
+    setTimeout(()=>ok.focus(),0);
+  });
+}
+
+/* Informational messages: no Vercel/GitHub/browser "says" heading. */
+window.alert=function(message){
+  jayvikDialog(message,{title:"Jayvik"});
+};
+
+/*
+  Custom confirmations must be awaited, so all native await jayvikConfirm() call sites
+  below are rewritten to: await jayvikConfirm(...)
+*/
+window.jayvikConfirm=function(message,options={}){
+  return jayvikDialog(message,{
+    ...options,
+    confirm:true,
+    title:options.title||"Jayvik"
+  });
 };
 
 </script>
@@ -5702,7 +5739,7 @@ function renderLiveOrderStatus(data){
             border-top:1px solid #e5e7eb
           "
         >
-          ${customerPartialOrderAlertHtml(statusData)}
+          
         <div
             style="
               font-size:16px;
@@ -6246,7 +6283,7 @@ async function saveLogo(){
 async function removeLogo(){
 
   if(
-    !confirm(
+    !await jayvikConfirm(
       "Remove current logo?"
     )
   )
@@ -6656,7 +6693,7 @@ async function removeCategory(category){
   }
 
   if(
-    !confirm(
+    !await jayvikConfirm(
       "Remove category "+category+"?"
     )
   )
@@ -9334,7 +9371,7 @@ async function archiveDispatchedOrder(orderId){
   }
 
   if(
-    !confirm(
+    !await jayvikConfirm(
       "Save Order "+order.id+" in the Dispatched Orders folder?"
     )
   ){
@@ -9506,7 +9543,7 @@ async function deletePaidDispatchedOrder(orderId){
     return;
   }
 
-  const ok=confirm(
+  const ok=await jayvikConfirm(
     "Are you sure you want to permanently delete Order "+order.id+"?\n\n"+
     "The order will first be safely saved in Sales Archive before it is removed from active orders."
   );
@@ -10070,7 +10107,7 @@ async function add10ToAllInventory(){
 
   const button=document.getElementById("add10AllInventoryBtn");
 
-  if(!confirm("Add 10 units to EVERY pack in inventory?"))return;
+  if(!await jayvikConfirm("Add 10 units to EVERY pack in inventory?"))return;
 
   if(button){
     button.disabled=true;
@@ -10853,7 +10890,7 @@ async function deleteArchivedHistoryOrder(orderId){
     order.customer||{};
 
   const confirmed=
-    confirm(
+    await jayvikConfirm(
       "Permanently delete archived order "+
       String(order.id||"")+
       " for "+
@@ -12817,7 +12854,7 @@ async function deleteProduct(id){
   if(!product)return;
 
   if(
-    !confirm(
+    !await jayvikConfirm(
       "Remove "+product.name+"?"
     )
   ){
@@ -14360,6 +14397,7 @@ if(document.readyState==="loading"){
     <div id="jayvikNoticeTitle" class="jayvik-notice-title">Jayvik</div>
     <div id="jayvikNoticeMessage" class="jayvik-notice-message"></div>
     <div class="jayvik-notice-actions">
+      <button id="jayvikNoticeCancel" type="button" class="btn btn-light" style="display:none">Cancel</button>
       <button id="jayvikNoticeOk" type="button" class="btn btn-green">OK</button>
     </div>
   </div>
