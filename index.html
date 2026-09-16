@@ -308,6 +308,26 @@ header{
   margin-bottom:12px;
 }
 
+.customer-partial-alert{
+  margin:14px 0;
+  padding:14px;
+  border:1px solid #efcf87;
+  border-radius:12px;
+  background:#fff8e8;
+}
+.customer-partial-alert-title{
+  font-weight:900;
+  color:#7a4d00;
+  margin-bottom:7px;
+}
+.customer-partial-alert-item{
+  padding:5px 0;
+  border-bottom:1px dashed #ead7ad;
+}
+.customer-partial-alert-item:last-child{
+  border-bottom:0;
+}
+
 .product-customer-note{
   margin:4px 0 12px;
   padding:9px 11px;
@@ -2462,6 +2482,13 @@ footer{
             onclick="filterOrders('pending',this)"
           >
             🔴 Pending
+          </button>
+
+          <button
+            class="btn btn-light"
+            onclick="filterOrders('partial',this)"
+          >
+            ⚠️ Partial Orders
           </button>
 
           <button
@@ -4816,7 +4843,11 @@ function getCustomerInvoiceOrder(orderId){
   const id=String(orderId||"");
   const live=(orders||[]).find(order=>String(order?.id||"")===id);
   if(live && Number(live.total||0)>0){
-    return {...live,invoiceNumber:live.invoiceNumber||getJayvikInvoiceNumber(live)};
+    const full={...live,invoiceNumber:live.invoiceNumber||getJayvikInvoiceNumber(live)};
+    if(live.status==="partial" || Array.isArray(live.fulfillment)){
+      return getReadyInvoiceOrder(full);
+    }
+    return full;
   }
 
   const allHistory=getCustomerOrderHistoryLocal();
@@ -5422,6 +5453,72 @@ function publicOrderStatusPayload(order){
 let customerOrderStatusRef=null;
 
 
+function customerPendingItemsFromOrder(order){
+  if(!order)return [];
+  const fulfillment=Array.isArray(order.fulfillment)
+    ? order.fulfillment
+    : calculateOrderFulfillment(order.items||[]);
+  return fulfillment.filter(x=>Number(x.pendingQty||0)>0);
+}
+
+function customerPartialOrderAlertHtml(order){
+  const pending=customerPendingItemsFromOrder(order);
+  if(!pending.length)return "";
+
+  const rows=pending.map(item=>{
+    const expected=item.expectedDate
+      ? ` — 📅 Expected ${escapeHtml(formatProductAvailabilityDate(item.expectedDate))}`
+      : "";
+    return `
+      <div class="customer-partial-alert-item">
+        🕒 <strong>${escapeHtml(item.name||"Product")}</strong>
+        ${escapeHtml(item.size||"")}
+        — Pending Qty: <strong>${Number(item.pendingQty||0)}</strong>
+        ${expected}
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="customer-partial-alert">
+      <div class="customer-partial-alert-title">
+        ⚠️ Partial Order — Some Items Pending
+      </div>
+      <div>
+        <strong>Order Reference:</strong>
+        ${escapeHtml(order.id||"")}
+      </div>
+      <div style="margin:6px 0 8px">
+        Some items in this order are awaiting stock.
+        Your invoice/payment amount includes ready items only.
+      </div>
+      ${rows}
+      <div class="small" style="margin-top:8px">
+        This status will update when Jayvik rechecks the pending items after stock arrives.
+      </div>
+    </div>
+  `;
+}
+
+function showCustomerPartialOrderPlacedNotice(order){
+  const pending=customerPendingItemsFromOrder(order);
+  if(!pending.length)return;
+
+  const lines=pending.map(item=>{
+    const date=item.expectedDate
+      ? ` | Expected ${formatProductAvailabilityDate(item.expectedDate)}`
+      : "";
+    return `• ${item.name} ${item.size} — Pending Qty ${Number(item.pendingQty||0)}${date}`;
+  });
+
+  alert(
+    `⚠️ PARTIAL ORDER\n\nOrder Reference: ${order.id}\n\n`+
+    `Some items are pending:\n${lines.join("\n")}\n\n`+
+    `Your invoice/payment amount includes READY ITEMS ONLY.`
+  );
+}
+
+
 function renderLiveOrderStatus(data){
 
   const box=
@@ -5490,7 +5587,8 @@ function renderLiveOrderStatus(data){
             border-top:1px solid #e5e7eb
           "
         >
-          <div
+          ${customerPartialOrderAlertHtml(statusData)}
+        <div
             style="
               font-size:16px;
               font-weight:800;
@@ -7543,113 +7641,128 @@ function renderProducts(){
 
 function addToCart(productId){
 
-  const product=
-    products.find(
-      p=>p.id===productId
-    );
-
+  const product=products.find(p=>p.id===productId);
   if(!product)return;
 
-  const pack=
-    selectedPacks[productId] ||
-    product.packs[0];
+  const pack=selectedPacks[productId] || product.packs[0];
+  if(!pack)return;
 
-  const stock=
-    getPackStock(pack);
-
-  if(stock<=0){
-
-    alert(
-      product.name+
-      " ("+
-      pack.size+
-      ") is currently not available."
-    );
-
-    renderProducts();
-
-    return;
-
-  }
-
-  const existing=
-    cart.find(
-      item=>
-        item.productId===productId &&
-        item.size===pack.size
-    );
+  const existing=cart.find(
+    item=>item.productId===productId && item.size===pack.size
+  );
 
   if(existing){
-
-    if(existing.qty>=stock){
-
-      alert(
-        "Only "+
-        stock+
-        " of "+
-        product.name+
-        " ("+
-        pack.size+
-        ") is currently available."
-      );
-
-      return;
-
-    }
-
-    existing.price=
-      getDiscountedPrice(
-        product,
-        pack
-      );
-
-    existing.originalPrice=
-      Number(
-        pack.price||0
-      );
-
-    existing.discountPercent=
-      getProductDiscountPercent(
-        product
-      );
-
+    existing.price=getDiscountedPrice(product,pack);
+    existing.originalPrice=Number(pack.price||0);
+    existing.discountPercent=getProductDiscountPercent(product);
     existing.qty++;
-
   }else{
-
     cart.push({
-
       productId,
       name:product.name,
       size:pack.size,
-      price:getDiscountedPrice(
-        product,
-        pack
-      ),
-      originalPrice:Number(
-        pack.price||0
-      ),
-      discountPercent:
-        getProductDiscountPercent(
-          product
-        ),
+      price:getDiscountedPrice(product,pack),
+      originalPrice:Number(pack.price||0),
+      discountPercent:getProductDiscountPercent(product),
       qty:1
-
     });
-
   }
 
   saveCartLocal();
-
   renderCart();
 
-  alert(
-    product.name+
-    " ("+
-    pack.size+
-    ") added to cart."
-  );
+  const stock=getPackStock(pack);
+  if(stock<=0){
+    alert(
+      product.name+" ("+pack.size+") added as a PENDING item. "+
+      "It is currently out of stock."
+    );
+  }else if((existing?.qty||1)>stock){
+    alert(
+      product.name+" ("+pack.size+") added. "+
+      stock+" pack(s) are currently ready; the balance will remain PENDING."
+    );
+  }else{
+    alert(product.name+" ("+pack.size+") added to cart.");
+  }
+}
 
+
+function getProductAvailabilityInfo(productId,size,name=""){
+  const product=products.find(p=>String(p.id)===String(productId))
+    || products.find(p=>productNamesCompatible(p.name,name));
+  const pack=product?.packs?.find(p=>normalizePackSize(p.size)===normalizePackSize(size));
+  return {product,pack,stock:pack?getPackStock(pack):0};
+}
+
+function getExpectedAvailabilityText(product){
+  if(!product)return "";
+  const date=String(product.availabilityDate||"").trim();
+  const note=String(product.availabilityNote||"").trim();
+  const enabled=product.availabilityNoteEnabled===true;
+  if(!enabled)return "";
+  const bits=[];
+  if(date)bits.push("Expected "+formatProductAvailabilityDate(date));
+  if(note)bits.push(note);
+  return bits.join(" — ");
+}
+
+function calculateOrderFulfillment(items){
+  return (items||[]).map(item=>{
+    const info=getProductAvailabilityInfo(item.productId,item.size,item.name);
+    const orderedQty=Math.max(0,Number(item.qty||0));
+    const availableQty=Math.max(0,Number(info.stock||0));
+    const readyQty=Math.min(orderedQty,availableQty);
+    const pendingQty=Math.max(0,orderedQty-readyQty);
+    return {
+      productId:item.productId,
+      name:item.name,
+      size:item.size,
+      orderedQty,
+      readyQty,
+      pendingQty,
+      expectedDate:String(info.product?.availabilityDate||""),
+      availabilityNote:String(info.product?.availabilityNote||"")
+    };
+  });
+}
+
+function applyOrderFulfillment(order){
+  order.fulfillment=calculateOrderFulfillment(order.items);
+  const ready=order.fulfillment.reduce((n,x)=>n+Number(x.readyQty||0),0);
+  const pending=order.fulfillment.reduce((n,x)=>n+Number(x.pendingQty||0),0);
+  order.readyItemQty=ready;
+  order.pendingItemQty=pending;
+  order.isPartial=ready>0 && pending>0;
+  if(pending>0){
+    order.status=ready>0 ? "partial" : "pending";
+  }
+  return order;
+}
+
+function getReadyInvoiceOrder(order){
+  if(!order)return null;
+  const fulfillment=Array.isArray(order.fulfillment)
+    ? order.fulfillment
+    : calculateOrderFulfillment(order.items||[]);
+  const readyItems=[];
+  for(const item of (order.items||[])){
+    const f=fulfillment.find(x=>
+      String(x.productId)===String(item.productId) &&
+      normalizePackSize(x.size)===normalizePackSize(item.size)
+    );
+    const qty=Math.max(0,Number(f?.readyQty ?? item.qty ?? 0));
+    if(qty>0)readyItems.push({...item,qty});
+  }
+  const total=readyItems.reduce(
+    (sum,item)=>sum+Number(item.price||0)*Number(item.qty||0),0
+  );
+  return {
+    ...order,
+    items:readyItems,
+    total,
+    invoiceNumber:(order.invoiceNumber||getJayvikInvoiceNumber(order))+"-R"
+  };
 }
 
 
@@ -7709,6 +7822,22 @@ function renderCart(){
             ${escapeHtml(item.size)}
             × ₹${Number(item.price).toLocaleString("en-IN")}
           </small>
+
+          ${
+            (()=>{
+              const info=getProductAvailabilityInfo(item.productId,item.size,item.name);
+              const ready=Math.min(Number(item.qty||0),Number(info.stock||0));
+              const pending=Math.max(0,Number(item.qty||0)-ready);
+              const expected=getExpectedAvailabilityText(info.product);
+              return `
+                <div class="small" style="margin-top:5px">
+                  ${ready>0 ? `<span class="stock-ok">🟢 Ready: ${ready}</span>` : ""}
+                  ${pending>0 ? `<span class="stock-missing" style="margin-left:6px">🕒 Pending: ${pending}</span>` : ""}
+                  ${pending>0 && expected ? `<div style="margin-top:3px">📅 ${escapeHtml(expected)}</div>` : ""}
+                </div>
+              `;
+            })()
+          }
 
         </div>
 
@@ -7775,68 +7904,18 @@ function renderCart(){
 }
 
 
-function changeQty(
-  index,
-  change
-){
+function changeQty(index,change){
 
   if(!cart[index])return;
 
-  if(change>0){
-
-    const item=
-      cart[index];
-
-    const product=
-      products.find(
-        p=>p.id===item.productId
-      );
-
-    const pack=
-      product?.packs?.find(
-        p=>
-          String(p.size)===
-          String(item.size)
-      );
-
-    const stock=
-      getPackStock(pack);
-
-    if(item.qty>=stock){
-
-      alert(
-        "Only "+
-        stock+
-        " of "+
-        item.name+
-        " ("+
-        item.size+
-        ") is currently available."
-      );
-
-      return;
-
-    }
-
-  }
-
   cart[index].qty+=change;
 
-  if(
-    cart[index].qty<=0
-  ){
-
-    cart.splice(
-      index,
-      1
-    );
-
+  if(cart[index].qty<=0){
+    cart.splice(index,1);
   }
 
   saveCartLocal();
-
   renderCart();
-
 }
 
 
@@ -8004,16 +8083,7 @@ async function sendWhatsAppOrder(){
     */
     await refreshProductsForOrderStockCheck();
 
-    const stockProblems=
-      getCartStockProblems();
-
-    if(stockProblems.length){
-
-      showOrderStockPopup(stockProblems);
-      renderProducts();
-      renderCart();
-      return;
-    }
+    /* Out-of-stock quantities are accepted as pending items. */
 
     const order={
       id:"JY"+Date.now(),
@@ -8037,29 +8107,25 @@ async function sendWhatsAppOrder(){
       stockDeducted:false
     };
 
-    /* Second in-memory safety check after Firebase refresh. */
-    if(!orderHasStock(order)){
-      const problems=getOrderMissingItems(order).map(item=>{
-        const pack=findPack(item.productId,item.size,item.name);
-        return{
-          name:item.name||"Product",
-          size:item.size||"",
-          required:Number(item.qty||0),
-          available:pack?getPackStock(pack):0
-        };
-      });
-      showOrderStockPopup(problems);
-      renderProducts();
-      renderCart();
-      return;
-    }
+    /*
+      Split every ordered quantity into Ready and Pending quantities.
+      A partially available order is stored under the Partial Orders status.
+    */
+    applyOrderFulfillment(order);
 
     let message=`Hello Jayvik, I would like to place an order:
 
 `;
 
     order.items.forEach((item,index)=>{
-      message+=`${index+1}. ${item.name} – ${item.size} × ${item.qty} = ₹${Number(item.price||0)*Number(item.qty||0)}\n`;
+      const f=(order.fulfillment||[]).find(x=>
+        String(x.productId)===String(item.productId) &&
+        normalizePackSize(x.size)===normalizePackSize(item.size)
+      );
+      const split=f
+        ? ` [Ready ${Number(f.readyQty||0)} | Pending ${Number(f.pendingQty||0)}]`
+        : "";
+      message+=`${index+1}. ${item.name} – ${item.size} × ${item.qty}${split} = ₹${Number(item.price||0)*Number(item.qty||0)}\n`;
     });
 
     message+=`
@@ -8137,6 +8203,7 @@ Order ID: ${order.id}`;
 
     renderCart();
     renderLiveOrderStatus(initialStatus);
+    showCustomerPartialOrderPlacedNotice(order);
     startCustomerOrderStatusListener();
 
     showSaveNotification(
@@ -8490,6 +8557,11 @@ async function renderOrders(refreshInventory=true){
     },
 
     {
+      key:"partial",
+      title:"⚠️ Partial Orders"
+    },
+
+    {
       key:"ready",
       title:"🟢 Ready"
     },
@@ -8637,6 +8709,60 @@ function renderDispatchedOrdersFolder(){
 }
 
 
+function partialOrderPendingItemsHtml(order){
+  const fulfillment=Array.isArray(order?.fulfillment)
+    ? order.fulfillment
+    : calculateOrderFulfillment(order?.items||[]);
+
+  const pending=fulfillment.filter(item=>Number(item.pendingQty||0)>0);
+  if(!pending.length)return "";
+
+  const rows=pending.map(item=>{
+    const product=products.find(p=>String(p.id)===String(item.productId))
+      || products.find(p=>productNamesCompatible(p.name,item.name));
+
+    const expectedDate=item.expectedDate || product?.availabilityDate || "";
+    const note=item.availabilityNote || product?.availabilityNote || "";
+
+    return `
+      <tr>
+        <td style="padding:7px">${escapeHtml(item.name||"Product")}</td>
+        <td style="padding:7px">${escapeHtml(item.size||"")}</td>
+        <td style="padding:7px;font-weight:900">${Number(item.pendingQty||0)}</td>
+        <td style="padding:7px">${
+          expectedDate
+            ? escapeHtml(formatProductAvailabilityDate(expectedDate))
+            : "Not specified"
+        }</td>
+        <td style="padding:7px">${note ? escapeHtml(note) : "—"}</td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div style="margin-top:14px;padding:12px;border:1px solid #efd5a1;background:#fffaf0;border-radius:10px">
+      <div style="font-weight:900;margin-bottom:9px;color:#7a4d00">
+        🕒 Pending Items
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:7px">Product</th>
+              <th style="text-align:left;padding:7px">Pack</th>
+              <th style="text-align:left;padding:7px">Pending Qty</th>
+              <th style="text-align:left;padding:7px">Expected Date</th>
+              <th style="text-align:left;padding:7px">Note</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+
 function buildOrderCard(order){
 
   const card=
@@ -8676,25 +8802,28 @@ function buildOrderCard(order){
           ?Number(pack.stock||0)
           :0;
 
-        const enough=
-          available>=
-          Number(item.qty||0);
+        const f=(order.fulfillment||[]).find(x=>
+          String(x.productId)===String(item.productId) &&
+          normalizePackSize(x.size)===normalizePackSize(item.size)
+        );
+        const readyQty=Number(f?.readyQty ?? Math.min(Number(item.qty||0),available));
+        const pendingQty=Number(f?.pendingQty ?? Math.max(0,Number(item.qty||0)-available));
+        const product=products.find(p=>String(p.id)===String(item.productId))
+          || products.find(p=>productNamesCompatible(p.name,item.name));
+        const expected=getExpectedAvailabilityText(product);
 
         return`
-          <div>
+          <div style="margin-bottom:7px">
             ${escapeHtml(item.name)}
             —
-            <strong>
-              ${escapeHtml(item.size)}
-            </strong>
+            <strong>${escapeHtml(item.size)}</strong>
             × ${item.qty}
-
-            <span
-              class="${enough ? "stock-ok" : "stock-missing"}"
-            >
-              (${available} in stock)
-            </span>
-
+            <div class="small">
+              ${readyQty>0 ? `<span class="stock-ok">🟢 Ready ${readyQty}</span>` : ""}
+              ${pendingQty>0 ? `<span class="stock-missing" style="margin-left:6px">🕒 Pending ${pendingQty}</span>` : ""}
+              <span style="margin-left:6px">(${available} currently in stock)</span>
+            </div>
+            ${pendingQty>0 && expected ? `<div class="small">📅 ${escapeHtml(expected)}</div>` : ""}
           </div>
         `;
 
@@ -8703,6 +8832,25 @@ function buildOrderCard(order){
 
 
   let actions="";
+
+
+  if(order.status==="partial"){
+    actions=`
+      <button
+        class="btn btn-green"
+        onclick="refreshPartialOrderAvailability('${escapeAttr(order.id)}')"
+      >
+        ↻ Recheck Pending Items
+      </button>
+      <button
+        type="button"
+        class="btn btn-light"
+        onclick="downloadCustomerInvoicePdf('${escapeAttr(order.id)}')"
+      >
+        🧾 Ready Items Invoice
+      </button>
+    `;
+  }
 
 
   if(
@@ -8887,7 +9035,9 @@ function buildOrderCard(order){
     </div>
 
     <div class="order-items">
-      ${itemHtml}${paymentSummary}
+      ${itemHtml}
+        ${order.status==="partial" ? partialOrderPendingItemsHtml(order) : ""}
+${paymentSummary}
     </div>
 
     <strong>
@@ -9178,6 +9328,52 @@ async function deletePaidDispatchedOrder(orderId){
     );
   }
 }
+
+async function refreshPartialOrderAvailability(orderId){
+
+  if(!auth?.currentUser || auth.currentUser.email!=="jayvik.india@gmail.com"){
+    alert("Admin login required.");
+    return;
+  }
+
+  const order=orders.find(o=>String(o.id)===String(orderId));
+  if(!order)return;
+
+  try{
+    await refreshAdminInventoryFromFirebase();
+
+    const oldStatus=order.status;
+    applyOrderFulfillment(order);
+    order.updatedAt=new Date().toISOString();
+
+    /*
+      If all pending quantities are now available, return the order to
+      Pending so Admin can deliberately start the normal Ready workflow.
+    */
+    if(Number(order.pendingItemQty||0)===0){
+      order.status="pending";
+      order.isPartial=false;
+    }
+
+    await db.ref().update({
+      ["/orders/"+String(order.id)]:order,
+      ["/store/public/orderStatus/"+String(order.id)]:publicOrderStatusPayload(order)
+    });
+
+    localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+    await renderOrders();
+
+    if(order.status==="pending" && Number(order.pendingItemQty||0)===0){
+      alert("All items are now available. The order can be moved to Ready.");
+    }else{
+      alert("Partial-order quantities refreshed from current inventory.");
+    }
+  }catch(err){
+    console.error("Partial order refresh failed:",err);
+    alert("Could not refresh the partial order. "+(err?.message||""));
+  }
+}
+
 
 async function moveOrder(orderId,nextStatus){
 
