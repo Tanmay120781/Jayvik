@@ -5452,6 +5452,27 @@ function publicOrderStatusPayload(order){
       )
       :0,
 
+    fulfillment:
+      Array.isArray(order.fulfillment)
+      ?order.fulfillment.map(x=>({
+        productId:String(x.productId||""),
+        name:String(x.name||""),
+        size:String(x.size||""),
+        orderedQty:Number(x.orderedQty||0),
+        readyQty:Number(x.readyQty||0),
+        pendingQty:Number(x.pendingQty||0),
+        expectedDate:String(x.expectedDate||""),
+        availabilityNote:String(x.availabilityNote||"")
+      }))
+      :[],
+
+    readyItemQty:Number(order.readyItemQty||0),
+    pendingItemQty:Number(order.pendingItemQty||0),
+    isPartial:order.status==="partial"||order.isPartial===true,
+    readyStage:String(order.readyStage||"ready"),
+    readyStageUpdatedAt:String(order.readyStageUpdatedAt||""),
+    readyBatchDispatchedAt:String(order.readyBatchDispatchedAt||""),
+
     updatedAt:
       new Date().toISOString()
 
@@ -5473,41 +5494,33 @@ function customerPendingItemsFromOrder(order){
 
 function customerPartialOrderAlertHtml(order){
   const pending=customerPendingItemsFromOrder(order);
-  if(!pending.length)return "";
+  const fulfillment=Array.isArray(order?.fulfillment)?order.fulfillment:[];
+  const ready=fulfillment.filter(x=>Number(x.readyQty||0)>0);
+  if(!pending.length&&!ready.length)return "";
 
-  const rows=pending.map(item=>{
-    const expected=item.expectedDate
-      ? ` — 📅 Expected ${escapeHtml(formatProductAvailabilityDate(item.expectedDate))}`
-      : "";
-    return `
-      <div class="customer-partial-alert-item">
-        🕒 <strong>${escapeHtml(item.name||"Product")}</strong>
-        ${escapeHtml(item.size||"")}
-        — Pending Qty: <strong>${Number(item.pendingQty||0)}</strong>
-        ${expected}
-      </div>
-    `;
+  const readyRows=ready.map(item=>`
+    <div class="customer-partial-alert-item">
+      🟢 <strong>${escapeHtml(item.name||"Product")}</strong>
+      ${escapeHtml(item.size||"")} — Ready Qty: <strong>${Number(item.readyQty||0)}</strong>
+    </div>`).join("");
+
+  const pendingRows=pending.map(item=>{
+    const expected=item.expectedDate?` — 📅 Expected ${escapeHtml(formatProductAvailabilityDate(item.expectedDate))}`:"";
+    return `<div class="customer-partial-alert-item">🕒 <strong>${escapeHtml(item.name||"Product")}</strong> ${escapeHtml(item.size||"")} — Pending Qty: <strong>${Number(item.pendingQty||0)}</strong>${expected}</div>`;
   }).join("");
 
   return `
     <div class="customer-partial-alert">
-      <div class="customer-partial-alert-title">
-        ⚠️ Partial Order — Some Items Pending
-      </div>
-      <div>
-        <strong>Order Reference:</strong>
-        ${escapeHtml(order.id||"")}
-      </div>
-      <div style="margin:6px 0 8px">
-        Some items in this order are awaiting stock.
-        Your invoice/payment amount includes ready items only.
-      </div>
-      ${rows}
-      <div class="small" style="margin-top:8px">
-        This status will update when Jayvik rechecks the pending items after stock arrives.
-      </div>
-    </div>
-  `;
+      <div class="customer-partial-alert-title">⚠️ Partial Order</div>
+      <div><strong>Order Reference:</strong> ${escapeHtml(order.id||"")}</div>
+      ${ready.length?`
+        <div style="margin-top:9px;font-weight:850">Ready Items Status: ${partialReadyStageLabel(order.readyStage||"ready")}</div>
+        ${readyRows}
+        <button type="button" class="btn btn-green" style="margin-top:9px" onclick="downloadCustomerInvoicePdf('${escapeAttr(order.id)}')">🧾 Download Ready Items Invoice</button>
+      `:""}
+      ${pending.length?`<div style="margin-top:12px;font-weight:850">🕒 Pending Items</div>${pendingRows}`:""}
+      <div class="small" style="margin-top:8px">Invoice/payment amount includes Ready items only. Pending items will be processed when stock becomes available.</div>
+    </div>`;
 }
 
 function showCustomerPartialOrderPlacedNotice(order){
@@ -5529,7 +5542,25 @@ function showCustomerPartialOrderPlacedNotice(order){
 }
 
 
+function mergeCustomerLiveOrderStatus(status){
+  if(!status?.id)return status;
+  const local=orders.find(o=>String(o.id)===String(status.id));
+  if(!local)return status;
+  return {
+    ...local,
+    ...status,
+    customer:local.customer,
+    items:local.items,
+    total:local.total,
+    fulfillment:Array.isArray(status.fulfillment)&&status.fulfillment.length
+      ?status.fulfillment
+      :local.fulfillment
+  };
+}
+
+
 function renderLiveOrderStatus(data){
+  data=mergeCustomerLiveOrderStatus(data);
 
   const box=
     document.getElementById(
@@ -9119,6 +9150,7 @@ function buildOrderCard(order){
             ₹${Number(getReadyInvoiceOrder(order)?.total||0).toLocaleString("en-IN")}
             <div class="small">Pending items are excluded from this invoice and payment QR.</div>
           </div>
+          ${partialReadyWorkflowHtml(order)}
           ${partialOrderPendingItemsHtml(order)}
         ` : ""}
 ${paymentSummary}
@@ -9412,6 +9444,55 @@ async function deletePaidDispatchedOrder(orderId){
     );
   }
 }
+
+function partialReadyItems(order){
+  const f=Array.isArray(order?.fulfillment)?order.fulfillment:calculateOrderFulfillment(order?.items||[]);
+  return f.filter(x=>Number(x.readyQty||0)>0);
+}
+function partialReadyStageLabel(stage){
+  return ({ready:"🟢 Ready",packing:"🟡 Packing",packed:"📦 Packed",dispatched:"🚚 Dispatched"})[stage]||"🟢 Ready";
+}
+function partialReadyNextStage(stage){
+  const seq=["ready","packing","packed","dispatched"];
+  const i=seq.indexOf(stage||"ready");
+  return i>=0&&i<seq.length-1?seq[i+1]:null;
+}
+function partialReadyWorkflowHtml(order){
+  if(order?.status!=="partial"||!partialReadyItems(order).length)return "";
+  const stage=order.readyStage||"ready";
+  const next=partialReadyNextStage(stage);
+  return `
+    <div style="margin-top:12px;padding:12px;border:1px solid #b9d8bd;background:#f1faf2;border-radius:10px">
+      <div style="font-weight:900">🟢 Ready Items Processing</div>
+      <div class="small" style="margin:7px 0">Current Stage: <strong>${partialReadyStageLabel(stage)}</strong></div>
+      ${partialReadyItems(order).map(x=>`<div class="small">${escapeHtml(x.name)} — <strong>${escapeHtml(x.size)}</strong> × ${Number(x.readyQty||0)}</div>`).join("")}
+      ${next?`<button type="button" class="btn btn-green" style="margin-top:10px" onclick="movePartialReadyItems('${escapeAttr(order.id)}','${next}')">Move Ready Items → ${partialReadyStageLabel(next)}</button>`:`<div style="margin-top:9px;font-weight:800">🚚 Ready items dispatched</div>`}
+    </div>`;
+}
+async function movePartialReadyItems(orderId,nextStage){
+  if(!auth?.currentUser||auth.currentUser.email!=="jayvik.india@gmail.com"){alert("Admin login required.");return;}
+  const order=orders.find(o=>String(o.id)===String(orderId));
+  if(!order||order.status!=="partial"){alert("Partial order not found.");return;}
+  const current=order.readyStage||"ready";
+  if(partialReadyNextStage(current)!==nextStage){alert("Please move Ready items step by step.");return;}
+  try{
+    order.readyStage=nextStage;
+    order.readyStageUpdatedAt=new Date().toISOString();
+    if(nextStage==="dispatched")order.readyBatchDispatchedAt=new Date().toISOString();
+    order.updatedAt=new Date().toISOString();
+    await db.ref().update({
+      ["/orders/"+String(order.id)]:order,
+      ["/store/public/orderStatus/"+String(order.id)]:publicOrderStatusPayload(order)
+    });
+    localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+    renderOrders();
+    alert("Ready items moved to "+partialReadyStageLabel(nextStage)+".");
+  }catch(err){
+    console.error(err);
+    alert("Could not update Ready items. "+(err?.message||""));
+  }
+}
+
 
 async function refreshPartialOrderAvailability(orderId){
 
