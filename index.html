@@ -4839,15 +4839,25 @@ function getJayvikInvoiceNumber(orderOrId){
   return "JY-INV-"+(id||Date.now());
 }
 
+function invoiceReadyOnly(order){
+  if(!order)return null;
+  if(order.status==="partial" || Array.isArray(order.fulfillment)){
+    const ready=getReadyInvoiceOrder(order);
+    return ready;
+  }
+  return order;
+}
+
+
 function getCustomerInvoiceOrder(orderId){
   const id=String(orderId||"");
   const live=(orders||[]).find(order=>String(order?.id||"")===id);
   if(live && Number(live.total||0)>0){
     const full={...live,invoiceNumber:live.invoiceNumber||getJayvikInvoiceNumber(live)};
     if(live.status==="partial" || Array.isArray(live.fulfillment)){
-      return getReadyInvoiceOrder(full);
+      return invoiceReadyOnly(full);
     }
-    return full;
+    return invoiceReadyOnly(full);
   }
 
   const allHistory=getCustomerOrderHistoryLocal();
@@ -8709,6 +8719,39 @@ function renderDispatchedOrdersFolder(){
 }
 
 
+function downloadAdminReadyItemsInvoice(orderId){
+  const order=orders.find(o=>String(o.id)===String(orderId));
+  if(!order){
+    alert("Order not found.");
+    return;
+  }
+
+  const readyOrder=getReadyInvoiceOrder(order);
+
+  if(!readyOrder || !(readyOrder.items||[]).length || Number(readyOrder.total||0)<=0){
+    alert("No ready items are available for invoice yet.");
+    return;
+  }
+
+  /*
+    Store a temporary ready-only invoice copy locally so the existing invoice
+    generator receives only Ready quantities and the QR gets the same amount.
+  */
+  const originalIndex=orders.findIndex(o=>String(o.id)===String(orderId));
+  const original=orders[originalIndex];
+
+  orders[originalIndex]=readyOrder;
+
+  try{
+    downloadCustomerInvoicePdf(orderId);
+  }finally{
+    setTimeout(()=>{
+      orders[originalIndex]=original;
+    },1500);
+  }
+}
+
+
 function partialOrderPendingItemsHtml(order){
   const fulfillment=Array.isArray(order?.fulfillment)
     ? order.fulfillment
@@ -8845,7 +8888,7 @@ function buildOrderCard(order){
       <button
         type="button"
         class="btn btn-light"
-        onclick="downloadCustomerInvoicePdf('${escapeAttr(order.id)}')"
+        onclick="downloadAdminReadyItemsInvoice('${escapeAttr(order.id)}')"
       >
         🧾 Ready Items Invoice
       </button>
@@ -9036,7 +9079,14 @@ function buildOrderCard(order){
 
     <div class="order-items">
       ${itemHtml}
-        ${order.status==="partial" ? partialOrderPendingItemsHtml(order) : ""}
+        ${order.status==="partial" ? `
+          <div style="margin-top:12px;padding:10px;border-radius:9px;background:#eef8ef">
+            <strong>🧾 Ready Items Invoice Amount:</strong>
+            ₹${Number(getReadyInvoiceOrder(order)?.total||0).toLocaleString("en-IN")}
+            <div class="small">Pending items are excluded from this invoice and payment QR.</div>
+          </div>
+          ${partialOrderPendingItemsHtml(order)}
+        ` : ""}
 ${paymentSummary}
     </div>
 
