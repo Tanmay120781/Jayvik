@@ -980,10 +980,84 @@ footer{
 .order-status-step.current{background:#edf6ed;border-color:var(--green);color:var(--dark);font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.05)}
 .order-status-step.done{background:#f1f8f1;color:var(--green);font-weight:700}
 .offer-admin-preview{width:240px;height:170px;object-fit:contain;background:#fff;border:1px solid #e4ebe4;border-radius:12px;padding:8px;display:none;margin:12px 0}
+
+/* ===== Jayvik custom notifications ===== */
+#jayvikNoticeOverlay{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(0,0,0,.28);
+  z-index:999999;
+}
+#jayvikNoticeOverlay.show{display:flex}
+.jayvik-notice-box{
+  width:min(420px,100%);
+  background:#fff;
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 20px 60px rgba(0,0,0,.22);
+  border:1px solid #dfe9df;
+}
+.jayvik-notice-title{
+  color:var(--dark,#17351d);
+  font-size:18px;
+  font-weight:900;
+  margin-bottom:10px;
+}
+.jayvik-notice-message{
+  white-space:pre-line;
+  line-height:1.5;
+  color:#273227;
+}
+.jayvik-notice-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:18px;
+}
+
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
+
+/* ===== Jayvik branded replacement for browser alert() =====
+   Removes "<domain> says" from customer/admin informational popups.
+*/
+window.jayvikNativeAlert = window.alert.bind(window);
+
+window.alert = function(message){
+  const overlay=document.getElementById("jayvikNoticeOverlay");
+  const messageEl=document.getElementById("jayvikNoticeMessage");
+  const ok=document.getElementById("jayvikNoticeOk");
+
+  /* Very early calls before page HTML is ready fall back safely. */
+  if(!overlay || !messageEl || !ok){
+    window.jayvikNativeAlert(String(message ?? ""));
+    return;
+  }
+
+  messageEl.textContent=String(message ?? "");
+  overlay.classList.add("show");
+  overlay.setAttribute("aria-hidden","false");
+
+  const close=()=>{
+    overlay.classList.remove("show");
+    overlay.setAttribute("aria-hidden","true");
+  };
+
+  ok.onclick=close;
+  overlay.onclick=(event)=>{
+    if(event.target===overlay)close();
+  };
+
+  setTimeout(()=>ok.focus(),0);
+};
+
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -14279,6 +14353,17 @@ if(document.readyState==="loading"){
 }
 
 </script>
+
+
+<div id="jayvikNoticeOverlay" aria-hidden="true">
+  <div class="jayvik-notice-box" role="dialog" aria-modal="true" aria-labelledby="jayvikNoticeTitle">
+    <div id="jayvikNoticeTitle" class="jayvik-notice-title">Jayvik</div>
+    <div id="jayvikNoticeMessage" class="jayvik-notice-message"></div>
+    <div class="jayvik-notice-actions">
+      <button id="jayvikNoticeOk" type="button" class="btn btn-green">OK</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
