@@ -8724,6 +8724,26 @@ async function checkOrderInventory(orderId){
   }
 }
 
+function orderMatchesAdminStage(order,stage){
+  const target=String(stage||"").toLowerCase();
+
+  if(order?.status==="partial"){
+    if(target==="partial")return true;
+
+    const readyQty=(Array.isArray(order.fulfillment)?order.fulfillment:[])
+      .reduce((sum,item)=>sum+Number(item.readyQty||0),0);
+
+    if(readyQty>0){
+      return String(order.readyStage||"ready").toLowerCase()===target;
+    }
+
+    return false;
+  }
+
+  return String(order?.status||"").toLowerCase()===target;
+}
+
+
 async function renderOrders(refreshInventory=true){
 
   if(refreshInventory){
@@ -8789,7 +8809,7 @@ async function renderOrders(refreshInventory=true){
       const list=
         orders.filter(
           o=>
-            o.status===col.key &&
+            orderMatchesAdminStage(o,col.key) &&
             (
               orderFilter==="all" ||
               orderFilter===col.key
@@ -9806,9 +9826,9 @@ function filterOrders(
 function updateOrderStats(){
 
   const count=
-    s=>
+    stage=>
       orders.filter(
-        o=>o.status===s
+        o=>orderMatchesAdminStage(o,stage)
       ).length;
 
   const totalStock=
