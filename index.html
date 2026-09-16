@@ -7420,6 +7420,28 @@ function formatProductAvailabilityDate(value){
   );
 }
 
+function unavailableCanOrderHtml(product,pack){
+  if(!pack)return "";
+  if(getPackStock(pack)>0)return "";
+  return `
+    <div
+      class="small"
+      style="
+        margin:6px 0 9px;
+        padding:7px 9px;
+        border-radius:8px;
+        background:#fff4e5;
+        color:#7a4d00;
+        font-weight:750
+      "
+    >
+      🕒 Currently unavailable — you can still add this item to your cart.
+      It will be placed under Pending Items / Partial Order.
+    </div>
+  `;
+}
+
+
 function productAvailabilityNoteHtml(product){
   if(!product?.availabilityNoteEnabled)return "";
 
@@ -7543,7 +7565,9 @@ function renderProducts(){
 
         ${productAvailabilityNoteHtml(product)}
 
-        <button
+                ${unavailableCanOrderHtml(product,pack)}
+
+<button
           class="add-btn"
           onclick="addToCart(${product.id})"
         >
