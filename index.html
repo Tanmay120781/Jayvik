@@ -9696,13 +9696,15 @@ async function movePartialReadyItems(orderId,nextStage){
     return;
   }
 
-  const order=orders.find(o=>String(o.id)===String(orderId));
+  const index=orders.findIndex(o=>String(o.id)===String(orderId));
+  const order=index>=0 ? orders[index] : null;
+
   if(!order || order.status!=="partial"){
     alert("Partial order not found.");
     return;
   }
 
-  const currentStage=order.readyStage||"ready";
+  const currentStage=String(order.readyStage||"ready").toLowerCase();
   const expectedStage=partialReadyNextStage(currentStage);
 
   if(nextStage!==expectedStage){
@@ -9710,61 +9712,65 @@ async function movePartialReadyItems(orderId,nextStage){
     return;
   }
 
-  const oldStage=order.readyStage||"ready";
-  const oldUpdatedAt=order.updatedAt||"";
-  const oldReadyUpdatedAt=order.readyStageUpdatedAt||"";
-
   try{
     const now=new Date().toISOString();
 
-    /*
-      Partial Order remains "partial".
-      Only the available batch moves through its own workflow.
-      The normal whole-order stock gate must NOT run here because it sees
-      the pending item and would incorrectly block Packing -> Packed.
-    */
-    order.readyStage=nextStage;
-    order.readyStageUpdatedAt=now;
-    order.updatedAt=now;
+    const updatedOrder={
+      ...order,
+      readyStage:nextStage,
+      readyStageUpdatedAt:now,
+      updatedAt:now
+    };
 
-    if(nextStage==="dispatched"){
-      order.readyBatchDispatchedAt=now;
+    /*
+      Save the COMPLETE order record.
+      This is safer for the existing Firebase order validation and preserves
+      all required children such as id, customer, items, total, status and
+      stockDeducted.
+    */
+    await db.ref("orders/"+String(order.id)).set(updatedOrder);
+
+    /*
+      Verify Firebase actually stored the new Ready-items stage before changing
+      the Admin screen.
+    */
+    const verifySnap=await db.ref("orders/"+String(order.id)).once("value");
+    const saved=verifySnap.val();
+
+    if(!saved || String(saved.readyStage||"").toLowerCase()!==String(nextStage).toLowerCase()){
+      throw new Error("Firebase did not confirm the new Ready-items stage.");
     }
 
-    await db.ref("orders/"+String(order.id)).update({
-      readyStage:order.readyStage,
-      readyStageUpdatedAt:order.readyStageUpdatedAt,
-      readyBatchDispatchedAt:order.readyBatchDispatchedAt||null,
-      updatedAt:order.updatedAt
-    });
+    orders[index]=saved;
+    localStorage.setItem("jayvik_orders",JSON.stringify(orders));
 
+    /*
+      Customer mirror is secondary. A mirror problem must not undo the Admin
+      Ready-items workflow.
+    */
     try{
       await db.ref("store/public/orderStatus/"+String(order.id))
-        .set(publicOrderStatusPayload(order));
+        .set(publicOrderStatusPayload(saved));
     }catch(mirrorErr){
-      console.error("Customer partial-order status mirror failed:",mirrorErr);
+      console.error("Customer status mirror update failed:",mirrorErr);
     }
 
-    localStorage.setItem("jayvik_orders",JSON.stringify(orders));
     renderOrders();
+    updateOrderStats();
 
     alert(
       nextStage==="packing"
         ? "Ready items moved to Packing."
         : nextStage==="packed"
         ? "Ready items marked Packed."
-        : "Ready items dispatched."
+        : "Ready items moved to "+partialReadyStageLabel(nextStage)+"."
     );
 
   }catch(err){
-    order.readyStage=oldStage;
-    order.readyStageUpdatedAt=oldReadyUpdatedAt;
-    order.updatedAt=oldUpdatedAt;
-
-    console.error("Partial Ready-items stage update failed:",err);
+    console.error("Ready-items stage save failed:",err);
     alert(
-      "Could not move Ready items to "+partialReadyStageLabel(nextStage)+
-      ". "+(err?.message||"Please try again.")
+      "Ready-items stage could not be updated.\n\nDetails: "+
+      (err?.message||String(err))
     );
   }
 }
