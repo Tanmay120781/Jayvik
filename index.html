@@ -8943,13 +8943,60 @@ function buildOrderCard(order){
 
 
   if(order.status==="partial"){
+    const readyStage=order.readyStage||"ready";
+    const nextReadyStage=partialReadyNextStage(readyStage);
+
     actions=`
+      <div
+        style="
+          width:100%;
+          padding:12px;
+          border:2px solid #79b982;
+          border-radius:10px;
+          background:#f1faf2;
+          margin-bottom:8px
+        "
+      >
+        <div style="font-weight:900;margin-bottom:8px">
+          🟢 Ready Items — ${partialReadyStageLabel(readyStage)}
+        </div>
+
+        ${
+          nextReadyStage
+          ? `
+            <button
+              type="button"
+              class="btn btn-green"
+              onclick="${
+                nextReadyStage==="dispatched"
+                ?`dispatchPartialReadyItems('${escapeAttr(order.id)}')`
+                :`movePartialReadyItems('${escapeAttr(order.id)}','${nextReadyStage}')`
+              }"
+            >
+              ${
+                nextReadyStage==="packing"
+                ?"🟡 Move Ready Items to Packing"
+                :nextReadyStage==="packed"
+                ?"📦 Mark Ready Items Packed"
+                :"🚚 Dispatch Ready Items"
+              }
+            </button>
+          `
+          : `
+            <div style="font-weight:800">
+              🚚 Ready items have been dispatched.
+            </div>
+          `
+        }
+      </div>
+
       <button
-        class="btn btn-green"
+        class="btn btn-light"
         onclick="refreshPartialOrderAvailability('${escapeAttr(order.id)}')"
       >
         ↻ Recheck Pending Items
       </button>
+
       <button
         type="button"
         class="btn btn-light"
@@ -9469,6 +9516,65 @@ function partialReadyWorkflowHtml(order){
       ${next?`<button type="button" class="btn btn-green" style="margin-top:10px" onclick="movePartialReadyItems('${escapeAttr(order.id)}','${next}')">Move Ready Items → ${partialReadyStageLabel(next)}</button>`:`<div style="margin-top:9px;font-weight:800">🚚 Ready items dispatched</div>`}
     </div>`;
 }
+async function dispatchPartialReadyItems(orderId){
+  if(!auth?.currentUser || auth.currentUser.email!=="jayvik.india@gmail.com"){
+    alert("Admin login required.");
+    return;
+  }
+
+  const order=orders.find(o=>String(o.id)===String(orderId));
+  if(!order || order.status!=="partial"){
+    alert("Partial order not found.");
+    return;
+  }
+
+  if((order.readyStage||"ready")!=="packed"){
+    alert("Ready items must be Packed before Dispatch.");
+    return;
+  }
+
+  try{
+    const now=new Date().toISOString();
+
+    order.readyStage="dispatched";
+    order.readyStageUpdatedAt=now;
+    order.readyBatchDispatchedAt=now;
+    order.updatedAt=now;
+
+    /*
+      Save the Admin order first. Then update the public customer mirror.
+      This prevents the Ready batch from being stuck if the mirror update
+      encounters a transient problem.
+    */
+    await db.ref("orders/"+String(order.id)).set(order);
+
+    try{
+      await db.ref(
+        "store/public/orderStatus/"+String(order.id)
+      ).set(publicOrderStatusPayload(order));
+    }catch(mirrorErr){
+      console.error("Customer status mirror update failed:",mirrorErr);
+    }
+
+    localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+
+    renderOrders();
+
+    alert(
+      "🚚 Ready items dispatched successfully. "+
+      "Pending items remain under this Partial Order."
+    );
+
+  }catch(err){
+    console.error("Partial ready dispatch failed:",err);
+    alert(
+      "Could not dispatch Ready items. "+
+      (err?.message||"Please try again.")
+    );
+  }
+}
+
+
 async function movePartialReadyItems(orderId,nextStage){
   if(!auth?.currentUser||auth.currentUser.email!=="jayvik.india@gmail.com"){alert("Admin login required.");return;}
   const order=orders.find(o=>String(o.id)===String(orderId));
