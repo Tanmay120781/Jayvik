@@ -8387,8 +8387,12 @@ Order ID: ${order.id}`;
     );
 
     renderCart();
-    renderLiveOrderStatus(initialStatus);
-    showCustomerPartialOrderPlacedNotice(order);
+    try{
+      renderLiveOrderStatus(initialStatus);
+      showCustomerPartialOrderPlacedNotice(order);
+    }catch(uiErr){
+      console.error("Customer status display error after order save:",uiErr);
+    }
     startCustomerOrderStatusListener();
 
     showSaveNotification(
@@ -14402,6 +14406,77 @@ if(document.readyState==="loading"){
     </div>
   </div>
 </div>
+
+
+<script>
+(function(){
+  function getParts(){
+    return {
+      overlay:document.getElementById("jayvikNoticeOverlay"),
+      message:document.getElementById("jayvikNoticeMessage"),
+      title:document.getElementById("jayvikNoticeTitle"),
+      ok:document.getElementById("jayvikNoticeOk"),
+      cancel:document.getElementById("jayvikNoticeCancel")
+    };
+  }
+
+  window.jayvikDialog=function(message,options={}){
+    const p=getParts();
+    if(!p.overlay||!p.message||!p.title||!p.ok){
+      console.log("Jayvik:",message);
+      return Promise.resolve(true);
+    }
+
+    const isConfirm=options.confirm===true;
+    p.title.textContent=options.title||"Jayvik";
+    p.message.textContent=String(message??"");
+    p.ok.textContent=isConfirm?(options.okText||"Confirm"):"OK";
+
+    if(p.cancel){
+      p.cancel.textContent=options.cancelText||"Cancel";
+      p.cancel.style.display=isConfirm?"":"none";
+    }
+
+    p.overlay.classList.add("show");
+    p.overlay.style.display="flex";
+    p.overlay.setAttribute("aria-hidden","false");
+
+    return new Promise(resolve=>{
+      let done=false;
+      const close=result=>{
+        if(done)return;
+        done=true;
+        p.overlay.classList.remove("show");
+        p.overlay.style.display="none";
+        p.overlay.setAttribute("aria-hidden","true");
+        p.ok.onclick=null;
+        if(p.cancel)p.cancel.onclick=null;
+        p.overlay.onclick=null;
+        resolve(result);
+      };
+      p.ok.onclick=()=>close(true);
+      if(p.cancel)p.cancel.onclick=()=>close(false);
+      p.overlay.onclick=e=>{
+        if(e.target===p.overlay&&!isConfirm)close(true);
+      };
+      setTimeout(()=>p.ok.focus(),0);
+    });
+  };
+
+  /* Definitive override: never show browser/domain "says" dialogs. */
+  window.alert=function(message){
+    window.jayvikDialog(message,{title:"Jayvik"});
+  };
+
+  window.jayvikConfirm=function(message,options={}){
+    return window.jayvikDialog(message,{
+      ...options,
+      confirm:true,
+      title:options.title||"Jayvik"
+    });
+  };
+})();
+</script>
 
 </body>
 </html>
