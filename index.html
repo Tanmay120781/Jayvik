@@ -8981,163 +8981,288 @@ function isOrderInDispatchedFolder(order){
   );
 }
 
-function renderDispatchedOrdersFolder(){
+async function renderDispatchedOrdersFolder(){
   const board=document.getElementById("dispatchedOrdersBoard");
   if(!board)return;
 
-  const historyOrders=(orders||[])
-    .filter(isOrderInDispatchedFolder)
-    .sort((a,b)=>new Date(b.archivedAt||b.updatedAt||0)-new Date(a.archivedAt||a.updatedAt||0));
+  board.innerHTML=`<div class="notice">Loading dispatched orders…</div>`;
 
-  if(!window.jayvikSelectedDispatchedOrders){
-    window.jayvikSelectedDispatchedOrders=new Set();
-  }
+  try{
+    /*
+      IMPORTANT:
+      This folder now reads /orders DIRECTLY from Firebase.
+      It no longer depends on the Order Management screen's local `orders`
+      array, filter, listener timing, or browser cache.
+    */
+    let sourceOrders=[];
 
-  /* Remove selections for records that are no longer in this folder. */
-  const validIds=new Set(historyOrders.map(o=>String(o.id)));
-  [...window.jayvikSelectedDispatchedOrders].forEach(id=>{
-    if(!validIds.has(String(id))){
-      window.jayvikSelectedDispatchedOrders.delete(String(id));
+    if(firebaseReady && db && auth?.currentUser){
+      const snap=await db.ref("orders").once("value");
+      sourceOrders=normalizeOrdersSnapshot(snap.val())
+        .map(order=>({
+          ...order,
+          id:String(order.id||"")
+        }));
+    }else{
+      sourceOrders=Array.isArray(orders)?orders:[];
     }
-  });
 
-  const selectedCount=window.jayvikSelectedDispatchedOrders.size;
-  const allSelected=
-    historyOrders.length>0 &&
-    historyOrders.every(o=>window.jayvikSelectedDispatchedOrders.has(String(o.id)));
+    const dispatchedOrders=sourceOrders
+      .filter(isOrderInDispatchedFolder)
+      .sort(
+        (a,b)=>
+          new Date(
+            b.dispatchedAt||
+            b.readyDispatchedAt||
+            b.archivedAt||
+            b.updatedAt||
+            b.createdAt||0
+          )-
+          new Date(
+            a.dispatchedAt||
+            a.readyDispatchedAt||
+            a.archivedAt||
+            a.updatedAt||
+            a.createdAt||0
+          )
+      );
 
-  if(!historyOrders.length){
+    if(!window.jayvikSelectedDispatchedOrders){
+      window.jayvikSelectedDispatchedOrders=new Set();
+    }
+
+    const validIds=new Set(
+      dispatchedOrders.map(order=>String(order.id))
+    );
+
+    [...window.jayvikSelectedDispatchedOrders].forEach(id=>{
+      if(!validIds.has(String(id))){
+        window.jayvikSelectedDispatchedOrders.delete(String(id));
+      }
+    });
+
+    const selectedCount=
+      window.jayvikSelectedDispatchedOrders.size;
+
+    const allSelected=
+      dispatchedOrders.length>0 &&
+      dispatchedOrders.every(order=>
+        window.jayvikSelectedDispatchedOrders.has(String(order.id))
+      );
+
+    if(!dispatchedOrders.length){
+      board.innerHTML=`
+        <div class="empty-state">
+          No dispatched orders found in Firebase.
+        </div>
+      `;
+      return;
+    }
+
+    const rows=dispatchedOrders.map(order=>{
+      const customer=order.customer||{};
+      const status=String(order.status||"").toLowerCase();
+      const paymentReceived=
+        String(order.paymentStatus||"pending").toLowerCase()==="received";
+
+      let folderItems=[];
+      let displayedAmount=Number(order.total||0);
+
+      if(status==="partial" && Array.isArray(order.fulfillment)){
+        folderItems=order.fulfillment
+          .filter(item=>Number(item.readyQty||0)>0)
+          .map(item=>({
+            ...item,
+            qty:Number(item.readyQty||0)
+          }));
+
+        /*
+          Calculate the dispatched/ready portion without calling another
+          invoice renderer. This prevents one helper error from blanking
+          the entire Dispatched Orders table.
+        */
+        displayedAmount=folderItems.reduce((sum,item)=>{
+          const qty=Number(item.qty||0);
+          const unitPrice=Number(
+            item.unitPrice ??
+            item.price ??
+            item.discountedPrice ??
+            0
+          );
+          return sum+(qty*unitPrice);
+        },0);
+
+        if(!Number.isFinite(displayedAmount) || displayedAmount<=0){
+          displayedAmount=Number(order.readyInvoiceTotal||order.readyTotal||0);
+        }
+      }else{
+        folderItems=Array.isArray(order.items)?order.items:[];
+      }
+
+      const items=folderItems.map(item=>{
+        const name=escapeHtml(
+          String(item.name||item.productName||"Item")
+        );
+        const size=escapeHtml(
+          String(item.size||item.pack||"")
+        );
+        const qty=Number(
+          item.qty||item.quantity||item.readyQty||0
+        );
+
+        return `${name}${size?` (${size})`:""} × ${qty}`;
+      }).join("<br>");
+
+      const checked=
+        window.jayvikSelectedDispatchedOrders.has(String(order.id))
+          ?"checked":"";
+
+      const dispatchedDate=
+        order.dispatchedAt||
+        order.readyDispatchedAt||
+        order.archivedAt||
+        order.updatedAt||
+        order.createdAt;
+
+      return `
+        <tr>
+          <td style="width:48px;text-align:center">
+            <input
+              type="checkbox"
+              class="jayvik-dispatched-row-check"
+              data-order-id="${escapeAttr(String(order.id))}"
+              ${checked}
+              onchange="toggleDispatchedFolderOrderSelection('${escapeAttr(String(order.id))}',this.checked)"
+            >
+          </td>
+
+          <td>
+            <strong>${escapeHtml(String(order.id||""))}</strong>
+          </td>
+
+          <td>
+            ${escapeHtml(formatAdminOrderDate(dispatchedDate))}
+          </td>
+
+          <td>${escapeHtml(String(customer.name||""))}</td>
+          <td>${escapeHtml(String(customer.phone||""))}</td>
+
+          <td>${items||"-"}</td>
+
+          <td>
+            ₹${Number(displayedAmount||0).toFixed(2)}
+          </td>
+
+          <td>
+            ${
+              paymentReceived
+                ? "<strong>💰 Received</strong>"
+                : "<strong>⏳ Pending</strong>"
+            }
+          </td>
+
+          <td>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              ${
+                !paymentReceived
+                  ? `<button
+                       class="btn btn-green"
+                       onclick="markPaymentReceived('${escapeAttr(String(order.id))}')"
+                     >💰 Payment Received</button>`
+                  : ""
+              }
+
+              <button
+                class="btn btn-light"
+                onclick="downloadCustomerInvoicePdf('${escapeAttr(String(order.id))}')"
+              >🧾 Invoice</button>
+
+              <button
+                class="btn btn-danger"
+                ${paymentReceived?"":"disabled"}
+                onclick="deletePaidDispatchedOrder('${escapeAttr(String(order.id))}')"
+              >🗑 Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
     board.innerHTML=`
-      <div class="empty-state">
-        No dispatched orders yet.
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          gap:10px;
+          flex-wrap:wrap;
+          margin-bottom:12px
+        "
+      >
+        <strong>
+          Dispatched Orders: ${dispatchedOrders.length}
+        </strong>
+
+        <strong>
+          Selected:
+          <span id="dispatchedFolderSelectedCount">
+            ${selectedCount}
+          </span>
+        </strong>
+
+        <button
+          type="button"
+          class="btn btn-light"
+          onclick="clearDispatchedFolderSelection()"
+          ${selectedCount?"":"disabled"}
+        >Untick All</button>
+
+        <button
+          type="button"
+          class="btn btn-danger"
+          onclick="deleteSelectedDispatchedFolderOrders()"
+          ${selectedCount?"":"disabled"}
+        >🗑 Delete Selected</button>
+      </div>
+
+      <div style="overflow-x:auto">
+        <table class="consumption-table" style="width:100%">
+          <thead>
+            <tr>
+              <th style="width:48px;text-align:center">
+                <input
+                  type="checkbox"
+                  ${allSelected?"checked":""}
+                  onchange="toggleAllDispatchedFolderOrders(this.checked)"
+                >
+              </th>
+              <th>Order ID</th>
+              <th>Dispatched At</th>
+              <th>Customer</th>
+              <th>Mobile</th>
+              <th>Products</th>
+              <th>Amount</th>
+              <th>Payment</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
       </div>
     `;
-    return;
-  }
 
-  const rows=historyOrders.map(order=>{
-    const customer=order.customer||{};
-    const paymentReceived=
-      String(order.paymentStatus||"pending").toLowerCase()==="received";
+  }catch(err){
+    console.error("Dispatched Orders direct Firebase load failed:",err);
 
-    const folderItems=
-      String(order.status||"").toLowerCase()==="partial" &&
-      Array.isArray(order.fulfillment)
-        ? order.fulfillment
-            .filter(item=>Number(item.readyQty||0)>0)
-            .map(item=>({
-              ...item,
-              qty:Number(item.readyQty||0)
-            }))
-        : (order.items||[]);
-
-    const items=folderItems.map(item=>{
-      const name=escapeHtml(String(item.name||item.productName||"Item"));
-      const size=escapeHtml(String(item.size||item.pack||""));
-      const qty=Number(item.qty||item.quantity||item.readyQty||0);
-      return `${name}${size?` (${size})`:""} × ${qty}`;
-    }).join("<br>");
-
-    const checked=
-      window.jayvikSelectedDispatchedOrders.has(String(order.id))
-        ?"checked":"";
-
-    return `
-      <tr>
-        <td style="width:48px;text-align:center">
-          <input
-            type="checkbox"
-            class="jayvik-dispatched-row-check"
-            data-order-id="${escapeAttr(String(order.id))}"
-            ${checked}
-            onchange="toggleDispatchedFolderOrderSelection('${escapeAttr(String(order.id))}',this.checked)"
-            aria-label="Select dispatched order ${escapeAttr(String(order.id))}"
-          >
-        </td>
-        <td><strong>${escapeHtml(String(order.id||""))}</strong></td>
-        <td>${escapeHtml(formatAdminOrderDate(order.archivedAt||order.dispatchedAt||order.updatedAt||order.createdAt))}</td>
-        <td>${escapeHtml(String(customer.name||""))}</td>
-        <td>${escapeHtml(String(customer.phone||""))}</td>
-        <td>${items||"-"}</td>
-        <td>₹${
-          Number(
-            String(order.status||"").toLowerCase()==="partial"
-              ? (getReadyInvoiceOrder(order)?.total||0)
-              : (order.total||0)
-          ).toFixed(2)
-        }</td>
-        <td>
-          ${
-            paymentReceived
-              ? `<strong>💰 Received</strong>`
-              : `<strong>⏳ Pending</strong>`
-          }
-        </td>
-        <td>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            ${
-              !paymentReceived
-                ? `<button class="btn btn-green" onclick="markPaymentReceived('${escapeAttr(String(order.id))}')">💰 Payment Received</button>`
-                : ""
-            }
-            <button
-              class="btn btn-light"
-              onclick="downloadCustomerInvoicePdf('${escapeAttr(String(order.id))}')"
-            >🧾 Invoice</button>
-            <button
-              class="btn btn-danger"
-              ${paymentReceived?"":"disabled"}
-              onclick="deletePaidDispatchedOrder('${escapeAttr(String(order.id))}')"
-            >🗑 Delete</button>
-          </div>
-        </td>
-      </tr>
+    board.innerHTML=`
+      <div class="notice" style="border-color:#c62828">
+        <strong>Could not load Dispatched Orders.</strong><br>
+        ${escapeHtml(String(err?.message||err||"Unknown Firebase error"))}
+      </div>
     `;
-  }).join("");
-
-  board.innerHTML=`
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
-      <strong>Selected: <span id="dispatchedFolderSelectedCount">${selectedCount}</span></strong>
-      <button
-        type="button"
-        class="btn btn-light"
-        onclick="clearDispatchedFolderSelection()"
-        ${selectedCount?"":"disabled"}
-      >Untick All</button>
-      <button
-        type="button"
-        class="btn btn-danger"
-        onclick="deleteSelectedDispatchedFolderOrders()"
-        ${selectedCount?"":"disabled"}
-      >🗑 Delete Selected</button>
-    </div>
-
-    <div style="overflow-x:auto">
-      <table class="consumption-table" style="width:100%">
-        <thead>
-          <tr>
-            <th style="width:48px;text-align:center">
-              <input
-                type="checkbox"
-                ${allSelected?"checked":""}
-                onchange="toggleAllDispatchedFolderOrders(this.checked)"
-                aria-label="Select or untick all dispatched orders"
-              >
-            </th>
-            <th>Order ID</th>
-            <th>Dispatched / Saved</th>
-            <th>Customer</th>
-            <th>Mobile</th>
-            <th>Products</th>
-            <th>Amount</th>
-            <th>Payment</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-  `;
+  }
 }
 
 function toggleDispatchedFolderOrderSelection(orderId,checked){
@@ -9150,32 +9275,49 @@ function toggleDispatchedFolderOrderSelection(orderId,checked){
   }else{
     window.jayvikSelectedDispatchedOrders.delete(id);
   }
-  renderDispatchedOrdersFolder();
+  void renderDispatchedOrdersFolder();
 }
 
-function toggleAllDispatchedFolderOrders(checked){
+async function toggleAllDispatchedFolderOrders(checked){
   if(!window.jayvikSelectedDispatchedOrders){
     window.jayvikSelectedDispatchedOrders=new Set();
   }
 
-  const historyOrders=(orders||[]).filter(isOrderInDispatchedFolder);
-
-  if(checked){
-    historyOrders.forEach(order=>
-      window.jayvikSelectedDispatchedOrders.add(String(order.id))
-    );
-  }else{
+  if(!checked){
     window.jayvikSelectedDispatchedOrders.clear();
+    await renderDispatchedOrdersFolder();
+    return;
   }
 
-  renderDispatchedOrdersFolder();
+  try{
+    let sourceOrders=[];
+
+    if(firebaseReady && db && auth?.currentUser){
+      const snap=await db.ref("orders").once("value");
+      sourceOrders=normalizeOrdersSnapshot(snap.val());
+    }else{
+      sourceOrders=Array.isArray(orders)?orders:[];
+    }
+
+    sourceOrders
+      .filter(isOrderInDispatchedFolder)
+      .forEach(order=>
+        window.jayvikSelectedDispatchedOrders.add(String(order.id))
+      );
+
+    await renderDispatchedOrdersFolder();
+
+  }catch(err){
+    console.error("Select all dispatched orders failed:",err);
+    alert("Could not select dispatched orders.");
+  }
 }
 
 function clearDispatchedFolderSelection(){
   if(window.jayvikSelectedDispatchedOrders){
     window.jayvikSelectedDispatchedOrders.clear();
   }
-  renderDispatchedOrdersFolder();
+  void renderDispatchedOrdersFolder();
 }
 
 async function deleteSelectedDispatchedFolderOrders(){
