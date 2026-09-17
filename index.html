@@ -3241,60 +3241,7 @@ db.ref("store/public").on("value",snap=>{
 
         startJayvikAdminOrdersListener();
 
-        if(window.jayvikOrdersRef)
-          window.jayvikOrdersRef.off("value");
 
-        window.jayvikOrdersRef=
-          db.ref("orders");
-
-        window.jayvikOrdersRef.on(
-          "value",
-          snap=>{
-
-            const data=
-              snap.val() || {};
-
-            orders=
-              Object.values(data)
-                .filter(Boolean)
-                .sort(
-                  (a,b)=>
-                    String(b.createdAt||"")
-                    .localeCompare(
-                      String(a.createdAt||"")
-                    )
-                );
-
-            localStorage.setItem(
-              "jayvik_orders",
-              JSON.stringify(orders)
-            );
-
-            if(
-              document.getElementById("adminOverlay")
-                ?.style.display!=="none"
-            ){
-
-              renderOrders();
-              updateOrderStats();
-
-            }
-
-          },
-          err=>{
-
-            console.error(
-              "Firebase orders listener failed:",
-              err
-            );
-
-          }
-        );
-
-      }else if(window.jayvikOrdersRef){
-
-        window.jayvikOrdersRef.off("value");
-        window.jayvikOrdersRef=null;
 
       }
 
@@ -9007,7 +8954,7 @@ function orderMatchesAdminStage(order,stage){
 
   if(stage==="dispatched"){
     return status==="dispatched" ||
-      (status==="partial" && readyStage==="dispatched" && readyQty>0);
+      (status==="partial" && readyStage==="dispatched");
   }
 
   return false;
@@ -9787,7 +9734,7 @@ function startJayvikAdminOrdersListener(){
           Always repaint Order Management from the latest Firebase /orders data.
           Do not require inventory refresh for this repaint.
         */
-        renderOrders(false);
+        void renderOrders(false);
 
         if(typeof renderDispatchedOrdersFolder==="function"){
           renderDispatchedOrdersFolder();
@@ -9865,9 +9812,17 @@ async function renderOrders(refreshInventory=true){
     const column=document.createElement("div");
     column.className="order-column";
 
-    const list=orders.filter(
-      order=>orderMatchesAdminStage(order,col.key)
-    );
+    const list=
+      col.key==="dispatched"
+        ? orders.filter(order=>{
+            const status=String(order?.status||"").toLowerCase();
+            const readyStage=String(order?.readyStage||"").toLowerCase();
+            return status==="dispatched" ||
+              (status==="partial" && readyStage==="dispatched");
+          })
+        : orders.filter(
+            order=>orderMatchesAdminStage(order,col.key)
+          );
 
     column.innerHTML=`
       <h4>
@@ -10896,7 +10851,15 @@ async function dispatchPartialReadyItems(orderId){
 
     localStorage.setItem("jayvik_orders",JSON.stringify(orders));
 
-    renderOrders();
+    orderFilter="all";
+    document.querySelectorAll(".order-filter").forEach(btn=>{
+      btn.classList.toggle(
+        "active",
+        String(btn.dataset.filter||"").toLowerCase()==="all"
+      );
+    });
+
+    await renderOrders(false);
 
     alert(
       "🚚 Ready items dispatched successfully. "+
