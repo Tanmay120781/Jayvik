@@ -8034,6 +8034,36 @@ function calculateOrderFulfillment(items){
   });
 }
 
+function getInitialOrderRouting(items){
+  const fulfillment=calculateOrderFulfillment(items||[]);
+  const pendingItemQty=fulfillment.reduce(
+    (sum,x)=>sum+Number(x.pendingQty||0),0
+  );
+  const readyItemQty=fulfillment.reduce(
+    (sum,x)=>sum+Number(x.readyQty||0),0
+  );
+
+  /*
+    IMPORTANT:
+    - No unavailable quantity -> order starts directly in Ready.
+    - Any unavailable quantity -> order appears in Pending Orders.
+    - If some items are available and some unavailable, the order is Partial,
+      with its available portion beginning at Ready.
+  */
+  return {
+    fulfillment,
+    pendingItemQty,
+    readyItemQty,
+    status:
+      pendingItemQty===0
+        ? "ready"
+        : (readyItemQty>0 ? "partial" : "pending"),
+    isPartial:pendingItemQty>0 && readyItemQty>0,
+    readyStage:readyItemQty>0 ? "ready" : ""
+  };
+}
+
+
 function applyOrderFulfillment(order){
   order.fulfillment=calculateOrderFulfillment(order.items);
   const ready=order.fulfillment.reduce((n,x)=>n+Number(x.readyQty||0),0);
@@ -8404,7 +8434,9 @@ async function sendWhatsAppOrder(){
 
     /* Out-of-stock quantities are accepted as pending items. */
 
-    const order={
+    const initialRouting=getInitialOrderRouting(orderItems||cart);
+
+  const order={
       id:"JY"+Date.now(),
       createdAt:new Date().toISOString(),
       customer:{name,phone,address},
@@ -10733,7 +10765,15 @@ async function dispatchPartialReadyItems(orderId){
       This prevents the Ready batch from being stuck if the mirror update
       encounters a transient problem.
     */
-    await db.ref("orders/"+String(order.id)).set(order);
+    const routing=getInitialOrderRouting(order.items||[]);
+      order.fulfillment=routing.fulfillment;
+      order.pendingItemQty=routing.pendingItemQty;
+      order.readyItemQty=routing.readyItemQty;
+      order.status=routing.status;
+      order.isPartial=routing.isPartial;
+      order.readyStage=routing.readyStage;
+
+      await db.ref("orders/"+String(order.id)).set(order);
 
     try{
       await db.ref(
