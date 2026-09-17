@@ -2624,13 +2624,6 @@ window.jayvikConfirm=function(message,options={}){
 
           <button
             class="btn btn-light"
-            onclick="filterOrders('pending',this)"
-          >
-            🔴 Pending
-          </button>
-
-          <button
-            class="btn btn-light"
             onclick="filterOrders('partial',this)"
           >
             🕒 Pending Orders
@@ -9144,6 +9137,96 @@ async function deletePartialReadyDispatchedInvoice(orderId){
 }
 
 
+async function renderOrders(refreshInventory=true){
+
+  if(refreshInventory){
+    try{
+      await refreshAdminInventoryFromFirebase();
+    }catch(err){
+      console.warn("Inventory refresh failed while rendering orders:",err);
+    }
+  }
+
+  if(typeof refreshOrderStatuses==="function"){
+    refreshOrderStatuses();
+  }
+
+  const board=document.getElementById("ordersBoard");
+  if(!board)return;
+
+  /*
+    ONLY these five Admin workflow columns:
+    Pending Orders | Ready | Packing | Packed | Dispatched
+
+    Internal status "partial" is not a separate visible column.
+    Both normal Pending and Partial/out-of-stock orders are combined
+    into the Pending Orders table.
+  */
+  const columns=[
+    {key:"partial",title:"🕒 Pending Orders"},
+    {key:"ready",title:"🟢 Ready"},
+    {key:"packing",title:"🟡 Packing"},
+    {key:"packed",title:"📦 Packed"},
+    {key:"dispatched",title:"🚚 Dispatched"}
+  ];
+
+  board.innerHTML="";
+
+  columns.forEach(col=>{
+
+    /* When a filter is selected, show only that workflow section. */
+    if(orderFilter!=="all" && orderFilter!==col.key){
+      return;
+    }
+
+    const column=document.createElement("div");
+    column.className="order-column";
+
+    const list=orders.filter(
+      order=>orderMatchesAdminStage(order,col.key)
+    );
+
+    column.innerHTML=`
+      <h4>
+        ${col.title}
+        <span class="brand-sub">(${list.length})</span>
+      </h4>
+    `;
+
+    if(col.key==="partial"){
+      /*
+        Pending Orders is TABLE ONLY.
+        It combines:
+        • ordinary status=pending orders
+        • status=partial orders with unavailable quantities
+      */
+      column.style.minWidth="100%";
+      column.appendChild(buildPendingOrdersTable(list));
+    }else if(list.length===0){
+      column.innerHTML+=`
+        <div class="empty" style="padding:18px">
+          No ${col.title.replace(/^[^A-Za-z]+/,"")} orders.
+        </div>
+      `;
+    }else{
+      list.forEach(order=>{
+        if(col.key==="dispatched" && order.status==="partial"){
+          column.appendChild(buildPartialReadyDispatchedCard(order));
+        }else{
+          column.appendChild(buildOrderCard(order));
+        }
+      });
+    }
+
+    board.appendChild(column);
+  });
+
+  if(typeof updateOrderStats==="function"){
+    updateOrderStats();
+  }
+}
+
+
 function buildOrderCard(order){
 
   const card=
@@ -10007,7 +10090,7 @@ function updateOrderStats(){
 
   set(
     "orderStatPending",
-    count("pending")
+    count("partial")
   );
 
   set(
