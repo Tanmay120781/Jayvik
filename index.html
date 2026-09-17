@@ -9655,7 +9655,10 @@ async function moveOrder(orderId,newStatus){
     };
 
     if(next==="dispatched"){
+      updated.status="dispatched";
       updated.dispatchedAt=updated.dispatchedAt||now;
+      updated.updatedAt=now;
+      updated.paymentStatus=updated.paymentStatus||"pending";
     }
 
     /*
@@ -9682,6 +9685,12 @@ async function moveOrder(orderId,newStatus){
     }
 
     await renderOrders(false);
+
+    if(next==="dispatched"){
+      if(typeof renderDispatchedOrdersFolder==="function"){
+        renderDispatchedOrdersFolder();
+      }
+    }
 
     alert(
       next==="ready" ? "Order moved to Ready." :
