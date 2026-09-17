@@ -1019,6 +1019,40 @@ footer{
   margin-top:18px;
 }
 
+
+/* ===== Pending Orders — table only ===== */
+.pending-orders-table-wrap{
+  width:100%;
+  background:#fff;
+  border:1px solid #e0e8e0;
+  border-radius:12px;
+  padding:10px;
+  box-shadow:var(--shadow,0 8px 25px rgba(0,0,0,.08));
+}
+.pending-orders-table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1050px;
+}
+.pending-orders-table th,
+.pending-orders-table td{
+  padding:10px 9px;
+  border-bottom:1px solid #e6ece6;
+  text-align:left;
+  vertical-align:middle;
+  font-size:13px;
+}
+.pending-orders-table th{
+  background:#f3f8f3;
+  color:#17351d;
+  font-weight:900;
+  position:sticky;
+  top:0;
+}
+.pending-orders-table tbody tr:hover{
+  background:#fafdfa;
+}
+
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -2599,7 +2633,7 @@ window.jayvikConfirm=function(message,options={}){
             class="btn btn-light"
             onclick="filterOrders('partial',this)"
           >
-            ⚠️ Partial Orders
+            🕒 Pending Orders
           </button>
 
           <button
@@ -8294,7 +8328,7 @@ async function sendWhatsAppOrder(){
 
     /*
       Split every ordered quantity into Ready and Pending quantities.
-      A partially available order is stored under the Partial Orders status.
+      A partially available order is stored under the Pending Orders status.
     */
     applyOrderFulfillment(order);
 
@@ -8726,137 +8760,35 @@ async function checkOrderInventory(orderId){
 
 function orderMatchesAdminStage(order,stage){
   const target=String(stage||"").toLowerCase();
+  const status=String(order?.status||"").toLowerCase();
 
-  if(order?.status==="partial"){
-    if(target==="partial")return true;
+  /*
+    The first Admin column uses internal key "partial" but is displayed as
+    "Pending Orders". It combines:
+      • normal Pending orders
+      • Partial orders containing out-of-stock/pending quantities.
+  */
+  if(target==="partial"){
+    return status==="pending" || status==="partial";
+  }
 
+  /*
+    A Partial order stays in Pending Orders while pending quantities remain,
+    but its available batch also appears in Ready/Packing/Packed/Dispatched
+    according to readyStage.
+  */
+  if(status==="partial"){
     const readyQty=(Array.isArray(order.fulfillment)?order.fulfillment:[])
       .reduce((sum,item)=>sum+Number(item.readyQty||0),0);
 
     if(readyQty>0){
       return String(order.readyStage||"ready").toLowerCase()===target;
     }
-
     return false;
   }
 
-  return String(order?.status||"").toLowerCase()===target;
+  return status===target;
 }
-
-
-async function renderOrders(refreshInventory=true){
-
-  if(refreshInventory){
-    await refreshAdminInventoryFromFirebase();
-  }
-
-  refreshOrderStatuses();
-
-  const board=
-    document.getElementById(
-      "ordersBoard"
-    );
-
-  if(!board)return;
-
-  const columns=[
-
-    {
-      key:"pending",
-      title:"🔴 Pending for Dispatch"
-    },
-
-    {
-      key:"partial",
-      title:"⚠️ Partial Orders"
-    },
-
-    {
-      key:"ready",
-      title:"🟢 Ready"
-    },
-
-    {
-      key:"packing",
-      title:"🟡 Packing"
-    },
-
-    {
-      key:"packed",
-      title:"📦 Packed"
-    },
-
-    {
-      key:"dispatched",
-      title:"🚚 Dispatched"
-    }
-
-  ];
-
-  board.innerHTML="";
-
-  columns.forEach(
-    col=>{
-
-      const column=
-        document.createElement(
-          "div"
-        );
-
-      column.className=
-        "order-column";
-
-      const list=
-        orders.filter(
-          o=>
-            orderMatchesAdminStage(o,col.key) &&
-            (
-              orderFilter==="all" ||
-              orderFilter===col.key
-            )
-        );
-
-      column.innerHTML=
-        `<h4>
-          ${col.title}
-          <span class="brand-sub">
-            (${list.length})
-          </span>
-        </h4>`;
-
-      if(list.length===0){
-
-        column.innerHTML+=
-          `<div
-            class="empty"
-            style="padding:20px"
-          >
-            No orders
-          </div>`;
-
-      }
-
-      list.forEach(
-        order=>
-          column.appendChild(
-            buildOrderCard(order)
-          )
-      );
-
-      board.appendChild(
-        column
-      );
-
-    }
-  );
-
-  renderDispatchedOrdersFolder();
-  renderInventory();
-  updateOrderStats();
-
-}
-
-
 
 function renderDispatchedOrdersFolder(){
 
@@ -9003,6 +8935,212 @@ function partialOrderPendingItemsHtml(order){
       </div>
     </div>
   `;
+}
+
+
+function buildPendingOrdersTable(partialOrders){
+  const wrap=document.createElement("div");
+  wrap.className="pending-orders-table-wrap";
+
+  const rows=[];
+
+  (partialOrders||[]).forEach(order=>{
+    const fulfillment=Array.isArray(order.fulfillment)
+      ? order.fulfillment
+      : calculateOrderFulfillment(order.items||[]);
+
+    let pending=fulfillment.filter(x=>Number(x.pendingQty||0)>0);
+
+    /* Normal Pending order: show its items in the same Pending Orders table. */
+    if(!pending.length && String(order.status||"").toLowerCase()==="pending"){
+      pending=(order.items||[]).map(item=>({
+        productId:item.productId||"",
+        name:item.name||"Product",
+        size:item.size||"",
+        orderedQty:Number(item.qty||0),
+        readyQty:0,
+        pendingQty:Number(item.qty||0),
+        expectedDate:item.expectedDate||""
+      }));
+    }
+
+    pending.forEach(item=>{
+      rows.push(`
+        <tr>
+          <td><strong>${escapeHtml(order.id||"")}</strong></td>
+          <td>${escapeHtml(formatOrderDate(order.createdAt))}</td>
+          <td>${escapeHtml(order.customer?.name||"")}</td>
+          <td>${escapeHtml(order.customer?.phone||"")}</td>
+          <td>${escapeHtml(item.name||"Product")}</td>
+          <td>${escapeHtml(item.size||"")}</td>
+          <td><strong>${Number(item.pendingQty||0)}</strong></td>
+          <td>${Number(item.readyQty||0)}</td>
+          <td>${escapeHtml(item.expectedDate ? formatProductAvailabilityDate(item.expectedDate) : "Not specified")}</td>
+          <td>
+            <button
+              type="button"
+              class="btn btn-light"
+              onclick="refreshPartialOrderAvailability('${escapeAttr(order.id)}')"
+            >
+              ↻ Recheck
+            </button>
+          </td>
+        </tr>
+      `);
+    });
+  });
+
+  wrap.innerHTML=`
+    <div style="overflow-x:auto;width:100%">
+      <table class="pending-orders-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Order Date</th>
+            <th>Customer</th>
+            <th>Mobile</th>
+            <th>Pending Product</th>
+            <th>Pack</th>
+            <th>Pending Qty</th>
+            <th>Ready Qty</th>
+            <th>Expected Availability</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            rows.length
+              ? rows.join("")
+              : `<tr><td colspan="10" style="text-align:center;padding:18px">No pending out-of-stock items.</td></tr>`
+          }
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  return wrap;
+}
+
+
+function buildPartialReadyDispatchedCard(order){
+  const readyOrder=getReadyInvoiceOrder(order);
+  const card=document.createElement("div");
+  card.className="order-card";
+
+  const readyItems=(readyOrder?.items||[]).map(item=>`
+    <div style="margin:7px 0">
+      ${escapeHtml(item.name||"Product")} —
+      <strong>${escapeHtml(item.size||"")}</strong>
+      × ${Number(item.qty||0)}
+    </div>
+  `).join("");
+
+  card.innerHTML=`
+    <div style="font-weight:900;font-size:17px">
+      ${escapeHtml(order.id||"")}
+    </div>
+    <div class="small">
+      ${escapeHtml(formatOrderDate(order.createdAt))}
+    </div>
+
+    <hr>
+
+    <div style="font-weight:900">
+      🚚 Ready Items Dispatched
+    </div>
+
+    ${readyItems || `<div class="small">No dispatched Ready items found.</div>`}
+
+    <div style="margin-top:10px;padding:10px;border-radius:9px;background:#eef8ef">
+      <strong>🧾 Invoice Amount:</strong>
+      ₹${Number(readyOrder?.total||0).toLocaleString("en-IN")}
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <button
+        type="button"
+        class="btn btn-light"
+        onclick="downloadAdminReadyItemsInvoice('${escapeAttr(order.id)}')"
+      >
+        🧾 Ready Items Invoice
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-danger"
+        onclick="deletePartialReadyDispatchedInvoice('${escapeAttr(order.id)}')"
+      >
+        🗑️ Delete Invoice
+      </button>
+    </div>
+
+    <div class="small" style="margin-top:9px">
+      Only the dispatched Ready items are shown here. Pending items remain in 🕒 Pending Orders.
+    </div>
+  `;
+
+  return card;
+}
+
+async function deletePartialReadyDispatchedInvoice(orderId){
+  if(!auth?.currentUser || auth.currentUser.email!=="jayvik.india@gmail.com"){
+    alert("Admin login required.");
+    return;
+  }
+
+  const index=orders.findIndex(o=>String(o.id)===String(orderId));
+  if(index<0){
+    alert("Order not found.");
+    return;
+  }
+
+  const order=orders[index];
+
+  if(order.status!=="partial" || String(order.readyStage||"")!=="dispatched"){
+    alert("Only a dispatched Ready-items invoice can be deleted here.");
+    return;
+  }
+
+  const confirmed=await jayvikConfirm(
+    "Delete the dispatched Ready-items invoice from the Dispatched section? Pending items will remain in Pending Orders."
+  );
+  if(!confirmed)return;
+
+  try{
+    const now=new Date().toISOString();
+
+    /*
+      Do NOT delete the Partial Order itself.
+      Only clear the dispatched Ready batch from the normal Dispatched column.
+      Pending quantities remain untouched for future fulfillment.
+    */
+    const updated={
+      ...order,
+      readyStage:"invoice_deleted",
+      readyInvoiceDeleted:true,
+      readyInvoiceDeletedAt:now,
+      updatedAt:now
+    };
+
+    await db.ref("orders/"+String(order.id)).set(updated);
+
+    try{
+      await db.ref("store/public/orderStatus/"+String(order.id))
+        .set(publicOrderStatusPayload(updated));
+    }catch(mirrorErr){
+      console.error("Customer status mirror update failed:",mirrorErr);
+    }
+
+    orders[index]=updated;
+    localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+
+    renderOrders();
+
+    alert("Ready-items invoice deleted from Dispatched. Pending items remain in Pending Orders.");
+  }catch(err){
+    console.error("Ready invoice delete failed:",err);
+    alert("Could not delete the Ready-items invoice. "+(err?.message||""));
+  }
 }
 
 
@@ -9697,7 +9835,7 @@ async function dispatchPartialReadyItems(orderId){
 
     alert(
       "🚚 Ready items dispatched successfully. "+
-      "Pending items remain under this Partial Order."
+      "Pending items remain under Pending Orders."
     );
 
   }catch(err){
