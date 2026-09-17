@@ -1178,6 +1178,99 @@ footer{
 #dispatchedOrdersBoard .dispatched-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 #dispatchedOrdersBoard .dispatched-actions .btn{width:auto!important;min-width:0!important;padding:8px 11px!important;margin:0!important;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}
 #dispatchedOrdersBoard input[type=checkbox]{width:18px;height:18px;margin:0}
+
+/* =========================================================
+   DISPATCHED ORDERS — FULL WIDTH / CLEAR ACTION VIEW
+========================================================= */
+
+/* Allow the Admin Dispatched Orders panel to use the available screen width. */
+#adminDispatchedOrders,
+#dispatchedOrdersSection,
+#dispatchedOrdersPanel,
+#dispatchedOrdersBoard{
+  width:100% !important;
+  max-width:none !important;
+}
+
+/* The folder/table itself must not be squeezed into a narrow card. */
+#dispatchedOrdersBoard .dispatched-table-wrap{
+  width:100% !important;
+  max-width:none !important;
+  overflow-x:auto !important;
+}
+
+#dispatchedOrdersBoard table.dispatched-orders-table{
+  width:100% !important;
+  min-width:1050px !important;
+  table-layout:fixed !important;
+}
+
+/* Balanced column widths so Payment and Action remain clearly visible. */
+#dispatchedOrdersBoard .col-select{width:4% !important;min-width:44px !important}
+#dispatchedOrdersBoard .col-order{width:10% !important;min-width:110px !important}
+#dispatchedOrdersBoard .col-date{width:12% !important;min-width:135px !important}
+#dispatchedOrdersBoard .col-customer{width:11% !important;min-width:120px !important}
+#dispatchedOrdersBoard .col-mobile{width:10% !important;min-width:115px !important}
+#dispatchedOrdersBoard .col-products{width:20% !important;min-width:210px !important}
+#dispatchedOrdersBoard .col-amount{width:8% !important;min-width:90px !important}
+#dispatchedOrdersBoard .col-payment{width:9% !important;min-width:105px !important}
+#dispatchedOrdersBoard .col-action{width:16% !important;min-width:235px !important}
+
+/* Keep product details readable without forcing other columns off screen. */
+#dispatchedOrdersBoard .col-products{
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+
+/* Make Payment status easy to scan. */
+#dispatchedOrdersBoard .col-payment{
+  text-align:center !important;
+}
+
+/* Keep operational buttons clearly visible and compact. */
+#dispatchedOrdersBoard .dispatched-actions{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:6px !important;
+  width:100% !important;
+}
+
+#dispatchedOrdersBoard .dispatched-actions .btn{
+  width:100% !important;
+  min-height:38px !important;
+  padding:7px 8px !important;
+  font-size:13px !important;
+  line-height:1.15 !important;
+  white-space:normal !important;
+}
+
+#dispatchedOrdersBoard .dispatched-actions .btn:first-child{
+  grid-column:1 / -1;
+}
+
+/* Delete stays clearly visible once payment is received. */
+#dispatchedOrdersBoard .dispatched-actions .btn-danger{
+  font-weight:700;
+}
+
+/* Header and rows remain aligned. */
+#dispatchedOrdersBoard .dispatched-orders-table th,
+#dispatchedOrdersBoard .dispatched-orders-table td{
+  box-sizing:border-box;
+}
+
+@media (min-width:1200px){
+  #dispatchedOrdersBoard table.dispatched-orders-table{
+    min-width:100% !important;
+  }
+}
+
+@media (max-width:900px){
+  #dispatchedOrdersBoard table.dispatched-orders-table{
+    min-width:1050px !important;
+  }
+}
+
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
