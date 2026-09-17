@@ -1271,6 +1271,13 @@ footer{
   }
 }
 
+
+#dispatchedOrdersBoard{--dispatch-window-width:100%;--dispatch-window-height:650px;--dispatch-font-size:14px}
+#dispatchedOrdersBoard .dispatch-dimension-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border:1px solid #dfe9df;border-radius:10px;background:#f8fbf8}
+#dispatchedOrdersBoard .dispatch-dimension-controls label{display:flex;align-items:center;gap:6px;font-weight:600;font-size:13px}
+#dispatchedOrdersBoard .dispatch-dimension-controls select{padding:6px 8px;border:1px solid #ccd8cc;border-radius:7px;background:#fff}
+#dispatchedOrdersBoard .dispatch-resizable-window{width:var(--dispatch-window-width)!important;max-width:100%!important;max-height:var(--dispatch-window-height)!important;overflow:auto!important;border:1px solid #dfe7df;border-radius:12px;background:#fff}
+#dispatchedOrdersBoard .dispatch-resizable-window table{font-size:var(--dispatch-font-size)!important}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -9112,6 +9119,48 @@ function isOrderInDispatchedFolder(order){
   );
 }
 
+
+function setDispatchedWindowDimensions(){
+  const board=document.getElementById("dispatchedOrdersBoard");
+  if(!board)return;
+  const width=document.getElementById("dispatchWidthControl")?.value||"100%";
+  const height=document.getElementById("dispatchHeightControl")?.value||"650px";
+  const font=document.getElementById("dispatchFontControl")?.value||"14px";
+  board.style.setProperty("--dispatch-window-width",width);
+  board.style.setProperty("--dispatch-window-height",height);
+  board.style.setProperty("--dispatch-font-size",font);
+  try{
+    localStorage.setItem("jayvik_dispatch_width",width);
+    localStorage.setItem("jayvik_dispatch_height",height);
+    localStorage.setItem("jayvik_dispatch_font",font);
+  }catch(e){}
+}
+function restoreDispatchedWindowDimensions(){
+  let width="100%",height="650px",font="14px";
+  try{
+    width=localStorage.getItem("jayvik_dispatch_width")||width;
+    height=localStorage.getItem("jayvik_dispatch_height")||height;
+    font=localStorage.getItem("jayvik_dispatch_font")||font;
+  }catch(e){}
+  const w=document.getElementById("dispatchWidthControl");
+  const h=document.getElementById("dispatchHeightControl");
+  const f=document.getElementById("dispatchFontControl");
+  if(w)w.value=width;if(h)h.value=height;if(f)f.value=font;
+  setDispatchedWindowDimensions();
+}
+function resetDispatchedWindowDimensions(){
+  try{
+    localStorage.removeItem("jayvik_dispatch_width");
+    localStorage.removeItem("jayvik_dispatch_height");
+    localStorage.removeItem("jayvik_dispatch_font");
+  }catch(e){}
+  const w=document.getElementById("dispatchWidthControl");
+  const h=document.getElementById("dispatchHeightControl");
+  const f=document.getElementById("dispatchFontControl");
+  if(w)w.value="100%";if(h)h.value="650px";if(f)f.value="14px";
+  setDispatchedWindowDimensions();
+}
+
 async function renderDispatchedOrdersFolder(){
   const board=document.getElementById("dispatchedOrdersBoard");
   if(!board)return;
@@ -9355,7 +9404,31 @@ async function renderDispatchedOrdersFolder(){
         >🗑 Delete Selected</button>
       </div>
 
-      <div style="overflow-x:auto">
+      <div class="dispatch-dimension-controls">
+        <strong>Window Dimensions:</strong>
+        <label>Width
+          <select id="dispatchWidthControl" onchange="setDispatchedWindowDimensions()">
+            <option value="100%">100%</option><option value="95%">95%</option>
+            <option value="90%">90%</option><option value="85%">85%</option>
+            <option value="80%">80%</option>
+          </select>
+        </label>
+        <label>Height
+          <select id="dispatchHeightControl" onchange="setDispatchedWindowDimensions()">
+            <option value="450px">450 px</option><option value="550px">550 px</option>
+            <option value="650px">650 px</option><option value="750px">750 px</option>
+            <option value="900px">900 px</option><option value="none">Auto</option>
+          </select>
+        </label>
+        <label>Text
+          <select id="dispatchFontControl" onchange="setDispatchedWindowDimensions()">
+            <option value="12px">Small</option><option value="14px">Normal</option>
+            <option value="16px">Large</option><option value="18px">Extra Large</option>
+          </select>
+        </label>
+        <button type="button" class="btn btn-light" onclick="resetDispatchedWindowDimensions()">Reset</button>
+      </div>
+      <div class="dispatch-resizable-window">
         <table class="consumption-table" style="width:100%">
           <thead>
             <tr>
@@ -9383,6 +9456,8 @@ async function renderDispatchedOrdersFolder(){
         </table>
       </div>
     `;
+
+    restoreDispatchedWindowDimensions();
 
   }catch(err){
     console.error("Dispatched Orders direct Firebase load failed:",err);
