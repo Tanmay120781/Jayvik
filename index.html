@@ -3075,7 +3075,13 @@ try{
     
 function normalizeFirebaseProducts(rawProducts){
   if(Array.isArray(rawProducts)){
-    return rawProducts.filter(Boolean);
+    return rawProducts
+      .map((product,index)=>
+        product
+          ? {...product,_firebaseKey:String(index)}
+          : null
+      )
+      .filter(Boolean);
   }
 
   if(rawProducts && typeof rawProducts==="object"){
@@ -3083,10 +3089,15 @@ function normalizeFirebaseProducts(rawProducts){
       .sort((a,b)=>{
         const na=Number(a);
         const nb=Number(b);
-        if(Number.isFinite(na) && Number.isFinite(nb)) return na-nb;
+        if(Number.isFinite(na) && Number.isFinite(nb))return na-nb;
         return String(a).localeCompare(String(b));
       })
-      .map(key=>rawProducts[key])
+      .map(key=>{
+        const product=rawProducts[key];
+        return product
+          ? {...product,_firebaseKey:String(key)}
+          : null;
+      })
       .filter(Boolean);
   }
 
@@ -8032,10 +8043,41 @@ function addToCart(productId){
 
 
 function getProductAvailabilityInfo(productId,size,name=""){
-  const product=products.find(p=>String(p.id)===String(productId))
-    || products.find(p=>productNamesCompatible(p.name,name));
-  const pack=product?.packs?.find(p=>normalizePackSize(p.size)===normalizePackSize(size));
-  return {product,pack,stock:pack?getPackStock(pack):0};
+  const wantedSize=normalizePackSize(size);
+  const wantedName=String(name||"").trim();
+
+  let product=
+    products.find(
+      p=>String(p.id||"")===String(productId||"")
+    );
+
+  let pack=
+    product?.packs?.find(
+      p=>normalizePackSize(p.size)===wantedSize
+    );
+
+  /*
+    Old orders can contain an older product ID. If ID lookup does not produce
+    the requested pack, match by compatible product name + exact pack size.
+  */
+  if(!pack){
+    product=products.find(p=>
+      productNamesCompatible(p.name,wantedName) &&
+      (p.packs||[]).some(
+        pack=>normalizePackSize(pack.size)===wantedSize
+      )
+    );
+
+    pack=product?.packs?.find(
+      p=>normalizePackSize(p.size)===wantedSize
+    );
+  }
+
+  return {
+    product:product||null,
+    pack:pack||null,
+    stock:pack ? getPackStock(pack) : 0
+  };
 }
 
 function getExpectedAvailabilityText(product){
@@ -8937,35 +8979,48 @@ async function checkOrderInventory(orderId){
 }
 
 function orderMatchesAdminStage(order,stage){
-  const target=String(stage||"").toLowerCase();
-  const status=String(order?.status||"").toLowerCase();
+  const status=String(order?.status||"pending").toLowerCase();
 
   /*
-    The first Admin column uses internal key "partial" but is displayed as
-    "Pending Orders". It combines:
-      • normal Pending orders
-      • Partial orders containing out-of-stock/pending quantities.
+    "history" belongs only to the separate Dispatched Orders/payment folder.
+    A newly dispatched order must remain visible in the Order Management
+    🚚 Dispatched column until it is deliberately archived.
   */
-  if(target==="partial"){
-    return status==="pending" || status==="partial";
+  if(status==="history")return false;
+
+  if(stage==="partial"){
+    return status==="partial" || status==="pending";
   }
 
-  /*
-    A Partial order stays in Pending Orders while pending quantities remain,
-    but its available batch also appears in Ready/Packing/Packed/Dispatched
-    according to readyStage.
-  */
-  if(status==="partial"){
-    const readyQty=(Array.isArray(order.fulfillment)?order.fulfillment:[])
-      .reduce((sum,item)=>sum+Number(item.readyQty||0),0);
-
-    if(readyQty>0){
-      return String(order.readyStage||"ready").toLowerCase()===target;
-    }
-    return false;
+  if(stage==="ready"){
+    return status==="ready" ||
+      (status==="partial" &&
+       String(order.readyStage||"ready").toLowerCase()==="ready" &&
+       Number(order.readyItemQty||0)>0);
   }
 
-  return status===target;
+  if(stage==="packing"){
+    return status==="packing" ||
+      (status==="partial" &&
+       String(order.readyStage||"ready").toLowerCase()==="packing" &&
+       Number(order.readyItemQty||0)>0);
+  }
+
+  if(stage==="packed"){
+    return status==="packed" ||
+      (status==="partial" &&
+       String(order.readyStage||"ready").toLowerCase()==="packed" &&
+       Number(order.readyItemQty||0)>0);
+  }
+
+  if(stage==="dispatched"){
+    return status==="dispatched" ||
+      (status==="partial" &&
+       String(order.readyStage||"ready").toLowerCase()==="dispatched" &&
+       Number(order.readyItemQty||0)>0);
+  }
+
+  return false;
 }
 
 function renderDispatchedOrdersFolder(){
@@ -9902,30 +9957,32 @@ async function moveOrder(orderId,newStatus){
 
   try{
     const now=new Date().toISOString();
-    const updated={
-      ...order,
+
+    const patch={
       status:next,
       updatedAt:now
     };
 
     if(next==="dispatched"){
-      updated.status="dispatched";
-      updated.dispatchedAt=updated.dispatchedAt||now;
-      updated.updatedAt=now;
-      updated.paymentStatus=updated.paymentStatus||"pending";
+      patch.dispatchedAt=String(order.dispatchedAt||now);
+      patch.paymentStatus=String(order.paymentStatus||"pending");
     }
 
     /*
-      Save the complete order record so it satisfies the existing Firebase
-      validation rules. Then read it back before repainting Admin.
+      Update only workflow fields. The rest of the validated order remains
+      untouched in Firebase.
     */
-    await db.ref("orders/"+String(order.id)).set(updated);
+    await db
+      .ref("orders/"+String(order.id))
+      .update(patch);
 
-    const verifySnap=await db.ref("orders/"+String(order.id)).once("value");
+    const verifySnap=
+      await db.ref("orders/"+String(order.id)).once("value");
+
     const saved=verifySnap.val();
 
     if(!saved || String(saved.status||"").toLowerCase()!==next){
-      throw new Error("Firebase did not confirm the new order stage.");
+      throw new Error("Firebase did not confirm "+next+" status.");
     }
 
     orders[index]=saved;
@@ -9940,10 +9997,9 @@ async function moveOrder(orderId,newStatus){
 
     await renderOrders(false);
 
-    if(next==="dispatched"){
-      if(typeof renderDispatchedOrdersFolder==="function"){
-        renderDispatchedOrdersFolder();
-      }
+    if(next==="dispatched" &&
+       typeof renderDispatchedOrdersFolder==="function"){
+      renderDispatchedOrdersFolder();
     }
 
     alert(
@@ -9962,7 +10018,6 @@ async function moveOrder(orderId,newStatus){
     );
   }
 }
-
 
 const jayvikSelectedOrders={
   pending:new Set(),
@@ -11413,9 +11468,15 @@ async function savePackStock(
       Do not call saveAll() here because that rewrites the full
       products array and can overwrite other pack stock values.
     */
+    const firebaseProductKey=
+      String(
+        product._firebaseKey ??
+        productIndex
+      );
+
     await db
       .ref(
-        `store/public/products/${productIndex}/packs/${packIndex}/stock`
+        `store/public/products/${firebaseProductKey}/packs/${packIndex}/stock`
       )
       .set(newStock);
 
