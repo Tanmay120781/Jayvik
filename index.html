@@ -3123,6 +3123,8 @@ db.ref("store/public").on("value",snap=>{
         user.email==="jayvik.india@gmail.com"
       ){
 
+        startJayvikAdminOrdersListener();
+
         if(window.jayvikOrdersRef)
           window.jayvikOrdersRef.off("value");
 
@@ -8931,6 +8933,20 @@ function partialOrderPendingItemsHtml(order){
 }
 
 
+function formatOrderDate(value){
+  if(!value)return "—";
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime()))return String(value);
+  return d.toLocaleString("en-IN",{
+    day:"2-digit",
+    month:"2-digit",
+    year:"numeric",
+    hour:"2-digit",
+    minute:"2-digit"
+  });
+}
+
+
 function buildPendingOrdersTable(partialOrders){
   const wrap=document.createElement("div");
   wrap.className="pending-orders-table-wrap";
@@ -9166,7 +9182,10 @@ function startJayvikAdminOrdersListener(){
     "value",
     snapshot=>{
       try{
-        orders=normalizeOrdersSnapshot(snapshot.val());
+        orders=normalizeOrdersSnapshot(snapshot.val())
+          .sort((a,b)=>
+            String(b.createdAt||"").localeCompare(String(a.createdAt||""))
+          );
 
         localStorage.setItem(
           "jayvik_orders",
@@ -9262,15 +9281,26 @@ async function renderOrders(refreshInventory=true){
       </h4>
     `;
 
+    /* Append the column immediately so one card/table error cannot blank the board. */
+    board.appendChild(column);
+
     if(col.key==="partial"){
       /*
         Pending Orders is TABLE ONLY.
-        It combines:
-        • ordinary status=pending orders
-        • status=partial orders with unavailable quantities
+        It combines normal Pending + Partial/out-of-stock orders.
       */
       column.style.minWidth="100%";
-      column.appendChild(buildPendingOrdersTable(list));
+      try{
+        column.appendChild(buildPendingOrdersTable(list));
+      }catch(tableErr){
+        console.error("Pending Orders table failed:",tableErr);
+        column.innerHTML+=`
+          <div class="empty" style="padding:18px">
+            Pending orders were loaded, but the table could not be drawn.
+            ${escapeHtml(tableErr?.message||"")}
+          </div>
+        `;
+      }
     }else if(list.length===0){
       column.innerHTML+=`
         <div class="empty" style="padding:18px">
@@ -9287,7 +9317,6 @@ async function renderOrders(refreshInventory=true){
       });
     }
 
-    board.appendChild(column);
   });
 
   if(typeof updateOrderStats==="function"){
