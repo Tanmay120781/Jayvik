@@ -8947,6 +8947,231 @@ function formatOrderDate(value){
 }
 
 
+function getPendingOrderRows(){
+  const rows=[];
+
+  (orders||[])
+    .filter(order=>orderMatchesAdminStage(order,"partial"))
+    .forEach(order=>{
+      const fulfillment=Array.isArray(order.fulfillment)
+        ? order.fulfillment
+        : calculateOrderFulfillment(order.items||[]);
+
+      let pending=fulfillment.filter(x=>Number(x.pendingQty||0)>0);
+
+      if(!pending.length && String(order.status||"").toLowerCase()==="pending"){
+        pending=(order.items||[]).map(item=>({
+          productId:item.productId||"",
+          name:item.name||"Product",
+          size:item.size||"",
+          orderedQty:Number(item.qty||0),
+          readyQty:0,
+          pendingQty:Number(item.qty||0),
+          expectedDate:item.expectedDate||""
+        }));
+      }
+
+      pending.forEach(item=>{
+        rows.push({
+          order,
+          item
+        });
+      });
+    });
+
+  return rows;
+}
+
+async function exportPendingOrdersExcel(){
+  if(typeof XLSX==="undefined"){
+    alert("Excel export library is not loaded. Please check your internet connection.");
+    return;
+  }
+
+  const pendingRows=getPendingOrderRows();
+
+  if(!pendingRows.length){
+    alert("No Pending Orders are available to export.");
+    return;
+  }
+
+  const data=pendingRows.map(({order,item})=>({
+    "Order ID":String(order.id||""),
+    "Order Date":excelSafeDate(order.createdAt),
+    "Customer Name":String(order.customer?.name||""),
+    "Mobile":String(order.customer?.phone||""),
+    "Address":String(order.customer?.address||""),
+    "Pending Product":String(item.name||""),
+    "Pack Size":String(item.size||""),
+    "Ordered Qty":Number(item.orderedQty||item.pendingQty||0),
+    "Ready Qty":Number(item.readyQty||0),
+    "Pending Qty":Number(item.pendingQty||0),
+    "Expected Availability":String(
+      item.expectedDate
+        ? formatProductAvailabilityDate(item.expectedDate)
+        : "Not specified"
+    ),
+    "Order Status":String(order.status||"")
+  }));
+
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.json_to_sheet(data);
+
+  ws["!cols"]=[
+    {wch:20},{wch:20},{wch:22},{wch:16},{wch:32},
+    {wch:28},{wch:14},{wch:12},{wch:12},{wch:14},
+    {wch:22},{wch:16}
+  ];
+
+  XLSX.utils.book_append_sheet(wb,ws,"Pending Orders");
+
+  const today=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,`Jayvik_Pending_Orders_${today}.xlsx`);
+}
+
+async function deletePendingOrderLine(orderId,productId,size){
+  if(!auth?.currentUser || auth.currentUser.email!=="jayvik.india@gmail.com"){
+    alert("Admin login required.");
+    return;
+  }
+
+  const index=orders.findIndex(o=>String(o.id)===String(orderId));
+  if(index<0){
+    alert("Order not found.");
+    return;
+  }
+
+  const order=orders[index];
+  const normSize=normalizePackSize(size);
+  const fulfillment=Array.isArray(order.fulfillment)
+    ? order.fulfillment.map(x=>({...x}))
+    : calculateOrderFulfillment(order.items||[]);
+
+  const target=fulfillment.find(x=>
+    String(x.productId||"")===String(productId||"") &&
+    normalizePackSize(x.size)===normSize &&
+    Number(x.pendingQty||0)>0
+  ) || fulfillment.find(x=>
+    productNamesCompatible(x.name||"",productId||"") &&
+    normalizePackSize(x.size)===normSize &&
+    Number(x.pendingQty||0)>0
+  );
+
+  const pendingQty=Number(target?.pendingQty||0);
+
+  const confirmed=await jayvikConfirm(
+    "Delete this Pending item line from the order? This cannot be undone."
+  );
+  if(!confirmed)return;
+
+  try{
+    const updated={
+      ...order,
+      items:(order.items||[]).map(item=>({...item})),
+      fulfillment:fulfillment.map(x=>({...x}))
+    };
+
+    const itemIndex=updated.items.findIndex(item=>
+      String(item.productId||"")===String(productId||"") &&
+      normalizePackSize(item.size)===normSize
+    );
+
+    const fIndex=updated.fulfillment.findIndex(x=>
+      String(x.productId||"")===String(productId||"") &&
+      normalizePackSize(x.size)===normSize
+    );
+
+    if(itemIndex<0){
+      throw new Error("Pending item line could not be matched to the order.");
+    }
+
+    const item=updated.items[itemIndex];
+    const readyQty=fIndex>=0
+      ? Number(updated.fulfillment[fIndex].readyQty||0)
+      : Math.max(0,Number(item.qty||0)-pendingQty);
+
+    /*
+      Delete only the Pending quantity.
+      If the same product has a Ready quantity, preserve that Ready quantity.
+    */
+    if(readyQty>0){
+      updated.items[itemIndex].qty=readyQty;
+
+      if(fIndex>=0){
+        updated.fulfillment[fIndex].orderedQty=readyQty;
+        updated.fulfillment[fIndex].pendingQty=0;
+        updated.fulfillment[fIndex].readyQty=readyQty;
+      }
+    }else{
+      updated.items.splice(itemIndex,1);
+      if(fIndex>=0)updated.fulfillment.splice(fIndex,1);
+    }
+
+    updated.total=updated.items.reduce(
+      (sum,item)=>sum+(Number(item.qty||0)*Number(item.price||0)),
+      0
+    );
+
+    updated.pendingItemQty=updated.fulfillment.reduce(
+      (sum,x)=>sum+Number(x.pendingQty||0),
+      0
+    );
+    updated.readyItemQty=updated.fulfillment.reduce(
+      (sum,x)=>sum+Number(x.readyQty||0),
+      0
+    );
+
+    const stillPending=updated.pendingItemQty>0;
+
+    if(!stillPending && String(updated.status||"").toLowerCase()==="partial"){
+      const stage=String(updated.readyStage||"ready").toLowerCase();
+      updated.status=["ready","packing","packed","dispatched"].includes(stage)
+        ? stage
+        : "ready";
+      updated.isPartial=false;
+    }
+
+    if(!updated.items.length){
+      /*
+        No lines remain. Remove the order itself because the Admin manually
+        deleted the final Pending line.
+      */
+      await db.ref("orders/"+String(order.id)).remove();
+
+      try{
+        await db.ref("store/public/orderStatus/"+String(order.id)).remove();
+      }catch(mirrorErr){
+        console.error("Customer status cleanup failed:",mirrorErr);
+      }
+
+      orders.splice(index,1);
+    }else{
+      updated.updatedAt=new Date().toISOString();
+
+      await db.ref("orders/"+String(order.id)).set(updated);
+
+      try{
+        await db.ref("store/public/orderStatus/"+String(order.id))
+          .set(publicOrderStatusPayload(updated));
+      }catch(mirrorErr){
+        console.error("Customer status update failed:",mirrorErr);
+      }
+
+      orders[index]=updated;
+    }
+
+    localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+    renderOrders(false);
+
+    alert("Pending item line deleted.");
+
+  }catch(err){
+    console.error("Pending line delete failed:",err);
+    alert("Could not delete Pending item line. "+(err?.message||""));
+  }
+}
+
+
 function buildPendingOrdersTable(partialOrders){
   const wrap=document.createElement("div");
   wrap.className="pending-orders-table-wrap";
@@ -8986,13 +9211,26 @@ function buildPendingOrdersTable(partialOrders){
           <td>${Number(item.readyQty||0)}</td>
           <td>${escapeHtml(item.expectedDate ? formatProductAvailabilityDate(item.expectedDate) : "Not specified")}</td>
           <td>
-            <button
-              type="button"
-              class="btn btn-light"
-              onclick="refreshPartialOrderAvailability('${escapeAttr(order.id)}')"
-            >
-              ↻ Recheck
-            </button>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button
+                type="button"
+                class="btn btn-light"
+                onclick="refreshPartialOrderAvailability('${escapeAttr(order.id)}')"
+              >
+                ↻ Recheck
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                onclick="deletePendingOrderLine(
+                  '${escapeAttr(order.id)}',
+                  '${escapeAttr(item.productId||item.name||"")}',
+                  '${escapeAttr(item.size||"")}'
+                )"
+              >
+                🗑️ Delete
+              </button>
+            </div>
           </td>
         </tr>
       `);
@@ -9000,6 +9238,16 @@ function buildPendingOrdersTable(partialOrders){
   });
 
   wrap.innerHTML=`
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+      <button
+        type="button"
+        class="btn btn-green"
+        onclick="exportPendingOrdersExcel()"
+      >
+        📥 Export Pending Orders Excel
+      </button>
+    </div>
+
     <div style="overflow-x:auto;width:100%">
       <table class="pending-orders-table">
         <thead>
