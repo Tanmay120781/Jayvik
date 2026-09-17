@@ -11428,7 +11428,7 @@ function closeAdmin(){
 
 
 
-async /* ===== Sales Archive multi-select ===== */
+/* ===== Sales Archive multi-select ===== */
 const jayvikSelectedArchiveOrders=new Set();
 
 function toggleSalesArchiveSelection(orderId,checked){
@@ -11438,7 +11438,11 @@ function toggleSalesArchiveSelection(orderId,checked){
   const count=document.getElementById("salesArchiveSelectedCount");
   const button=document.getElementById("salesArchiveBulkDeleteBtn");
   if(count)count.textContent=String(jayvikSelectedArchiveOrders.size);
-  if(button)button.disabled=jayvikSelectedArchiveOrders.size===0;
+  if(button){
+    button.disabled=jayvikSelectedArchiveOrders.size===0;
+    button.style.opacity=jayvikSelectedArchiveOrders.size>0 ? "1" : ".5";
+    button.style.cursor=jayvikSelectedArchiveOrders.size>0 ? "pointer" : "not-allowed";
+  }
 }
 
 function toggleAllSalesArchiveRows(checked){
@@ -11451,7 +11455,11 @@ function toggleAllSalesArchiveRows(checked){
   const count=document.getElementById("salesArchiveSelectedCount");
   const button=document.getElementById("salesArchiveBulkDeleteBtn");
   if(count)count.textContent=String(jayvikSelectedArchiveOrders.size);
-  if(button)button.disabled=jayvikSelectedArchiveOrders.size===0;
+  if(button){
+    button.disabled=jayvikSelectedArchiveOrders.size===0;
+    button.style.opacity=jayvikSelectedArchiveOrders.size>0 ? "1" : ".5";
+    button.style.cursor=jayvikSelectedArchiveOrders.size>0 ? "pointer" : "not-allowed";
+  }
 }
 
 async function bulkDeleteSalesArchiveOrders(){
