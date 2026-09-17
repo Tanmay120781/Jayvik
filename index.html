@@ -9137,6 +9137,75 @@ async function deletePartialReadyDispatchedInvoice(orderId){
 }
 
 
+function normalizeOrdersSnapshot(snapshotValue){
+  if(!snapshotValue)return [];
+
+  if(Array.isArray(snapshotValue)){
+    return snapshotValue
+      .filter(Boolean)
+      .map((order,index)=>({
+        ...order,
+        id:String(order?.id || index)
+      }));
+  }
+
+  return Object.entries(snapshotValue).map(([firebaseKey,order])=>({
+    ...(order||{}),
+    id:String(order?.id || firebaseKey),
+    _firebaseKey:firebaseKey
+  }));
+}
+
+let jayvikAdminOrdersListenerStarted=false;
+
+function startJayvikAdminOrdersListener(){
+  if(jayvikAdminOrdersListenerStarted)return;
+  jayvikAdminOrdersListenerStarted=true;
+
+  db.ref("orders").on(
+    "value",
+    snapshot=>{
+      try{
+        orders=normalizeOrdersSnapshot(snapshot.val());
+
+        localStorage.setItem(
+          "jayvik_orders",
+          JSON.stringify(orders)
+        );
+
+        /*
+          Always repaint Order Management from the latest Firebase /orders data.
+          Do not require inventory refresh for this repaint.
+        */
+        renderOrders(false);
+
+        if(typeof renderDispatchedOrdersFolder==="function"){
+          renderDispatchedOrdersFolder();
+        }
+
+        if(typeof renderSalesArchive==="function"){
+          renderSalesArchive();
+        }
+
+        console.log(
+          "Jayvik Admin Orders synced from Firebase:",
+          orders.length
+        );
+      }catch(err){
+        console.error("Admin Orders render failed:",err);
+      }
+    },
+    error=>{
+      console.error("Firebase /orders listener failed:",error);
+      alert(
+        "Admin could not read orders from Firebase.\n\nDetails: "+
+        (error?.message||String(error))
+      );
+    }
+  );
+}
+
+
 async function renderOrders(refreshInventory=true){
 
   if(refreshInventory){
@@ -14501,6 +14570,13 @@ if(document.readyState==="loading"){
     });
   };
 })();
+
+onAuthStateChanged(auth,user=>{
+  if(user && user.email==="jayvik.india@gmail.com"){
+    startJayvikAdminOrdersListener();
+  }
+});
+
 </script>
 
 </body>
