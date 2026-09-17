@@ -8980,44 +8980,34 @@ async function checkOrderInventory(orderId){
 
 function orderMatchesAdminStage(order,stage){
   const status=String(order?.status||"pending").toLowerCase();
+  const readyStage=String(order?.readyStage||"ready").toLowerCase();
+  const readyQty=Number(order?.readyItemQty||0);
 
-  /*
-    "history" belongs only to the separate Dispatched Orders/payment folder.
-    A newly dispatched order must remain visible in the Order Management
-    🚚 Dispatched column until it is deliberately archived.
-  */
+  /* Archived/history orders belong only to the separate payment folder. */
   if(status==="history")return false;
 
   if(stage==="partial"){
-    return status==="partial" || status==="pending";
+    return status==="pending" || status==="partial";
   }
 
   if(stage==="ready"){
     return status==="ready" ||
-      (status==="partial" &&
-       String(order.readyStage||"ready").toLowerCase()==="ready" &&
-       Number(order.readyItemQty||0)>0);
+      (status==="partial" && readyStage==="ready" && readyQty>0);
   }
 
   if(stage==="packing"){
     return status==="packing" ||
-      (status==="partial" &&
-       String(order.readyStage||"ready").toLowerCase()==="packing" &&
-       Number(order.readyItemQty||0)>0);
+      (status==="partial" && readyStage==="packing" && readyQty>0);
   }
 
   if(stage==="packed"){
     return status==="packed" ||
-      (status==="partial" &&
-       String(order.readyStage||"ready").toLowerCase()==="packed" &&
-       Number(order.readyItemQty||0)>0);
+      (status==="partial" && readyStage==="packed" && readyQty>0);
   }
 
   if(stage==="dispatched"){
     return status==="dispatched" ||
-      (status==="partial" &&
-       String(order.readyStage||"ready").toLowerCase()==="dispatched" &&
-       Number(order.readyItemQty||0)>0);
+      (status==="partial" && readyStage==="dispatched" && readyQty>0);
   }
 
   return false;
@@ -9780,6 +9770,10 @@ function startJayvikAdminOrdersListener(){
     snapshot=>{
       try{
         orders=normalizeOrdersSnapshot(snapshot.val())
+          .map(order=>({
+            ...order,
+            id:String(order.id||"")
+          }))
           .sort((a,b)=>
             String(b.createdAt||"").localeCompare(String(a.createdAt||""))
           );
