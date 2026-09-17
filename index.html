@@ -1098,6 +1098,44 @@ footer{
   white-space:nowrap;
 }
 
+
+/* ===== Bulk order selection ===== */
+.order-select-box{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  width:max-content;
+  padding:6px 9px;
+  margin-bottom:9px;
+  border:1px solid #cfe1d1;
+  border-radius:8px;
+  background:#f4faf4;
+  font-weight:800;
+  color:#267a35;
+}
+.order-select-box input,
+.pending-orders-table input[type="checkbox"]{
+  width:18px;
+  height:18px;
+  cursor:pointer;
+}
+.bulk-order-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  flex-wrap:wrap;
+  padding:8px;
+  margin:0 0 10px;
+  border:1px solid #d9e7da;
+  border-radius:9px;
+  background:#f7fbf7;
+}
+.bulk-order-toolbar button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -9246,6 +9284,17 @@ function buildPendingOrdersTable(partialOrders){
     pending.forEach(item=>{
       rows.push(`
         <tr>
+          <td>
+            <input
+              type="checkbox"
+              onchange="toggleOrderSelection(
+                'pending',
+                '${escapeAttr(order.id)}',
+                this.checked
+              )"
+              title="Select Pending Order"
+            >
+          </td>
           <td><strong>${escapeHtml(order.id||"")}</strong></td>
           <td>${escapeHtml(formatOrderDate(order.createdAt))}</td>
           <td>${escapeHtml(order.customer?.name||"")}</td>
@@ -9283,6 +9332,7 @@ function buildPendingOrdersTable(partialOrders){
   });
 
   wrap.innerHTML=`
+    ${bulkToolbarHtml("pending")}
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
       <button
         type="button"
@@ -9297,6 +9347,7 @@ function buildPendingOrdersTable(partialOrders){
       <table class="pending-orders-table">
         <thead>
           <tr>
+            <th>✓</th>
             <th>Order ID</th>
             <th>Order Date</th>
             <th>Customer</th>
@@ -9313,7 +9364,7 @@ function buildPendingOrdersTable(partialOrders){
           ${
             rows.length
               ? rows.join("")
-              : `<tr><td colspan="10" style="text-align:center;padding:18px">No pending out-of-stock items.</td></tr>`
+              : `<tr><td colspan="11" style="text-align:center;padding:18px">No pending out-of-stock items.</td></tr>`
           }
         </tbody>
       </table>
@@ -9572,6 +9623,11 @@ async function renderOrders(refreshInventory=true){
         ${col.title}
         <span class="brand-sub">(${list.length})</span>
       </h4>
+      ${
+        ["ready","packing","packed"].includes(col.key)
+          ? bulkToolbarHtml(col.key)
+          : ""
+      }
     `;
 
     /* Append the column immediately so one card/table error cannot blank the board. */
@@ -9707,6 +9763,167 @@ async function moveOrder(orderId,newStatus){
       ". "+(err?.message||"Please try again.")
     );
   }
+}
+
+
+const jayvikSelectedOrders={
+  pending:new Set(),
+  ready:new Set(),
+  packing:new Set(),
+  packed:new Set()
+};
+
+function toggleOrderSelection(stage,orderId,checked){
+  const set=jayvikSelectedOrders[stage];
+  if(!set)return;
+  if(checked)set.add(String(orderId));
+  else set.delete(String(orderId));
+  updateBulkActionButtons();
+}
+
+function updateBulkActionButtons(){
+  Object.entries(jayvikSelectedOrders).forEach(([stage,set])=>{
+    const countEl=document.getElementById("bulkCount_"+stage);
+    const actionEl=document.getElementById("bulkAction_"+stage);
+    if(countEl)countEl.textContent=String(set.size);
+    if(actionEl)actionEl.disabled=set.size===0;
+  });
+}
+
+async function bulkMoveOrders(stage,nextStage){
+  const selected=[...(jayvikSelectedOrders[stage]||[])];
+  if(!selected.length){
+    alert("Please tick at least one order.");
+    return;
+  }
+
+  const ok=await jayvikConfirm(
+    `Move ${selected.length} selected order(s) to ${partialReadyStageLabel(nextStage)}?`
+  );
+  if(!ok)return;
+
+  let moved=0;
+  let failed=0;
+
+  for(const id of selected){
+    try{
+      const order=orders.find(o=>String(o.id)===String(id));
+      if(!order){failed++;continue;}
+
+      if(order.status==="partial"){
+        await movePartialReadyItems(id,nextStage);
+      }else{
+        await moveOrder(id,nextStage);
+      }
+      moved++;
+    }catch(err){
+      console.error("Bulk move failed for",id,err);
+      failed++;
+    }
+  }
+
+  jayvikSelectedOrders[stage].clear();
+  await renderOrders(false);
+  updateBulkActionButtons();
+
+  alert(
+    failed
+      ? `${moved} order(s) moved. ${failed} could not be moved.`
+      : `${moved} order(s) moved successfully.`
+  );
+}
+
+async function bulkDeletePendingOrders(){
+  const selected=[...(jayvikSelectedOrders.pending||[])];
+  if(!selected.length){
+    alert("Please tick at least one Pending Order.");
+    return;
+  }
+
+  const ok=await jayvikConfirm(
+    `Delete ${selected.length} selected Pending Order(s)? This cannot be undone.`
+  );
+  if(!ok)return;
+
+  let deleted=0;
+  let failed=0;
+
+  for(const id of selected){
+    try{
+      const index=orders.findIndex(o=>String(o.id)===String(id));
+      if(index<0){failed++;continue;}
+
+      const order=orders[index];
+
+      await db.ref("orders/"+String(order.id)).remove();
+
+      try{
+        await db.ref("store/public/orderStatus/"+String(order.id)).remove();
+      }catch(mirrorErr){
+        console.error("Customer status cleanup failed:",mirrorErr);
+      }
+
+      orders.splice(index,1);
+      deleted++;
+    }catch(err){
+      console.error("Pending order delete failed:",id,err);
+      failed++;
+    }
+  }
+
+  localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+  jayvikSelectedOrders.pending.clear();
+  await renderOrders(false);
+  updateBulkActionButtons();
+
+  alert(
+    failed
+      ? `${deleted} Pending Order(s) deleted. ${failed} could not be deleted.`
+      : `${deleted} Pending Order(s) deleted.`
+  );
+}
+
+function orderSelectionCheckbox(order,stage){
+  return `
+    <label class="order-select-box" title="Select order">
+      <input
+        type="checkbox"
+        onchange="toggleOrderSelection(
+          '${escapeAttr(stage)}',
+          '${escapeAttr(order.id)}',
+          this.checked
+        )"
+      >
+      <span>Select</span>
+    </label>
+  `;
+}
+
+function bulkToolbarHtml(stage){
+  const config={
+    pending:{label:"🗑️ Delete Selected",action:"bulkDeletePendingOrders()"},
+    ready:{label:"🟡 Move Selected to Packing",action:"bulkMoveOrders('ready','packing')"},
+    packing:{label:"📦 Move Selected to Packed",action:"bulkMoveOrders('packing','packed')"},
+    packed:{label:"🚚 Move Selected to Dispatched",action:"bulkMoveOrders('packed','dispatched')"}
+  };
+
+  const c=config[stage];
+  if(!c)return "";
+
+  return `
+    <div class="bulk-order-toolbar">
+      <strong>Selected: <span id="bulkCount_${stage}">0</span></strong>
+      <button
+        id="bulkAction_${stage}"
+        type="button"
+        class="${stage==="pending" ? "btn btn-danger" : "btn btn-green"}"
+        onclick="${c.action}"
+        disabled
+      >
+        ${c.label}
+      </button>
+    </div>
+  `;
 }
 
 
@@ -9992,7 +10209,18 @@ function buildOrderCard(order){
   }
 
 
+  const selectionStage=
+    order.status==="partial"
+      ? String(order.readyStage||"ready").toLowerCase()
+      : String(order.status||"").toLowerCase();
+
   card.innerHTML=`
+
+    ${
+      ["ready","packing","packed"].includes(selectionStage)
+        ? orderSelectionCheckbox(order,selectionStage)
+        : ""
+    }
 
     <strong>
       ${escapeHtml(order.id)}
