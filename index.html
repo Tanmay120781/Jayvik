@@ -9799,6 +9799,10 @@ function startJayvikAdminOrdersListener(){
           renderDispatchedOrdersFolder();
         }
 
+        if(typeof updateOrderStats==="function"){
+          updateOrderStats();
+        }
+
         if(typeof renderSalesArchive==="function"){
           renderSalesArchive();
         }
@@ -9979,7 +9983,10 @@ async function moveOrder(orderId,newStatus){
     const verifySnap=
       await db.ref("orders/"+String(order.id)).once("value");
 
-    const saved=verifySnap.val();
+    const savedRaw=verifySnap.val();
+    const saved=savedRaw
+      ? {...savedRaw,id:String(savedRaw.id||order.id)}
+      : null;
 
     if(!saved || String(saved.status||"").toLowerCase()!==next){
       throw new Error("Firebase did not confirm "+next+" status.");
@@ -9987,6 +9994,15 @@ async function moveOrder(orderId,newStatus){
 
     orders[index]=saved;
     localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+
+    /* Always reveal the destination column after a successful move. */
+    orderFilter="all";
+    document.querySelectorAll(".order-filter").forEach(btn=>{
+      btn.classList.toggle(
+        "active",
+        String(btn.dataset.filter||"").toLowerCase()==="all"
+      );
+    });
 
     try{
       await db.ref("store/public/orderStatus/"+String(order.id))
@@ -10478,6 +10494,14 @@ function buildOrderCard(order){
     <strong>
       ${escapeHtml(order.id)}
     </strong>
+
+    ${
+      String(order.status||"").toLowerCase()==="dispatched"
+        ? `<div style="margin:7px 0;padding:7px 9px;border-radius:8px;background:#eef8ef;color:#267a35;font-weight:800">
+            🚚 Dispatched
+          </div>`
+        : ""
+    }
 
     <div class="brand-sub">
       ${new Date(
