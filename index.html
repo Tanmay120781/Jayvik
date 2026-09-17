@@ -8522,7 +8522,7 @@ async function sendWhatsAppOrder(){
 
     /* Out-of-stock quantities are accepted as pending items. */
 
-    const initialRouting=getInitialOrderRouting(orderItems||cart);
+    const initialRouting=getInitialOrderRouting(cart||[]);
 
   const order={
       id:"JY"+Date.now(),
