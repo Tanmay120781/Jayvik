@@ -9277,6 +9277,104 @@ async function deletePendingOrderLine(orderId,productId,size){
 }
 
 
+async function recheckAndMovePendingOrderToReady(orderId){
+  if(!auth?.currentUser || auth.currentUser.email!=="jayvik.india@gmail.com"){
+    alert("Admin login required.");
+    return;
+  }
+
+  const index=orders.findIndex(o=>String(o.id)===String(orderId));
+  if(index<0){
+    alert("Order not found.");
+    return;
+  }
+
+  try{
+    const productSnap=await db.ref("store/public/products").once("value");
+    const latestProducts=normalizeFirebaseProducts(productSnap.val());
+
+    if(Array.isArray(latestProducts) && latestProducts.length){
+      products=latestProducts;
+      localStorage.setItem("jayvik_products",JSON.stringify(products));
+    }
+
+    const order=orders[index];
+    const fulfillment=calculateOrderFulfillment(order.items||[]);
+    const pending=fulfillment.filter(x=>Number(x.pendingQty||0)>0);
+    const ready=fulfillment.filter(x=>Number(x.readyQty||0)>0);
+    const now=new Date().toISOString();
+
+    if(pending.length===0){
+      const updated={
+        ...order,
+        status:"ready",
+        isPartial:false,
+        fulfillment,
+        readyStage:"ready",
+        pendingItemQty:0,
+        readyItemQty:fulfillment.reduce((sum,x)=>sum+Number(x.readyQty||0),0),
+        updatedAt:now
+      };
+
+      await db.ref("orders/"+String(order.id)).set(updated);
+      const verify=await db.ref("orders/"+String(order.id)).once("value");
+      const saved=verify.val();
+
+      if(!saved || String(saved.status||"").toLowerCase()!=="ready"){
+        throw new Error("Firebase did not confirm Ready status.");
+      }
+
+      orders[index]=saved;
+      localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+
+      try{
+        await db.ref("store/public/orderStatus/"+String(order.id))
+          .set(publicOrderStatusPayload(saved));
+      }catch(mirrorErr){
+        console.error("Customer status mirror failed:",mirrorErr);
+      }
+
+      await renderOrders(false);
+      alert("Stock is available. Order moved to Ready.");
+      return;
+    }
+
+    const refreshed={
+      ...order,
+      status:ready.length ? "partial" : "pending",
+      isPartial:ready.length>0,
+      fulfillment,
+      pendingItemQty:pending.reduce((sum,x)=>sum+Number(x.pendingQty||0),0),
+      readyItemQty:ready.reduce((sum,x)=>sum+Number(x.readyQty||0),0),
+      readyStage:ready.length ? String(order.readyStage||"ready") : "",
+      updatedAt:now
+    };
+
+    await db.ref("orders/"+String(order.id)).set(refreshed);
+    orders[index]=refreshed;
+    localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+
+    try{
+      await db.ref("store/public/orderStatus/"+String(order.id))
+        .set(publicOrderStatusPayload(refreshed));
+    }catch(mirrorErr){
+      console.error("Customer status mirror failed:",mirrorErr);
+    }
+
+    await renderOrders(false);
+
+    alert(
+      ready.length
+        ? "Stock rechecked. Available items moved to Ready; unavailable items remain Pending."
+        : "Stock rechecked. This order still has unavailable items."
+    );
+  }catch(err){
+    console.error("Pending stock recheck failed:",err);
+    alert("Could not recheck this Pending Order. "+(err?.message||"Please try again."));
+  }
+}
+
+
 function buildPendingOrdersTable(partialOrders){
   const wrap=document.createElement("div");
   wrap.className="pending-orders-table-wrap";
@@ -9331,9 +9429,9 @@ function buildPendingOrdersTable(partialOrders){
               <button
                 type="button"
                 class="btn btn-light"
-                onclick="refreshPartialOrderAvailability('${escapeAttr(order.id)}')"
+                onclick="recheckAndMovePendingOrderToReady('${escapeAttr(order.id)}')"
               >
-                ↻ Recheck
+                ↻ Recheck Stock / Move Ready
               </button>
               <button
                 type="button"
@@ -10070,7 +10168,7 @@ function buildOrderCard(order){
 
       <button
         class="btn btn-light"
-        onclick="refreshPartialOrderAvailability('${escapeAttr(order.id)}')"
+        onclick="recheckAndMovePendingOrderToReady('${escapeAttr(order.id)}')"
       >
         ↻ Recheck Pending Items
       </button>
