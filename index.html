@@ -8964,7 +8964,10 @@ function renderDispatchedOrdersFolder(){
   if(!board)return;
 
   const historyOrders=(orders||[])
-    .filter(order=>String(order.status||"").toLowerCase()==="history")
+    .filter(order=>{
+      const status=String(order.status||"").toLowerCase();
+      return status==="dispatched" || status==="history";
+    })
     .sort((a,b)=>new Date(b.archivedAt||b.updatedAt||0)-new Date(a.archivedAt||a.updatedAt||0));
 
   if(!window.jayvikSelectedDispatchedOrders){
@@ -8987,7 +8990,7 @@ function renderDispatchedOrdersFolder(){
   if(!historyOrders.length){
     board.innerHTML=`
       <div class="empty-state">
-        No orders in Dispatched Orders folder.
+        No dispatched orders yet.
       </div>
     `;
     return;
@@ -9048,7 +9051,7 @@ function renderDispatchedOrdersFolder(){
             <button
               class="btn btn-danger"
               ${paymentReceived?"":"disabled"}
-              onclick="deleteDispatchedOrder('${escapeAttr(String(order.id))}')"
+              onclick="deletePaidDispatchedOrder('${escapeAttr(String(order.id))}')"
             >🗑 Delete</button>
           </div>
         </td>
@@ -9119,9 +9122,10 @@ function toggleAllDispatchedFolderOrders(checked){
     window.jayvikSelectedDispatchedOrders=new Set();
   }
 
-  const historyOrders=(orders||[]).filter(
-    order=>String(order.status||"").toLowerCase()==="history"
-  );
+  const historyOrders=(orders||[]).filter(order=>{
+    const status=String(order.status||"").toLowerCase();
+    return status==="dispatched" || status==="history";
+  });
 
   if(checked){
     historyOrders.forEach(order=>
@@ -9173,7 +9177,7 @@ async function deleteSelectedDispatchedFolderOrders(){
   }
 
   for(const order of selectedOrders){
-    await deleteDispatchedOrder(String(order.id),true);
+    await deletePaidDispatchedOrder(String(order.id),true);
   }
 
   window.jayvikSelectedDispatchedOrders.clear();
@@ -10702,7 +10706,7 @@ async function markPaymentReceived(orderId){
 
   if(!order)return;
 
-  if(order.status!=="history"){
+  if(!["dispatched","history"].includes(String(order.status||"").toLowerCase())){
     alert("Payment can be marked received only for Dispatched Orders.");
     return;
   }
@@ -10767,7 +10771,7 @@ async function markPaymentReceived(orderId){
 }
 
 
-async function deletePaidDispatchedOrder(orderId){
+async function deletePaidDispatchedOrder(orderId,skipConfirm=false){
 
   if(
     !auth?.currentUser ||
@@ -10780,7 +10784,7 @@ async function deletePaidDispatchedOrder(orderId){
   const order=orders.find(o=>String(o.id)===String(orderId));
   if(!order)return;
 
-  if(order.status!=="history"){
+  if(!["dispatched","history"].includes(String(order.status||"").toLowerCase())){
     alert("Only orders in Dispatched Orders can be deleted.");
     return;
   }
@@ -10790,11 +10794,13 @@ async function deletePaidDispatchedOrder(orderId){
     return;
   }
 
-  const ok=await jayvikConfirm(
-    "Are you sure you want to permanently delete Order "+order.id+"?\n\n"+
-    "The order will first be safely saved in Sales Archive before it is removed from active orders."
-  );
-  if(!ok)return;
+  if(!skipConfirm){
+    const ok=await jayvikConfirm(
+      "Are you sure you want to permanently delete Order "+order.id+"?\n\n"+
+      "The order will first be safely saved in Sales Archive before it is removed from active orders."
+    );
+    if(!ok)return;
+  }
 
   try{
     if(!firebaseReady || !db){
