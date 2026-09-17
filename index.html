@@ -1136,6 +1136,14 @@ footer{
   cursor:not-allowed;
 }
 
+
+/* ===== Sales Archive multi-select ===== */
+.sales-archive-bulk-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;padding:10px;margin:0 0 12px;
+  border:1px solid #dfe9df;border-radius:10px;background:#f7fbf7;
+}
+.sales-archive-bulk-toolbar button:disabled{opacity:.5;cursor:not-allowed}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -11406,6 +11414,89 @@ function closeAdmin(){
 
 
 
+async /* ===== Sales Archive multi-select ===== */
+const jayvikSelectedArchiveOrders=new Set();
+
+function toggleSalesArchiveSelection(orderId,checked){
+  const id=String(orderId||"");
+  if(checked)jayvikSelectedArchiveOrders.add(id);
+  else jayvikSelectedArchiveOrders.delete(id);
+  const count=document.getElementById("salesArchiveSelectedCount");
+  const button=document.getElementById("salesArchiveBulkDeleteBtn");
+  if(count)count.textContent=String(jayvikSelectedArchiveOrders.size);
+  if(button)button.disabled=jayvikSelectedArchiveOrders.size===0;
+}
+
+function toggleAllSalesArchiveRows(checked){
+  document.querySelectorAll(".salesArchiveRowCheck").forEach(box=>{
+    box.checked=checked;
+    const id=String(box.dataset.orderId||"");
+    if(checked)jayvikSelectedArchiveOrders.add(id);
+    else jayvikSelectedArchiveOrders.delete(id);
+  });
+  const count=document.getElementById("salesArchiveSelectedCount");
+  const button=document.getElementById("salesArchiveBulkDeleteBtn");
+  if(count)count.textContent=String(jayvikSelectedArchiveOrders.size);
+  if(button)button.disabled=jayvikSelectedArchiveOrders.size===0;
+}
+
+async function bulkDeleteSalesArchiveOrders(){
+  if(!firebaseReady || !db || !auth?.currentUser ||
+     auth.currentUser.email!=="jayvik.india@gmail.com"){
+    alert("Admin login is required to delete Sales Archive orders.");
+    return;
+  }
+
+  const ids=[...jayvikSelectedArchiveOrders];
+  if(!ids.length){
+    alert("Please tick at least one Sales Archive order.");
+    return;
+  }
+
+  const confirmed=await jayvikConfirm(
+    "Permanently delete "+ids.length+" selected Sales Archive order(s)?\n\n"+
+    "These orders will also be removed from Customer Consumption reports and future Excel exports."
+  );
+  if(!confirmed)return;
+
+  let deleted=0, failed=0;
+
+  for(const orderId of ids){
+    try{
+      const updates={};
+      updates["/store/salesArchive/"+String(orderId)]=null;
+      updates["/store/public/orderStatus/"+String(orderId)]=null;
+      updates["/store/public/orderHistoryDeleted/"+String(orderId)]={
+        deleted:true,
+        deletedAt:new Date().toISOString()
+      };
+
+      await db.ref().update(updates);
+      salesArchive=(salesArchive||[]).filter(
+        item=>String(item.id)!==String(orderId)
+      );
+      deleted++;
+    }catch(err){
+      console.error("Bulk Sales Archive delete failed:",orderId,err);
+      failed++;
+    }
+  }
+
+  jayvikSelectedArchiveOrders.clear();
+  await renderSalesArchive();
+
+  if(document.getElementById("consumptionAdmin")?.classList.contains("active")){
+    await renderConsumptionAnalytics();
+  }
+
+  alert(
+    failed
+      ? deleted+" archived order(s) deleted. "+failed+" could not be deleted."
+      : deleted+" archived order(s) deleted successfully."
+  );
+}
+
+
 async function renderSalesArchive(){
 
   await loadSalesArchive();
@@ -11546,6 +11637,16 @@ async function renderSalesArchive(){
         "";
 
       return [
+        `
+          <input
+            type="checkbox"
+            class="salesArchiveRowCheck"
+            data-order-id="${escapeAttr(String(order.id||""))}"
+            onchange="toggleSalesArchiveSelection('${escapeAttr(String(order.id||""))}',this.checked)"
+            title="Select archived order"
+            style="width:18px;height:18px;cursor:pointer"
+          >
+        `,
         escapeHtml(String(order.id||"")),
         escapeHtml(
           archiveDate
@@ -11580,8 +11681,28 @@ async function renderSalesArchive(){
     });
 
   table.innerHTML=
+    `
+      <div class="sales-archive-bulk-toolbar">
+        <strong>Selected: <span id="salesArchiveSelectedCount">0</span></strong>
+        <button
+          id="salesArchiveBulkDeleteBtn"
+          type="button"
+          class="btn btn-danger"
+          onclick="bulkDeleteSalesArchiveOrders()"
+          disabled
+        >
+          🗑️ Delete Selected
+        </button>
+      </div>
+    `+
     consumptionTable(
       [
+        `<input
+          type="checkbox"
+          title="Select all archived orders"
+          onchange="toggleAllSalesArchiveRows(this.checked)"
+          style="width:18px;height:18px;cursor:pointer"
+        >`,
         "Order ID",
         "Archived At",
         "Customer",
