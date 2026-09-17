@@ -1158,6 +1158,26 @@ footer{
   table-layout:auto !important;
 }
 
+
+/* DISPATCHED ORDERS - CLEAN TABLE */
+#dispatchedOrdersBoard{width:100%;max-width:100%}
+#dispatchedOrdersBoard .dispatched-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 14px;background:#f8fbf8;border:1px solid #dfe9df;border-radius:12px}
+#dispatchedOrdersBoard .dispatched-table-wrap{width:100%;overflow-x:auto;border:1px solid #dfe7df;border-radius:12px;background:#fff}
+#dispatchedOrdersBoard table.dispatched-orders-table{width:100%;min-width:1180px;border-collapse:collapse;table-layout:auto;margin:0}
+#dispatchedOrdersBoard .dispatched-orders-table th,#dispatchedOrdersBoard .dispatched-orders-table td{padding:12px 10px;border-bottom:1px solid #e8eee8;vertical-align:middle;text-align:left;white-space:normal;line-height:1.4}
+#dispatchedOrdersBoard .dispatched-orders-table thead th{background:#f1f7f1;color:#17351d;font-weight:700;white-space:nowrap}
+#dispatchedOrdersBoard .col-select{width:52px;min-width:52px;text-align:center!important}
+#dispatchedOrdersBoard .col-order{min-width:135px}
+#dispatchedOrdersBoard .col-date{min-width:155px}
+#dispatchedOrdersBoard .col-customer{min-width:145px}
+#dispatchedOrdersBoard .col-mobile{min-width:125px}
+#dispatchedOrdersBoard .col-products{min-width:250px}
+#dispatchedOrdersBoard .col-amount{min-width:105px;white-space:nowrap!important}
+#dispatchedOrdersBoard .col-payment{min-width:115px;white-space:nowrap!important}
+#dispatchedOrdersBoard .col-action{min-width:300px}
+#dispatchedOrdersBoard .dispatched-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+#dispatchedOrdersBoard .dispatched-actions .btn{width:auto!important;min-width:0!important;padding:8px 11px!important;margin:0!important;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}
+#dispatchedOrdersBoard input[type=checkbox]{width:18px;height:18px;margin:0}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -9144,7 +9164,7 @@ async function renderDispatchedOrdersFolder(){
 
       return `
         <tr>
-          <td style="width:48px;text-align:center">
+          <td class="col-select">
             <input
               type="checkbox"
               class="jayvik-dispatched-row-check"
@@ -9162,16 +9182,16 @@ async function renderDispatchedOrdersFolder(){
             ${escapeHtml(formatDispatchedOrderDate(dispatchedDate))}
           </td>
 
-          <td>${escapeHtml(String(customer.name||""))}</td>
-          <td>${escapeHtml(String(customer.phone||""))}</td>
+          <td class="col-customer">${escapeHtml(String(customer.name||""))}</td>
+          <td class="col-mobile">${escapeHtml(String(customer.phone||""))}</td>
 
-          <td>${items||"-"}</td>
+          <td class="col-products">${items||"-"}</td>
 
           <td>
             ₹${Number(displayedAmount||0).toFixed(2)}
           </td>
 
-          <td>
+          <td class="col-payment">
             ${
               paymentReceived
                 ? "<strong>💰 Received</strong>"
@@ -9179,8 +9199,8 @@ async function renderDispatchedOrdersFolder(){
             }
           </td>
 
-          <td>
-            <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <td class="col-action">
+            <div class="dispatched-actions">
               ${
                 !paymentReceived
                   ? `<button
@@ -9246,21 +9266,21 @@ async function renderDispatchedOrdersFolder(){
         <table class="consumption-table" style="width:100%">
           <thead>
             <tr>
-              <th style="width:48px;text-align:center">
+              <th class="col-select">
                 <input
                   type="checkbox"
                   ${allSelected?"checked":""}
                   onchange="toggleAllDispatchedFolderOrders(this.checked)"
                 >
               </th>
-              <th>Order ID</th>
-              <th>Dispatched At</th>
-              <th>Customer</th>
-              <th>Mobile</th>
-              <th>Products</th>
-              <th>Amount</th>
-              <th>Payment</th>
-              <th>Action</th>
+              <th class="col-order">Order ID</th>
+              <th class="col-date">Dispatched At</th>
+              <th class="col-customer">Customer</th>
+              <th class="col-mobile">Mobile</th>
+              <th class="col-products">Products</th>
+              <th class="col-amount">Amount</th>
+              <th class="col-payment">Payment</th>
+              <th class="col-action">Action</th>
             </tr>
           </thead>
 
