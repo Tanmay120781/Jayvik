@@ -4664,12 +4664,54 @@ async function saveOrderToFirebase(order){
   }
 
   try{
+    /*
+      IMPORTANT:
+      Read the latest Firebase catalogue immediately before the customer order
+      is classified. This prevents an in-stock product from being treated as
+      Pending because the browser had an older/local catalogue copy.
+    */
+    const productSnap=
+      await db.ref("store/public/products").once("value");
+
+    const latestProducts=
+      normalizeFirebaseProducts(productSnap.val());
+
+    if(Array.isArray(latestProducts) && latestProducts.length){
+      products=latestProducts.map(product=>({
+        ...product,
+        packs:(product.packs||[]).map(pack=>({
+          ...pack,
+          stock:Number.isFinite(Number(pack.stock))
+            ? Number(pack.stock)
+            : 0
+        }))
+      }));
+
+      localStorage.setItem(
+        "jayvik_products",
+        JSON.stringify(products)
+      );
+    }
 
     /*
-      Existing Firebase Rules allow a public customer to CREATE
-      /orders/{id}. Keep this customer write limited to that path.
-      Writing protected status paths in the same multi-location
-      update would make Firebase reject the whole order save.
+      Classify the NEW order from the latest live stock:
+        all quantities available  -> READY
+        some unavailable          -> PARTIAL / Pending Orders
+        all unavailable           -> PENDING
+    */
+    const routing=
+      getInitialOrderRouting(order.items||[]);
+
+    order.fulfillment=routing.fulfillment;
+    order.pendingItemQty=routing.pendingItemQty;
+    order.readyItemQty=routing.readyItemQty;
+    order.status=routing.status;
+    order.isPartial=routing.isPartial;
+    order.readyStage=routing.readyStage;
+
+    /*
+      Existing Firebase Rules allow public first-time creation at /orders/{id}.
+      Keep the customer write limited to that path.
     */
     await db
       .ref("orders/" + String(order.id))
@@ -4685,15 +4727,9 @@ async function saveOrderToFirebase(order){
       err?.message || err
     );
 
-    showSaveNotification(
-      "Firebase could not confirm the order save. Please try again.",
-      true
-    );
-
     return false;
   }
 }
-
 
 function normalizeCustomerPhone(value){
 
@@ -8065,15 +8101,25 @@ function getInitialOrderRouting(items){
 
 
 function applyOrderFulfillment(order){
-  order.fulfillment=calculateOrderFulfillment(order.items);
-  const ready=order.fulfillment.reduce((n,x)=>n+Number(x.readyQty||0),0);
-  const pending=order.fulfillment.reduce((n,x)=>n+Number(x.pendingQty||0),0);
-  order.readyItemQty=ready;
-  order.pendingItemQty=pending;
-  order.isPartial=ready>0 && pending>0;
-  if(pending>0){
-    order.status=ready>0 ? "partial" : "pending";
+  const routing=getInitialOrderRouting(order.items||[]);
+  order.fulfillment=routing.fulfillment;
+  order.readyItemQty=routing.readyItemQty;
+  order.pendingItemQty=routing.pendingItemQty;
+  order.isPartial=routing.isPartial;
+
+  /*
+    Only use this helper for stock classification.
+    A completely available Pending/Partial order becomes Ready.
+  */
+  if(
+    ["pending","partial","ready"].includes(
+      String(order.status||"pending").toLowerCase()
+    )
+  ){
+    order.status=routing.status;
+    order.readyStage=routing.readyStage;
   }
+
   return order;
 }
 
@@ -10765,15 +10811,7 @@ async function dispatchPartialReadyItems(orderId){
       This prevents the Ready batch from being stuck if the mirror update
       encounters a transient problem.
     */
-    const routing=getInitialOrderRouting(order.items||[]);
-      order.fulfillment=routing.fulfillment;
-      order.pendingItemQty=routing.pendingItemQty;
-      order.readyItemQty=routing.readyItemQty;
-      order.status=routing.status;
-      order.isPartial=routing.isPartial;
-      order.readyStage=routing.readyStage;
-
-      await db.ref("orders/"+String(order.id)).set(order);
+    await db.ref("orders/"+String(order.id)).set(order);
 
     try{
       await db.ref(
