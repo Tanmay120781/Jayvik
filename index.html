@@ -1276,7 +1276,7 @@ footer{
 #dispatchedOrdersBoard .dispatch-dimension-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border:1px solid #dfe9df;border-radius:10px;background:#f8fbf8}
 #dispatchedOrdersBoard .dispatch-dimension-controls label{display:flex;align-items:center;gap:6px;font-weight:600;font-size:13px}
 #dispatchedOrdersBoard .dispatch-dimension-controls select{padding:6px 8px;border:1px solid #ccd8cc;border-radius:7px;background:#fff}
-#dispatchedOrdersBoard .dispatch-resizable-window{width:var(--dispatch-window-width)!important;max-width:100%!important;max-height:var(--dispatch-window-height)!important;overflow:auto!important;border:1px solid #dfe7df;border-radius:12px;background:#fff}
+#dispatchedOrdersBoard .dispatch-resizable-window{width:var(--dispatch-window-width)!important;max-width:none!important;max-height:var(--dispatch-window-height)!important;overflow:auto!important;border:1px solid #dfe7df;border-radius:12px;background:#fff}
 #dispatchedOrdersBoard .dispatch-resizable-window table{font-size:var(--dispatch-font-size)!important}
 
 #dispatchedOrdersBoard .dispatch-dimension-controls{
@@ -1287,6 +1287,16 @@ footer{
   margin-bottom:14px !important;
   background:#eef8ef !important;
   border:2px solid #87b88e !important;
+}
+
+/* Permit Dispatched Orders width controls above 100%. */
+#dispatchedOrdersBoard{
+  overflow-x:auto !important;
+  overflow-y:visible !important;
+}
+#dispatchedOrdersBoard .dispatch-resizable-window{
+  max-width:none !important;
+  min-width:0;
 }
 </style>
 
@@ -9246,11 +9256,18 @@ async function renderDispatchedOrdersFolder(){
         <strong>⚙️ Window Dimensions:</strong>
         <label>Width
           <select id="dispatchWidthControl" onchange="setDispatchedWindowDimensions()">
-            <option value="100%">100%</option>
-            <option value="95%">95%</option>
-            <option value="90%">90%</option>
-            <option value="85%">85%</option>
             <option value="80%">80%</option>
+            <option value="90%">90%</option>
+            <option value="100%">100%</option>
+            <option value="125%">125%</option>
+            <option value="150%">150%</option>
+            <option value="175%">175%</option>
+            <option value="200%">200%</option>
+            <option value="250%">250%</option>
+            <option value="300%">300%</option>
+            <option value="350%">350%</option>
+            <option value="400%">400%</option>
+            <option value="500%">500%</option>
           </select>
         </label>
         <label>Height
