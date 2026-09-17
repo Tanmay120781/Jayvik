@@ -8959,15 +8959,34 @@ function orderMatchesAdminStage(order,stage){
   return false;
 }
 
+function isOrderInDispatchedFolder(order){
+  const status=String(order?.status||"").toLowerCase();
+  const readyStage=String(order?.readyStage||"").toLowerCase();
+
+  /*
+    Full order:
+      status = dispatched
+
+    Partial order:
+      status stays partial because unavailable items remain Pending,
+      while its available portion reaches readyStage = dispatched.
+
+    Older archived records:
+      status = history
+  */
+  return (
+    status==="dispatched" ||
+    status==="history" ||
+    (status==="partial" && readyStage==="dispatched")
+  );
+}
+
 function renderDispatchedOrdersFolder(){
   const board=document.getElementById("dispatchedOrdersBoard");
   if(!board)return;
 
   const historyOrders=(orders||[])
-    .filter(order=>{
-      const status=String(order.status||"").toLowerCase();
-      return status==="dispatched" || status==="history";
-    })
+    .filter(isOrderInDispatchedFolder)
     .sort((a,b)=>new Date(b.archivedAt||b.updatedAt||0)-new Date(a.archivedAt||a.updatedAt||0));
 
   if(!window.jayvikSelectedDispatchedOrders){
@@ -9001,10 +9020,21 @@ function renderDispatchedOrdersFolder(){
     const paymentReceived=
       String(order.paymentStatus||"pending").toLowerCase()==="received";
 
-    const items=(order.items||[]).map(item=>{
+    const folderItems=
+      String(order.status||"").toLowerCase()==="partial" &&
+      Array.isArray(order.fulfillment)
+        ? order.fulfillment
+            .filter(item=>Number(item.readyQty||0)>0)
+            .map(item=>({
+              ...item,
+              qty:Number(item.readyQty||0)
+            }))
+        : (order.items||[]);
+
+    const items=folderItems.map(item=>{
       const name=escapeHtml(String(item.name||item.productName||"Item"));
       const size=escapeHtml(String(item.size||item.pack||""));
-      const qty=Number(item.qty||item.quantity||0);
+      const qty=Number(item.qty||item.quantity||item.readyQty||0);
       return `${name}${size?` (${size})`:""} × ${qty}`;
     }).join("<br>");
 
@@ -9029,7 +9059,13 @@ function renderDispatchedOrdersFolder(){
         <td>${escapeHtml(String(customer.name||""))}</td>
         <td>${escapeHtml(String(customer.phone||""))}</td>
         <td>${items||"-"}</td>
-        <td>₹${Number(order.total||0).toFixed(2)}</td>
+        <td>₹${
+          Number(
+            String(order.status||"").toLowerCase()==="partial"
+              ? (getReadyInvoiceOrder(order)?.total||0)
+              : (order.total||0)
+          ).toFixed(2)
+        }</td>
         <td>
           ${
             paymentReceived
@@ -9122,10 +9158,7 @@ function toggleAllDispatchedFolderOrders(checked){
     window.jayvikSelectedDispatchedOrders=new Set();
   }
 
-  const historyOrders=(orders||[]).filter(order=>{
-    const status=String(order.status||"").toLowerCase();
-    return status==="dispatched" || status==="history";
-  });
+  const historyOrders=(orders||[]).filter(isOrderInDispatchedFolder);
 
   if(checked){
     historyOrders.forEach(order=>
@@ -10706,7 +10739,7 @@ async function markPaymentReceived(orderId){
 
   if(!order)return;
 
-  if(!["dispatched","history"].includes(String(order.status||"").toLowerCase())){
+  if(!isOrderInDispatchedFolder(order)){
     alert("Payment can be marked received only for Dispatched Orders.");
     return;
   }
@@ -10784,7 +10817,7 @@ async function deletePaidDispatchedOrder(orderId,skipConfirm=false){
   const order=orders.find(o=>String(o.id)===String(orderId));
   if(!order)return;
 
-  if(!["dispatched","history"].includes(String(order.status||"").toLowerCase())){
+  if(!isOrderInDispatchedFolder(order)){
     alert("Only orders in Dispatched Orders can be deleted.");
     return;
   }
