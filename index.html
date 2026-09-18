@@ -1330,6 +1330,40 @@ footer{
   visibility:visible !important;
   min-height:80px;
 }
+
+/* INVENTORY CATEGORY QUICK-NAV TABS */
+#inventoryCategorySummary{
+  position:sticky;
+  top:0;
+  z-index:5;
+  background:#fff;
+  padding:10px 0;
+}
+.inventory-category-chip{
+  cursor:pointer !important;
+  user-select:none;
+  transition:transform .12s ease, background .12s ease, border-color .12s ease;
+}
+.inventory-category-chip:hover{
+  background:#e8f5e9 !important;
+  border-color:#7daf83 !important;
+  transform:translateY(-1px);
+}
+.inventory-category-chip:focus{
+  outline:3px solid rgba(38,122,53,.22);
+  outline-offset:2px;
+}
+.inventory-category-chip.active{
+  background:#267a35 !important;
+  color:#fff !important;
+  border-color:#267a35 !important;
+}
+.inventory-category-block{
+  scroll-margin-top:110px;
+}
+.inventory-category-heading{
+  scroll-margin-top:110px;
+}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -11793,6 +11827,41 @@ async function openInventoryManagement(){
   renderInventory();
 }
 
+function inventoryCategoryDomId(category){
+  return "inventory-category-"+String(category||"")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-+|-+$/g,"");
+}
+
+function goToInventoryCategory(category){
+  const id=inventoryCategoryDomId(category);
+  const target=document.getElementById(id);
+  if(!target)return;
+
+  document.querySelectorAll(".inventory-category-chip").forEach(tab=>{
+    tab.classList.toggle(
+      "active",
+      String(tab.dataset.category||"")===String(category||"")
+    );
+  });
+
+  target.scrollIntoView({
+    behavior:"smooth",
+    block:"start"
+  });
+
+  // Briefly highlight the category heading.
+  const heading=target.querySelector(".inventory-category-heading");
+  if(heading){
+    const oldBoxShadow=heading.style.boxShadow;
+    heading.style.boxShadow="inset 5px 0 0 #267a35";
+    setTimeout(()=>{
+      heading.style.boxShadow=oldBoxShadow;
+    },1200);
+  }
+}
+
 function renderInventory(){
   try{
     renderInventoryCore();
@@ -11856,7 +11925,17 @@ function renderInventoryCore(){
       const packs=categoryProducts.reduce(
         (sum,product)=>sum+(Array.isArray(product.packs)?product.packs.length:0),0
       );
-      return `<span class="inventory-category-chip">${escapeHtml(category)} · ${categoryProducts.length} products · ${packs} packs</span>`;
+      return `
+        <button
+          type="button"
+          class="inventory-category-chip"
+          data-category="${escapeAttr(category)}"
+          onclick="goToInventoryCategory('${escapeAttr(category)}')"
+          title="Go directly to ${escapeAttr(category)} inventory"
+        >
+          ${escapeHtml(category)} · ${categoryProducts.length} products · ${packs} packs
+        </button>
+      `;
     }).join("");
   }
 
@@ -11868,6 +11947,7 @@ function renderInventoryCore(){
 
     const block=document.createElement("div");
     block.className="inventory-category-block";
+    block.id=inventoryCategoryDomId(category);
     block.innerHTML=`
       <div class="inventory-category-heading">
         <span>🗂️ ${escapeHtml(category)}</span>
