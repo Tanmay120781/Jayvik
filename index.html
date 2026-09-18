@@ -5493,37 +5493,19 @@ async function customerHasPendingPaymentBeforeNewOrder(){
   const lock=getCustomerInterlockState(phone);
 
   if(!lock.enabled){
-    return {
-      blocked:false,
-      total:0,
-      orders:[],
-      interlock:lock
-    };
+    return {blocked:false,total:0,orders:[],interlock:lock};
   }
 
-  const ids=await getKnownCustomerOrderIdsForPaymentDashboard();
-  const lastId=String(
-    localStorage.getItem("jayvik_last_order_id")||""
-  ).trim();
-  if(lastId)ids.add(lastId);
-
-  if(!ids.size){
-    return {
-      blocked:false,
-      total:0,
-      orders:[],
-      interlock:lock
-    };
+  if(phone.length!==10 || !firebaseReady || !db){
+    return {blocked:false,total:0,orders:[],interlock:lock};
   }
 
   try{
-    const snaps=await Promise.all(
-      [...ids].map(id=>
-        db.ref("store/public/orderStatus").child(id).once("value")
-      )
-    );
+    const snap=await db.ref(
+      "store/public/paymentLedger/"+phone
+    ).once("value");
 
-    const pending=snaps.map(x=>x.val()).filter(o=>
+    const pending=Object.values(snap.val()||{}).filter(o=>
       o?.id &&
       String(o.paymentStatus||"pending").toLowerCase()!=="received" &&
       !["history","deleted"].includes(
@@ -5533,20 +5515,13 @@ async function customerHasPendingPaymentBeforeNewOrder(){
 
     return {
       blocked:pending.length>0,
-      total:pending.reduce(
-        (sum,o)=>sum+Number(o.orderTotal||0),0
-      ),
+      total:pending.reduce((sum,o)=>sum+Number(o.amount||0),0),
       orders:pending,
       interlock:lock
     };
   }catch(err){
-    console.error("Payment interlock check failed:",err);
-    return {
-      blocked:false,
-      total:0,
-      orders:[],
-      interlock:lock
-    };
+    console.error("Payment interlock ledger check failed:",err);
+    return {blocked:false,total:0,orders:[],interlock:lock};
   }
 }
 
@@ -6668,6 +6643,63 @@ function restoreLastCustomerOnLoad(){
 }
 
 
+
+function paymentLedgerPhone(order){
+  return normalizeCustomerPhone(
+    order?.customer?.phone ||
+    order?.customerPhone ||
+    order?.phone ||
+    ""
+  );
+}
+
+function paymentLedgerAmount(order){
+  const status=String(order?.status||"").toLowerCase();
+
+  if(status==="partial"){
+    const partial=Number(
+      order?.readyTotal ??
+      order?.payableTotal ??
+      order?.invoiceTotal ??
+      0
+    );
+    if(partial>0)return partial;
+  }
+
+  return Number(order?.total||0);
+}
+
+async function syncOrderToPaymentLedger(order){
+  if(!firebaseReady||!db||!order?.id)return;
+
+  const phone=paymentLedgerPhone(order);
+  if(phone.length!==10)return;
+
+  const id=String(order.id);
+  const status=String(order.status||"pending").toLowerCase();
+  const paymentStatus=String(order.paymentStatus||"pending").toLowerCase();
+  const ref=db.ref("store/public/paymentLedger/"+phone+"/"+id);
+
+  if(
+    paymentStatus==="received" ||
+    status==="history" ||
+    status==="deleted"
+  ){
+    await ref.remove();
+    return;
+  }
+
+  await ref.set({
+    id,
+    status:String(order.status||"pending"),
+    readyStage:String(order.readyStage||""),
+    paymentStatus:String(order.paymentStatus||"pending"),
+    amount:Number(paymentLedgerAmount(order)||0),
+    createdAt:String(order.createdAt||""),
+    updatedAt:String(order.updatedAt||order.createdAt||new Date().toISOString())
+  });
+}
+
 function publicOrderStatusPayload(order){
 
   return{
@@ -6785,6 +6817,8 @@ async function syncCustomerLiveOrderStatus(order){
   const ref=db.ref("store/public/orderStatus/"+id);
 
   await ref.set(payload);
+
+  await syncOrderToPaymentLedger(order);
 
   /*
     Privacy-safe payment lookup index.
@@ -7407,7 +7441,7 @@ async function refreshCustomerPendingPaymentsDashboard(){
   const host=document.getElementById("customerPendingPaymentsDashboard");
   if(!host)return;
 
-  function showZero(){
+  const showZero=()=>{
     host.innerHTML=`
       <div class="customer-payment-summary customer-payment-clear">
         <div>
@@ -7415,142 +7449,50 @@ async function refreshCustomerPendingPaymentsDashboard(){
           <span>✅ No pending payment</span>
         </div>
       </div>`;
-  }
+  };
 
   if(!firebaseReady||!db){
     showZero();
-
-    /*
-      Firebase may still be initializing when the customer page first renders.
-      Retry automatically; never leave a permanent Loading state.
-    */
     clearTimeout(window.__jayvikPendingPaymentRetryTimer);
-    window.__jayvikPendingPaymentRetryTimer=setTimeout(()=>{
-      refreshCustomerPendingPaymentsDashboard();
-    },1200);
+    window.__jayvikPendingPaymentRetryTimer=setTimeout(
+      refreshCustomerPendingPaymentsDashboard,1200
+    );
     return;
   }
 
-  clearTimeout(window.__jayvikPendingPaymentRetryTimer);
+  const phone=normalizeCustomerPhone(
+    document.getElementById("customerPhone")?.value ||
+    localStorage.getItem("jayvik_last_customer_phone") ||
+    ""
+  );
 
-  const ids=new Set();
-  const localById={};
-
-  try{
-    const allHistory=getCustomerOrderHistoryLocal();
-    Object.values(allHistory||{}).forEach(list=>{
-      (Array.isArray(list)?list:[]).forEach(o=>{
-        if(o?.id){
-          ids.add(String(o.id));
-          localById[String(o.id)]=o;
-        }
-      });
-    });
-  }catch(e){}
-
-  try{
-    const legacy=JSON.parse(localStorage.getItem("jayvik_orders")||"[]");
-    (Array.isArray(legacy)?legacy:[]).forEach(o=>{
-      if(o?.id){
-        ids.add(String(o.id));
-        localById[String(o.id)]={...(localById[String(o.id)]||{}),...o};
-      }
-    });
-  }catch(e){}
-
-  try{
-    (Array.isArray(orders)?orders:[]).forEach(o=>{
-      if(o?.id){
-        ids.add(String(o.id));
-        localById[String(o.id)]={...(localById[String(o.id)]||{}),...o};
-      }
-    });
-  }catch(e){}
-
-  const lastId=String(localStorage.getItem("jayvik_last_order_id")||"").trim();
-  if(lastId)ids.add(lastId);
-
-  if(!ids.size){
+  if(phone.length!==10){
     showZero();
     return;
   }
 
   try{
-    const snapshots=await Promise.all(
-      [...ids].map(async id=>{
-        try{
-          const snap=await db.ref("store/public/orderStatus").child(id).once("value");
-          return {id,data:snap.val()};
-        }catch(e){
-          return {id,data:null};
-        }
-      })
-    );
+    const snap=await db.ref(
+      "store/public/paymentLedger/"+phone
+    ).once("value");
 
-    const rows=[];
+    const map=snap.val()||{};
 
-    snapshots.forEach(({id,data})=>{
-      const local=localById[id]||{};
-      const order=data ? {...local,...data} : local;
-
-      if(!order?.id)return;
-
-      const status=String(order.status||"").toLowerCase();
-      const payment=String(order.paymentStatus||"pending").toLowerCase();
-
-      if(payment==="received")return;
-      if(["history","deleted"].includes(status))return;
-
-      // Only genuine active transactions belong in pending payment.
-      if(!["pending","partial","ready","packing","dispatched"].includes(status)){
-        return;
-      }
-
-      let amount=Number(
-        order.orderTotal ??
-        order.total ??
-        0
+    const rows=Object.values(map)
+      .filter(o=>
+        o?.id &&
+        String(o.paymentStatus||"pending").toLowerCase()!=="received" &&
+        !["history","deleted"].includes(
+          String(o.status||"").toLowerCase()
+        )
+      )
+      .sort((a,b)=>
+        (new Date(b.createdAt||b.updatedAt||0).getTime()||0)-
+        (new Date(a.createdAt||a.updatedAt||0).getTime()||0)
       );
 
-      // For partial orders, use the payable/ready amount when available.
-      if(status==="partial"){
-        const partialAmount=Number(
-          order.readyTotal ??
-          order.payableTotal ??
-          order.invoiceTotal ??
-          0
-        );
-        if(partialAmount>0)amount=partialAmount;
-      }
-
-      rows.push({
-        ...order,
-        id:String(order.id),
-        orderTotal:Number(amount||0),
-        paymentItems:
-          Array.isArray(order.paymentItems)&&order.paymentItems.length
-            ? order.paymentItems
-            : (
-                Array.isArray(order.items)
-                  ? order.items.map(item=>({
-                      name:String(item?.name||"Product"),
-                      size:String(item?.size||item?.pack||""),
-                      qty:Number(item?.qty||0),
-                      price:Number(item?.price||0)
-                    }))
-                  : []
-              )
-      });
-    });
-
-    rows.sort((a,b)=>
-      (new Date(b.createdAt||b.updatedAt||0).getTime()||0)-
-      (new Date(a.createdAt||a.updatedAt||0).getTime()||0)
-    );
-
     const total=rows.reduce(
-      (sum,o)=>sum+Number(o.orderTotal||0),
-      0
+      (sum,o)=>sum+Number(o.amount||0),0
     );
 
     if(!rows.length){
@@ -7559,7 +7501,11 @@ async function refreshCustomerPendingPaymentsDashboard(){
     }
 
     if(total>0){
-      showCustomerPendingPaymentPopup(rows,total);
+      const popupRows=rows.map(o=>({
+        ...o,
+        orderTotal:Number(o.amount||0)
+      }));
+      showCustomerPendingPaymentPopup(popupRows,total);
     }
 
     host.innerHTML=`
@@ -7568,9 +7514,7 @@ async function refreshCustomerPendingPaymentsDashboard(){
           <strong class="customer-payment-pulse">
             ⚠️ 💳 Total Pending Payment: ₹${formatMoney(total)}
           </strong>
-          <span>
-            ${rows.length} pending transaction${rows.length===1?"":"s"}
-          </span>
+          <span>${rows.length} pending transaction${rows.length===1?"":"s"}</span>
         </div>
       </div>
 
@@ -7579,8 +7523,7 @@ async function refreshCustomerPendingPaymentsDashboard(){
           <thead>
             <tr>
               <th>Order ID</th>
-              <th>Transaction / Order Date</th>
-              <th>Order Details</th>
+              <th>Order Date</th>
               <th>Pending Amount</th>
               <th>Order Status</th>
               <th>Payment</th>
@@ -7595,27 +7538,16 @@ async function refreshCustomerPendingPaymentsDashboard(){
                     ? new Date(order.createdAt).toLocaleString("en-IN")
                     : "-"
                 )}</td>
-                <td>
-                  ${(Array.isArray(order.paymentItems)?order.paymentItems:[])
-                    .map(item=>`
-                      <div>
-                        <strong>${escapeHtml(item.name||"Product")}</strong>
-                        ${item.size?" — "+escapeHtml(item.size):""}
-                        × ${Number(item.qty||0)}
-                      </div>`).join("") || "-"}
-                </td>
-                <td>
-                  <strong>₹${formatMoney(Number(order.orderTotal||0))}</strong>
-                </td>
+                <td><strong>₹${formatMoney(Number(order.amount||0))}</strong></td>
                 <td>${escapeHtml(customerStatusLabel(order))}</td>
                 <td><strong>💳 Payment Pending</strong></td>
-              </tr>`).join("")}
+              </tr>
+            `).join("")}
           </tbody>
         </table>
       </div>`;
   }catch(err){
-    console.error("Customer pending-payment dashboard failed:",err);
-    // Never leave the customer dashboard stuck on Loading.
+    console.error("Unified pending payment lookup failed:",err);
     showZero();
   }
 }
@@ -12947,6 +12879,12 @@ async function markPaymentReceived(orderId){
     );
     if(paymentPhone.length===10){
       await db.ref(
+        "store/public/paymentLedger/"+paymentPhone+"/"+String(orderId)
+      ).remove();
+    }
+
+    if(paymentPhone.length===10){
+      await db.ref(
         "store/public/customerPaymentOrders/"+
         paymentPhone+"/"+
         String(orderId)
@@ -15975,6 +15913,28 @@ function collectCustomerPaymentInterlockRows(){
 
 
 
+
+async function repairUnifiedPaymentLedger(){
+  if(
+    !firebaseReady ||
+    !db ||
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  )return;
+
+  try{
+    const snap=await db.ref("orders").once("value");
+    const map=snap.val()||{};
+
+    for(const id of Object.keys(map)){
+      const order={...map[id],id:String(map[id]?.id||id)};
+      await syncOrderToPaymentLedger(order);
+    }
+  }catch(err){
+    console.warn("Unified payment ledger repair failed:",err);
+  }
+}
+
 async function repairCustomerPaymentOrderIndex(){
   if(
     !firebaseReady ||
@@ -16414,15 +16374,28 @@ function showAdminTab(id,button){
   }
 
   if(id==="paymentControlAdmin"){
-    repairCustomerPaymentOrderIndex().then(()=>{
+    (async()=>{
+      try{
+        const snap=await db.ref("orders").once("value");
+        const map=snap.val()||{};
+        orders=Object.keys(map).map(id=>({
+          ...map[id],
+          id:String(map[id]?.id||id)
+        }));
+        await repairUnifiedPaymentLedger();
+        await repairCustomerPaymentOrderIndex();
+      }catch(err){
+        console.warn("Payment Control refresh failed:",err);
+      }
       renderPaymentInterlockAdmin();
-    });
+    })();
   }
 
   if(id==="ordersAdmin"){
     renderOrders();
     updatePaymentControlSummary();
     repairCustomerPaymentOrderIndex();
+    repairUnifiedPaymentLedger();
   }
 }
 
