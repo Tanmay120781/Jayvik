@@ -2084,7 +2084,7 @@ window.jayvikConfirm=function(message,options={}){
 
       <button
         class="admin-tab"
-        onclick="showAdminTab('ordersAdmin',this);renderOrders();loadOrderHistoryTimingEditor()"
+        onclick="showAdminTab('ordersAdmin',this)"
       >
         🧾 Orders
       </button>
@@ -11802,41 +11802,7 @@ async function add10ToAllInventory(){
 
 
 function openInventoryAdminTab(button){
-  /*
-    Hard visibility fix:
-    1. Let the existing generic tab function do its normal work.
-    2. Explicitly hide all Admin sections.
-    3. Explicitly show Inventory Management.
-    4. Explicitly mark its tab active.
-    This prevents CSS/class mismatches from leaving the content area blank.
-  */
-  try{
-    if(typeof showAdminTab==="function"){
-      showAdminTab("inventoryAdmin",button);
-    }
-  }catch(err){
-    console.error("Generic Admin tab switch failed:",err);
-  }
-
-  document.querySelectorAll(".admin-section").forEach(section=>{
-    section.classList.remove("active");
-    section.style.display="none";
-  });
-
-  const inventorySection=document.getElementById("inventoryAdmin");
-  if(inventorySection){
-    inventorySection.classList.add("active");
-    inventorySection.style.display="block";
-    inventorySection.style.visibility="visible";
-    inventorySection.style.opacity="1";
-  }
-
-  document.querySelectorAll(".admin-tab").forEach(tab=>{
-    tab.classList.remove("active");
-  });
-  if(button)button.classList.add("active");
-
-  void openInventoryManagement();
+  showAdminTab("inventoryAdmin",button);
 }
 
 async function openInventoryManagement(){
@@ -13893,45 +13859,57 @@ async function exportJayvikExcel(){
 }
 
 
-function showAdminTab(
-  id,
-  button
-){
+function showAdminTab(id,button){
+  /*
+    One authoritative Admin tab switcher.
+    Important: clear old inline display/visibility styles left by earlier
+    Inventory Management fixes, otherwise Orders and other tabs can remain hidden.
+  */
+  document.querySelectorAll(".admin-section").forEach(section=>{
+    section.classList.remove("active");
+    section.style.removeProperty("display");
+    section.style.removeProperty("visibility");
+    section.style.removeProperty("opacity");
+  });
 
-  document
-    .querySelectorAll(
-      ".admin-section"
-    )
-    .forEach(
-      s=>
-        s.classList.remove(
-          "active"
-        )
-    );
+  document.querySelectorAll(".admin-tab").forEach(tab=>{
+    tab.classList.remove("active");
+  });
 
-  document
-    .querySelectorAll(
-      ".admin-tab"
-    )
-    .forEach(
-      b=>
-        b.classList.remove(
-          "active"
-        )
-    );
+  const target=document.getElementById(id);
 
-  document
-    .getElementById(id)
-    .classList.add(
-      "active"
-    );
+  if(!target){
+    console.error("Admin section not found:",id);
+    return;
+  }
 
-  button.classList.add(
-    "active"
-  );
+  target.classList.add("active");
+  target.style.display="block";
+  target.style.visibility="visible";
+  target.style.opacity="1";
 
+  if(button){
+    button.classList.add("active");
+  }
+
+  // Keep useful tab-specific rendering centralized and reliable.
+  try{
+    if(id==="ordersAdmin"){
+      if(typeof renderOrders==="function")renderOrders();
+      if(typeof loadOrderHistoryTimingEditor==="function"){
+        loadOrderHistoryTimingEditor();
+      }
+    }
+
+    if(id==="inventoryAdmin"){
+      if(typeof openInventoryManagement==="function"){
+        void openInventoryManagement();
+      }
+    }
+  }catch(err){
+    console.error("Admin tab render failed:",id,err);
+  }
 }
-
 
 /* =====================================================
    ADMIN PRODUCTS
