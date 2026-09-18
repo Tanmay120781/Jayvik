@@ -2036,8 +2036,11 @@ window.jayvikConfirm=function(message,options={}){
 <section class="customer-pending-payments-section">
   <h2>💳 Pending Payments</h2>
   <div id="customerPendingPaymentsDashboard">
-    <div class="customer-payment-summary">
-      <strong>Loading pending payment transactions...</strong>
+    <div class="customer-payment-summary customer-payment-clear">
+      <div>
+        <strong>💰 Total Pending Payment: ₹0</strong>
+        <span>Checking payment status...</span>
+      </div>
     </div>
   </div>
 </section>
@@ -7258,8 +7261,19 @@ async function refreshCustomerPendingPaymentsDashboard(){
 
   if(!firebaseReady||!db){
     showZero();
+
+    /*
+      Firebase may still be initializing when the customer page first renders.
+      Retry automatically; never leave a permanent Loading state.
+    */
+    clearTimeout(window.__jayvikPendingPaymentRetryTimer);
+    window.__jayvikPendingPaymentRetryTimer=setTimeout(()=>{
+      refreshCustomerPendingPaymentsDashboard();
+    },1200);
     return;
   }
+
+  clearTimeout(window.__jayvikPendingPaymentRetryTimer);
 
   const ids=new Set();
   const localById={};
@@ -18569,6 +18583,51 @@ onAuthStateChanged(auth,user=>{
   }
 });
 
+
+/* =====================================================
+   CUSTOMER PENDING PAYMENT — INDEPENDENT STARTUP
+   This runs even when Live Order Status has no current order.
+===================================================== */
+function startPendingPaymentDashboardIndependent(){
+  const run=()=>{
+    try{
+      refreshCustomerPendingPaymentsDashboard();
+    }catch(err){
+      console.error("Pending payment startup failed:",err);
+      const host=document.getElementById("customerPendingPaymentsDashboard");
+      if(host){
+        host.innerHTML=`
+          <div class="customer-payment-summary customer-payment-clear">
+            <div>
+              <strong>💰 Total Pending Payment: ₹0</strong>
+              <span>Payment status will refresh automatically.</span>
+            </div>
+          </div>`;
+      }
+    }
+  };
+
+  run();
+  setTimeout(run,800);
+  setTimeout(run,2200);
+}
+
+if(document.readyState==="loading"){
+  document.addEventListener(
+    "DOMContentLoaded",
+    startPendingPaymentDashboardIndependent,
+    {once:true}
+  );
+}else{
+  startPendingPaymentDashboardIndependent();
+}
+
+
+window.addEventListener("load",()=>{
+  setTimeout(()=>{
+    refreshCustomerPendingPaymentsDashboard();
+  },400);
+});
 </script>
 
 </body>
