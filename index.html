@@ -1411,6 +1411,18 @@ footer{
 .inventory-stock-badge.out{background:#fdecec;color:#a72828}
 @media(max-width:1000px){.action-dashboard-grid{grid-template-columns:repeat(2,minmax(140px,1fr))}}
 @media(max-width:600px){.action-dashboard-grid{grid-template-columns:1fr}}
+
+/* PACKING → DISPATCHED ACTION — ALWAYS CLEARLY VISIBLE */
+.move-to-dispatched-btn{
+  display:inline-flex !important;
+  align-items:center;
+  justify-content:center;
+  min-width:190px !important;
+  padding:11px 16px !important;
+  font-weight:800 !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -10344,6 +10356,14 @@ function buildPartialReadyDispatchedCard(order){
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
       <button
         type="button"
+        class="btn btn-green"
+        onclick="openOrderInDispatchedFolder('${escapeAttr(order.id)}')"
+      >
+        📁 Move / View in Dispatched Orders
+      </button>
+
+      <button
+        type="button"
         class="btn btn-light"
         onclick="downloadAdminReadyItemsInvoice('${escapeAttr(order.id)}')"
       >
@@ -10365,6 +10385,26 @@ function buildPartialReadyDispatchedCard(order){
   `;
 
   return card;
+}
+
+async function openOrderInDispatchedFolder(orderId){
+  try{
+    if(typeof renderDispatchedOrdersFolder==="function"){
+      await renderDispatchedOrdersFolder();
+    }
+
+    const folder=document.getElementById("dispatchedOrdersBoard");
+    if(folder){
+      folder.scrollIntoView({behavior:"smooth",block:"start"});
+    }
+
+    showSaveNotification(
+      "Order "+String(orderId)+" is available in Dispatched Orders for payment update."
+    );
+  }catch(err){
+    console.error("Could not open Dispatched Orders:",err);
+    alert("Could not open Dispatched Orders. "+String(err?.message||err||""));
+  }
 }
 
 async function deletePartialReadyDispatchedInvoice(orderId){
@@ -10976,7 +11016,7 @@ function buildOrderCard(order){
               ${
                 nextReadyStage==="packing"
                 ?"📦 Move Ready Items to Packing"
-                :"🚚 Dispatch Ready Items"
+                :"🚚 Move Ready Items to Dispatched"
               }
             </button>
           `
@@ -11116,17 +11156,17 @@ function buildOrderCard(order){
   }
 
   if(
-    order.status==="packing" ||
-    order.status==="packed"
+    String(order.status||"").toLowerCase()==="packing" ||
+    String(order.status||"").toLowerCase()==="packed"
   ){
     actions=
       `<button
-        class="btn btn-dark"
+        type="button"
+        class="btn btn-green move-to-dispatched-btn"
         onclick="moveOrder('${escapeAttr(order.id)}','dispatched')"
       >
-        🚚 Mark Dispatched
+        🚚 Move to Dispatched
       </button>`;
-
   }
 
 
