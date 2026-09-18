@@ -3343,6 +3343,13 @@ window.jayvikConfirm=function(message,options={}){
           >
             📦 Open Order Management
           </button>
+          <button
+            type="button"
+            class="btn btn-light"
+            onclick="refreshPaymentControlFromOrders()"
+          >
+            🔄 Refresh Payment Control
+          </button>
         </div>
 
         <h4>👤 Customer-wise Payment & Interlock Control</h4>
@@ -7477,8 +7484,38 @@ async function refreshCustomerPendingPaymentsDashboard(){
     ).once("value");
 
     const map=snap.val()||{};
+    let paymentSource=Object.values(map);
 
-    const rows=Object.values(map)
+    if(!paymentSource.length){
+      const ids=await getKnownCustomerOrderIdsForPaymentDashboard();
+      const statusRows=[];
+
+      for(const id of ids){
+        try{
+          const statusSnap=await db.ref(
+            "store/public/orderStatus/"+String(id)
+          ).once("value");
+          const row=statusSnap.val();
+          if(!row)continue;
+
+          const rowPhone=normalizeCustomerPhone(row.customerPhoneKey||"");
+          if(rowPhone.length===10 && rowPhone!==phone)continue;
+
+          statusRows.push({
+            id:String(row.id||id),
+            status:String(row.status||"pending"),
+            readyStage:String(row.readyStage||""),
+            paymentStatus:String(row.paymentStatus||"pending"),
+            amount:Number(row.orderTotal||0),
+            createdAt:String(row.createdAt||""),
+            updatedAt:String(row.updatedAt||row.createdAt||"")
+          });
+        }catch(e){}
+      }
+      paymentSource=statusRows;
+    }
+
+    const rows=paymentSource
       .filter(o=>
         o?.id &&
         String(o.paymentStatus||"pending").toLowerCase()!=="received" &&
@@ -15821,10 +15858,16 @@ async function exportJayvikExcel(){
 
 
 
+let paymentControlOrders=[];
+
 function collectCustomerPaymentInterlockRows(){
   const byPhone={};
 
-  (Array.isArray(orders)?orders:[]).forEach(order=>{
+  const sourceOrders=
+    Array.isArray(paymentControlOrders) && paymentControlOrders.length
+      ? paymentControlOrders
+      : (Array.isArray(orders)?orders:[]);
+  sourceOrders.forEach(order=>{
     const phone=interlockPhoneKey(
       order?.customer?.phone ||
       order?.customerPhone ||
@@ -15991,7 +16034,7 @@ async function repairCustomerPaymentOrderIndex(){
 
 function updatePaymentControlSummary(){
   const rows=collectCustomerPaymentInterlockRows();
-  const pendingRows=rows.filter(x=>Number(x.pending||0)>0);
+  const pendingRows=rows.filter(x=>Number(x.pendingOrders||0)>0);
   const total=pendingRows.reduce((sum,x)=>sum+Number(x.pending||0),0);
   const locked=rows.filter(x=>getCustomerInterlockState(x.phone).enabled).length;
 
@@ -16035,6 +16078,36 @@ function openOrdersForPaymentCustomer(phone){
   showSaveNotification(
     "Order Management opened for customer "+normalized+"."
   );
+}
+
+
+async function refreshPaymentControlFromOrders(){
+  if(!firebaseReady||!db){
+    alert("Firebase is not ready yet.");
+    return;
+  }
+
+  try{
+    const snap=await db.ref("orders").once("value");
+    const map=snap.val()||{};
+    const fresh=Object.keys(map).map(orderId=>({
+      ...map[orderId],
+      id:String(map[orderId]?.id||orderId)
+    }));
+
+    paymentControlOrders=
+      fresh.length
+        ? fresh
+        : (Array.isArray(orders)?orders.slice():[]);
+
+    await repairUnifiedPaymentLedger();
+    await repairCustomerPaymentOrderIndex();
+    await renderPaymentInterlockAdmin();
+    showSaveNotification("Payment Control refreshed from Orders.");
+  }catch(err){
+    console.error("Payment Control manual refresh failed:",err);
+    alert("Could not refresh Payment Control. "+(err?.message||""));
+  }
 }
 
 async function renderPaymentInterlockAdmin(){
@@ -16375,13 +16448,15 @@ function showAdminTab(id,button){
 
   if(id==="paymentControlAdmin"){
     (async()=>{
+      paymentControlOrders=Array.isArray(orders)?orders.slice():[];
       try{
         const snap=await db.ref("orders").once("value");
         const map=snap.val()||{};
-        orders=Object.keys(map).map(id=>({
-          ...map[id],
-          id:String(map[id]?.id||id)
+        const fresh=Object.keys(map).map(orderId=>({
+          ...map[orderId],
+          id:String(map[orderId]?.id||orderId)
         }));
+        if(fresh.length)paymentControlOrders=fresh;
         await repairUnifiedPaymentLedger();
         await repairCustomerPaymentOrderIndex();
       }catch(err){
