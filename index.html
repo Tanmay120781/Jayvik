@@ -5717,6 +5717,22 @@ function getCustomerMyOrdersHistory(){
   return history;
 }
 
+let customerArchivedOrderIds=new Set();
+let customerOrderArchiveRef=null;
+
+function startCustomerOrderArchiveListener(){
+  if(!firebaseReady||!db)return;
+  if(customerOrderArchiveRef)customerOrderArchiveRef.off("value");
+  customerOrderArchiveRef=db.ref("store/public/orderHistoryArchived");
+  customerOrderArchiveRef.on("value",snap=>{
+    const map=snap.val()||{};
+    customerArchivedOrderIds=new Set(
+      Object.keys(map).filter(id=>map[id]?.archived===true)
+    );
+    renderCustomerOrderHistory();
+  },err=>console.error("Customer archived-order listener failed:",err));
+}
+
 function renderCustomerOrderHistory(
   phoneValue=null
 ){
@@ -5748,7 +5764,11 @@ function renderCustomerOrderHistory(
     : [];
 
   const ordersForPhone=[...rawOrdersForPhone]
-    .filter(order=>order && order.id)
+    .filter(order=>
+      order &&
+      order.id &&
+      customerArchivedOrderIds.has(String(order.id))
+    )
     .sort((a,b)=>{
       const bt=new Date(b.createdAt||b.updatedAt||0).getTime()||0;
       const at=new Date(a.createdAt||a.updatedAt||0).getTime()||0;
@@ -10957,6 +10977,62 @@ async function repairCustomerLiveStatusMirrors(){
   }
 }
 
+function activeOrderDeleteButtonHtml(order){
+  const status=String(order?.status||"").toLowerCase();
+  const stage=String(order?.readyStage||"").toLowerCase();
+  const allowed=["pending","ready","packing"].includes(status) ||
+    (status==="partial" && stage!=="dispatched");
+  if(!allowed)return "";
+  return `<button type="button" class="btn btn-danger"
+    onclick="deleteActiveOrderFromAdmin('${escapeAttr(String(order.id||""))}')">
+    🗑️ Delete Order
+  </button>`;
+}
+
+async function deleteActiveOrderFromAdmin(orderId){
+  if(!firebaseReady||!db||!auth?.currentUser||
+     auth.currentUser.email!=="jayvik.india@gmail.com"){
+    alert("Admin login required."); return;
+  }
+  const order=(orders||[]).find(o=>String(o.id)===String(orderId));
+  if(!order){alert("Order not found.");return;}
+
+  const status=String(order.status||"").toLowerCase();
+  const stage=String(order.readyStage||"").toLowerCase();
+  const allowed=["pending","ready","packing"].includes(status) ||
+    (status==="partial" && stage!=="dispatched");
+
+  if(!allowed){
+    alert("Only Pending, Partial, Ready or Packing orders can be deleted here. Dispatched orders must follow Payment Received → Sales Archive.");
+    return;
+  }
+
+  const ok=await jayvikConfirm(
+    "Delete Order "+order.id+"?\\n\\n"+
+    "This removes it from active Admin orders and Customer Live Order Status. "+
+    "It will not be added to Sales Archive or My Order History."
+  );
+  if(!ok)return;
+
+  try{
+    const updates={};
+    const now=new Date().toISOString();
+    updates["/orders/"+String(order.id)]=null;
+    updates["/store/public/orderStatus/"+String(order.id)]=null;
+    updates["/store/public/orderHistoryArchived/"+String(order.id)]=null;
+    updates["/store/public/orderHistoryDeleted/"+String(order.id)]={
+      deleted:true,deletedAt:now
+    };
+    await db.ref().update(updates);
+    orders=(orders||[]).filter(o=>String(o.id)!==String(order.id));
+    renderOrders(false);
+    showSaveNotification("Order "+order.id+" deleted.");
+  }catch(err){
+    console.error("Active order delete failed:",err);
+    alert("Could not delete active order. "+(err?.message||""));
+  }
+}
+
 async function renderOrders(refreshInventory=true){
   updateOrderActionDashboard();
 
@@ -11622,6 +11698,7 @@ ${paymentSummary}
 
     <div class="order-actions">
       ${actions}
+          ${activeOrderDeleteButtonHtml(order)}
     </div>
 
   `;
@@ -11854,6 +11931,11 @@ async function deletePaidDispatchedOrder(orderId,skipConfirm=false){
         };
 
         await db.ref("store/salesArchive/"+String(order.id)).set(archiveRecord);
+    await db.ref("store/public/orderHistoryArchived/"+String(order.id)).set({
+      archived:true,
+      archivedAt:new Date().toISOString()
+    });
+
         const verify=await db.ref("store/salesArchive/"+String(order.id)).once("value");
         if(!verify.exists())throw new Error("Sales Archive did not confirm the record.");
 
@@ -13174,6 +13256,7 @@ async function bulkDeleteSalesArchiveOrders(){
       const updates={};
       updates["/store/salesArchive/"+String(orderId)]=null;
       updates["/store/public/orderStatus/"+String(orderId)]=null;
+      updates["/store/public/orderHistoryArchived/"+String(orderId)]=null;
       updates["/store/public/orderHistoryDeleted/"+String(orderId)]={
         deleted:true,
         deletedAt:new Date().toISOString()
@@ -13490,6 +13573,10 @@ async function deleteArchivedHistoryOrder(orderId){
     */
     updates[
       "/store/public/orderStatus/"+
+      String(order.id)
+    ]=null;
+    updates[
+      "/store/public/orderHistoryArchived/"+
       String(order.id)
     ]=null;
 
@@ -16990,6 +17077,7 @@ if(document.readyState==="loading"){
   restoreLastCustomerOnLoad();
   renderCustomerOrderHistory();
   startCustomerOrderHistoryDeletionListener();
+startCustomerOrderArchiveListener();
 
 }
 
