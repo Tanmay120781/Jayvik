@@ -1467,6 +1467,91 @@ footer{
   background:#f1f2f1;
   color:#687168;
 }
+
+/* CUSTOMER — MY ORDER HISTORY TABLE */
+.customer-history-table-wrap{
+  width:100%;
+  overflow-x:auto;
+  border:1px solid #dfe8df;
+  border-radius:14px;
+  background:#fff;
+}
+.customer-history-table{
+  width:100%;
+  min-width:900px;
+  border-collapse:collapse;
+}
+.customer-history-table th{
+  background:#17351d;
+  color:#fff;
+  text-align:left;
+  padding:12px 10px;
+  font-size:13px;
+  white-space:nowrap;
+}
+.customer-history-table td{
+  padding:12px 10px;
+  border-bottom:1px solid #e6ece6;
+  vertical-align:top;
+  font-size:14px;
+}
+.customer-history-table tbody tr:last-child td{
+  border-bottom:0;
+}
+.customer-history-table tbody tr:hover{
+  background:#f7faf7;
+}
+.customer-history-product{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  flex-wrap:wrap;
+  padding:3px 0;
+}
+.customer-history-product span{
+  color:#5f6b62;
+}
+.customer-history-status{
+  font-weight:800;
+  white-space:nowrap;
+}
+.customer-history-invoice .btn{
+  margin:2px;
+}
+@media(max-width:760px){
+  .customer-history-table{
+    min-width:0;
+  }
+  .customer-history-table thead{
+    display:none;
+  }
+  .customer-history-table,
+  .customer-history-table tbody,
+  .customer-history-table tr,
+  .customer-history-table td{
+    display:block;
+    width:100%;
+  }
+  .customer-history-table tr{
+    padding:10px 12px;
+    border-bottom:8px solid #f3f7f3;
+  }
+  .customer-history-table td{
+    display:grid;
+    grid-template-columns:120px 1fr;
+    gap:10px;
+    border-bottom:1px dashed #e3e8e3;
+    padding:8px 0;
+  }
+  .customer-history-table td::before{
+    content:attr(data-label);
+    font-weight:800;
+    color:#17351d;
+  }
+  .customer-history-table tr:last-child{
+    border-bottom:0;
+  }
+}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -5636,196 +5721,124 @@ function renderCustomerOrderHistory(
   phoneValue=null
 ){
 
-  const section=
-    document.getElementById(
-      "customerOrderHistorySection"
-    );
-
-  const box=
-    document.getElementById(
-      "customerOrderHistory"
-    );
-
+  const section=document.getElementById("customerOrderHistorySection");
+  const box=document.getElementById("customerOrderHistory");
   if(!section||!box)return;
 
-  const phoneInput=
-    document.getElementById(
-      "customerPhone"
-    );
-
-  const phone=
-    normalizeCustomerPhone(
-      phoneValue!==null
-        ? phoneValue
-        : (
-            phoneInput?.value||
-            localStorage.getItem(
-              "jayvik_last_customer_phone"
-            )||
-            ""
-          )
-    );
+  const phoneInput=document.getElementById("customerPhone");
+  const phone=normalizeCustomerPhone(
+    phoneValue!==null
+      ? phoneValue
+      : (
+          phoneInput?.value||
+          localStorage.getItem("jayvik_last_customer_phone")||
+          ""
+        )
+  );
 
   if(phone.length!==10){
-
     section.style.display="none";
     box.innerHTML="";
     return;
   }
 
-  const allHistory=
-    getCustomerOrderHistoryLocal();
+  const allHistory=getCustomerOrderHistoryLocal();
+  const rawOrdersForPhone=Array.isArray(allHistory[phone])
+    ? allHistory[phone]
+    : [];
 
-  const rawOrdersForPhone=
-    Array.isArray(
-      allHistory[phone]
-    )
-      ? allHistory[phone]
-      : [];
+  const ordersForPhone=[...rawOrdersForPhone]
+    .filter(order=>order && order.id)
+    .sort((a,b)=>{
+      const bt=new Date(b.createdAt||b.updatedAt||0).getTime()||0;
+      const at=new Date(a.createdAt||a.updatedAt||0).getTime()||0;
+      return bt-at;
+    });
 
-  /*
-    My Orders should show every order for this customer.
-    Previously it showed only Dispatched orders after the configured delay.
-  */
-  const ordersForPhone=
-    [...rawOrdersForPhone]
-      .filter(order=>order && order.id)
-      .sort((a,b)=>{
-        const bt=new Date(b.createdAt||b.updatedAt||0).getTime()||0;
-        const at=new Date(a.createdAt||a.updatedAt||0).getTime()||0;
-        return bt-at;
-      });
-
-  section.style.display=
-    ordersForPhone.length
-      ?"block"
-      :"none";
+  section.style.display=ordersForPhone.length?"block":"none";
 
   if(!ordersForPhone.length){
     box.innerHTML="";
     return;
   }
 
-  box.innerHTML=
-    ordersForPhone
-      .map(order=>{
+  box.innerHTML=`
+    <div class="customer-history-table-wrap">
+      <table class="customer-history-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Order Date</th>
+            <th>Products / Pack / Qty</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Invoice</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ordersForPhone.map(order=>{
+            const date=order.createdAt
+              ? new Date(order.createdAt).toLocaleString("en-IN")
+              : "";
 
-        const date=
-          order.createdAt
-            ? new Date(
-                order.createdAt
-              ).toLocaleString(
-                "en-IN"
+            const items=Array.isArray(order.items)?order.items:[];
+
+            const productsHtml=items.length
+              ? items.map(item=>`
+                  <div class="customer-history-product">
+                    <strong>${escapeHtml(item.name||"Product")}</strong>
+                    ${item.size?`<span>${escapeHtml(item.size)}</span>`:""}
+                    <span>Qty ${Number(item.qty||0)}</span>
+                  </div>
+                `).join("")
+              : `<span class="small">No item details</span>`;
+
+            const amount=Number(
+              order.total||
+              items.reduce(
+                (sum,item)=>sum+
+                  Number(item.price||0)*Number(item.qty||0),
+                0
               )
-            : "";
+            );
 
-        const items=
-          Array.isArray(order.items)
-            ? order.items
-            : [];
-
-        return `
-          <div
-            class="cart-box"
-            style="margin-bottom:12px"
-          >
-
-            <div
-              style="
-                display:flex;
-                justify-content:space-between;
-                align-items:flex-start;
-                gap:12px;
-                flex-wrap:wrap
-              "
-            >
-
-              <div>
-                <strong
-                  style="
-                    font-size:17px;
-                    color:var(--dark)
-                  "
-                >
-                  Order ${escapeHtml(order.id||"")}
-                </strong>
-
-                ${
-                  date
-                    ?`
-                      <div class="small">
-                        ${escapeHtml(date)}
-                      </div>
-                    `
-                    :""
-                }
-              </div>
-
-              <strong>
-                ${escapeHtml(
-                  customerStatusLabel(
-                    order.status,
-                    order.readyStage
-                  )
-                )}
-              </strong>
-
-            </div>
-
-            <div
-              style="
-                margin-top:10px;
-                display:grid;
-                gap:6px
-              "
-            >
-              ${
-                items.map(
-                  (item,index)=>`
-                    <div
-                      style="
-                        display:flex;
-                        justify-content:space-between;
-                        gap:12px;
-                        border-bottom:1px dashed #e5e7eb;
-                        padding:6px 0
-                      "
-                    >
-                      <span>
-                        ${index+1}.
-                        <strong>
-                          ${escapeHtml(item.name||"Product")}
-                        </strong>
-                        ${
-                          item.size
-                            ?` — ${escapeHtml(item.size)}`
-                            :""
-                        }
-                      </span>
-
-                      <strong>
-                        Qty ${Number(item.qty||0)}
-                      </strong>
-                    </div>
-                  `
-                ).join("")
-              }
-            </div>
-
-            ${customerInvoiceActionHtml(order.id)}
-
-          </div>
-        `;
-
-      })
-      .join("");
-
+            return `
+              <tr>
+                <td data-label="Order ID">
+                  <strong>${escapeHtml(order.id||"")}</strong>
+                </td>
+                <td data-label="Order Date">
+                  ${escapeHtml(date)}
+                </td>
+                <td data-label="Products / Pack / Qty">
+                  ${productsHtml}
+                </td>
+                <td data-label="Amount">
+                  <strong>₹${amount.toLocaleString("en-IN")}</strong>
+                </td>
+                <td data-label="Status">
+                  <span class="customer-history-status">
+                    ${escapeHtml(
+                      customerStatusLabel(
+                        order.status,
+                        order.readyStage
+                      )
+                    )}
+                  </span>
+                </td>
+                <td data-label="Invoice">
+                  <div class="customer-history-invoice">
+                    ${customerInvoiceActionHtml(order.id)}
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
 }
-
-
-
-let customerOrderHistoryDeletionRef=null;
-
 
 function removeDeletedOrdersFromLocalHistory(
   deletedMap
