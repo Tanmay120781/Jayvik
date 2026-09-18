@@ -15870,6 +15870,15 @@ async function exportJayvikExcel(){
 
 
 
+
+function formatMoney(value){
+  const n=Number(value||0);
+  return n.toLocaleString("en-IN",{
+    minimumFractionDigits:0,
+    maximumFractionDigits:2
+  });
+}
+
 let paymentControlOrders=[];
 
 function collectCustomerPaymentInterlockRows(){
@@ -15894,6 +15903,7 @@ function collectCustomerPaymentInterlockRows(){
         name:String(
           order?.customer?.name ||
           order?.customerName ||
+          order?.name ||
           "Customer"
         ),
         address:String(
@@ -15936,7 +15946,11 @@ function collectCustomerPaymentInterlockRows(){
 
     if(paymentPending){
       row.pending+=Number(
-        order?.total ?? order?.orderTotal ?? 0
+        order?.total ??
+        order?.orderTotal ??
+        order?.payableTotal ??
+        order?.readyTotal ??
+        0
       );
       row.pendingOrders+=1;
     }
@@ -16181,8 +16195,12 @@ async function refreshPaymentControlFromOrders(){
         ? fresh
         : (Array.isArray(orders)?orders.slice():[]);
 
-    await repairUnifiedPaymentLedger();
-    await repairCustomerPaymentOrderIndex();
+    try{ await repairUnifiedPaymentLedger(); }catch(e){
+      console.warn("Unified payment repair warning:",e);
+    }
+    try{ await repairCustomerPaymentOrderIndex(); }catch(e){
+      console.warn("Payment order index repair warning:",e);
+    }
     await renderPaymentInterlockAdmin();
     showSaveNotification("Payment Control refreshed from Orders.");
   }catch(err){
@@ -16192,6 +16210,10 @@ async function refreshPaymentControlFromOrders(){
 }
 
 async function renderPaymentInterlockAdmin(){
+  if(!Array.isArray(paymentControlOrders)){
+    paymentControlOrders=[];
+  }
+
   await refreshPaymentInterlockSetting();
 
   const btn=document.getElementById(
