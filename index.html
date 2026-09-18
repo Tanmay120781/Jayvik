@@ -1423,6 +1423,50 @@ footer{
   visibility:visible !important;
   opacity:1 !important;
 }
+
+/* AUTOMATIC INVENTORY STOCK ALERTS */
+.inventory-threshold-control{display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #d9e6d9;border-radius:9px;background:#fff;font-weight:700}
+.inventory-threshold-control input{width:64px;padding:5px 7px;border:1px solid #ccd8cc;border-radius:6px}
+#inventoryAdmin .inventory-stock-row.low{background:#fff8df!important;border-left:5px solid #d99b18!important}
+#inventoryAdmin .inventory-stock-row.out{background:#fff0f0!important;border-left:5px solid #c62828!important}
+#inventoryAdmin .inventory-stock-row.available{border-left:5px solid transparent}
+.inventory-stock-badge{font-size:12px;font-weight:800;padding:5px 8px;border-radius:999px;white-space:nowrap}
+.inventory-stock-badge.available{background:#e8f5e9;color:#1f6d2d}
+.inventory-stock-badge.low{background:#fff0b8!important;color:#7a5700!important;border:1px solid #e3bd43}
+.inventory-stock-badge.out{background:#ffdede!important;color:#a31414!important;border:1px solid #e78b8b}
+
+/* INVENTORY STOCK ALERTS — TOP OF INVENTORY MANAGEMENT */
+.inventory-top-stock-alerts{margin:16px 0 8px}
+.inventory-alert-summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.inventory-alert-count{display:flex;align-items:center;gap:8px;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
+.inventory-alert-count strong{font-size:20px}
+.inventory-alert-count.out{background:#ffe5e5;border:1px solid #e79a9a;color:#9f1818}
+.inventory-alert-count.low{background:#fff4c9;border:1px solid #e0bd4e;color:#795800}
+.inventory-alert-count.all{background:#f4f7f4;border:1px solid #d5dfd5;color:#17351d}
+.inventory-alert-list{display:flex;gap:7px;flex-wrap:wrap;padding:10px;border:1px solid #e1e8e1;border-radius:12px;background:#fafcfa}
+.inventory-alert-item{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:9px;cursor:pointer;font:inherit}
+.inventory-alert-item.out{background:#fff0f0;border:1px solid #efb3b3;color:#8e1717}
+.inventory-alert-item.low{background:#fff9df;border:1px solid #ead382;color:#6f5600}
+.inventory-alert-item:hover{transform:translateY(-1px)}
+.inventory-all-good{padding:12px;border-radius:10px;background:#eaf6eb;color:#246d30;font-weight:800}
+
+/* PRODUCT-WISE INVENTORY ALERT ON/OFF */
+.inventory-alert-toggle{
+  border:1px solid #cbd9cb;
+  border-radius:9px;
+  padding:7px 10px;
+  font-weight:800;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.inventory-alert-toggle.on{
+  background:#e8f5e9;
+  color:#1f6d2d;
+}
+.inventory-alert-toggle.off{
+  background:#f1f2f1;
+  color:#687168;
+}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -2894,8 +2938,14 @@ window.jayvikConfirm=function(message,options={}){
             <button class="btn btn-light" type="button" onclick="openInventoryManagement()">
               ↻ Refresh Inventory
             </button>
+            <label class="inventory-threshold-control">
+              Low Stock ≤
+              <input id="inventoryLowStockThreshold" type="number" min="1" value="5"
+                     onchange="saveInventoryLowStockThreshold();renderInventory()">
+            </label>
           </div>
         </div>
+        <div id="inventoryTopStockAlerts" class="inventory-top-stock-alerts"></div>
         <div id="inventoryCategorySummary" class="inventory-category-summary"></div>
         <div id="inventoryList"></div>
       </div>
@@ -12061,6 +12111,91 @@ function goToInventoryCategory(category){
   }
 }
 
+function getInventoryLowStockThreshold(){
+  try{
+    const n=Number(localStorage.getItem("jayvik_inventory_low_stock_threshold"));
+    return Number.isFinite(n)&&n>=1?Math.floor(n):5;
+  }catch(e){return 5;}
+}
+function saveInventoryLowStockThreshold(){
+  const input=document.getElementById("inventoryLowStockThreshold");
+  const n=Math.max(1,Math.floor(Number(input?.value||5)));
+  if(input)input.value=String(n);
+  try{localStorage.setItem("jayvik_inventory_low_stock_threshold",String(n));}catch(e){}
+}
+function inventoryAlertMuteKey(product){
+  return String(
+    product?._firebaseKey ??
+    product?.id ??
+    product?.name ??
+    ""
+  );
+}
+
+function getMutedInventoryAlertProducts(){
+  try{
+    const raw=JSON.parse(
+      localStorage.getItem("jayvik_inventory_muted_alert_products")||"[]"
+    );
+    return new Set(Array.isArray(raw)?raw.map(String):[]);
+  }catch(e){
+    return new Set();
+  }
+}
+
+function isInventoryAlertMuted(product){
+  return getMutedInventoryAlertProducts().has(
+    inventoryAlertMuteKey(product)
+  );
+}
+
+function setInventoryProductAlert(productKey,enabled){
+  const muted=getMutedInventoryAlertProducts();
+  const key=String(productKey||"");
+
+  if(enabled) muted.delete(key);
+  else muted.add(key);
+
+  try{
+    localStorage.setItem(
+      "jayvik_inventory_muted_alert_products",
+      JSON.stringify([...muted])
+    );
+  }catch(e){}
+
+  renderInventory();
+}
+
+function inventoryStockState(stock){
+  const qty=Math.max(0,Number(stock||0));
+  const low=getInventoryLowStockThreshold();
+  if(qty===0)return {key:"out",label:"🔴 OUT OF STOCK"};
+  if(qty<=low)return {key:"low",label:"🟡 LOW STOCK"};
+  return {key:"available",label:"🟢 AVAILABLE"};
+}
+function updateInventoryRowHighlight(input){
+  const row=input?.closest?.(".inventory-stock-row");
+  if(!row)return;
+  const muted=String(row.dataset.alertMuted||"")==="true";
+  const state=muted
+    ? {key:"available",label:"⚪ INDICATION OFF"}
+    : inventoryStockState(input.value);
+  row.classList.remove("available","low","out");
+  row.classList.add(state.key);
+  const badge=row.querySelector(".inventory-stock-badge");
+  if(badge){
+    badge.className="inventory-stock-badge "+state.key;
+    badge.textContent=state.label;
+  }
+}
+
+function filterInventoryAlerts(type){
+  document.querySelectorAll("#inventoryTopStockAlerts .inventory-alert-item").forEach(item=>{
+    const state=String(item.dataset.alertState||"");
+    item.style.display=(type==="all"||state===type)?"inline-flex":"none";
+  });
+}
+
 function renderInventory(){
   try{
     renderInventoryCore();
@@ -12079,6 +12214,9 @@ function renderInventory(){
 }
 
 function renderInventoryCore(){
+  const thresholdInput=document.getElementById("inventoryLowStockThreshold");
+  if(thresholdInput)thresholdInput.value=String(getInventoryLowStockThreshold());
+
   const box=document.getElementById("inventoryList");
   const summary=document.getElementById("inventoryCategorySummary");
   if(!box)return;
@@ -12116,6 +12254,68 @@ function renderInventoryCore(){
   if(!categoryNames.length){
     box.innerHTML=`<div class="notice"><strong>Inventory catalogue is not loaded.</strong><br>Click Refresh Inventory to load the latest Firebase stock.</div>`;
     return;
+  }
+
+  const topAlerts=document.getElementById("inventoryTopStockAlerts");
+  if(topAlerts){
+    const alertRows=[];
+
+    (products||[]).forEach(product=>{
+      if(isInventoryAlertMuted(product))return;
+      (product.packs||[]).forEach((pack,packIndex)=>{
+        const state=inventoryStockState(pack.stock);
+        if(state.key==="out" || state.key==="low"){
+          alertRows.push({
+            product,
+            pack,
+            packIndex,
+            state,
+            stock:Math.max(0,Number(pack.stock||0))
+          });
+        }
+      });
+    });
+
+    const outCount=alertRows.filter(x=>x.state.key==="out").length;
+    const lowCount=alertRows.filter(x=>x.state.key==="low").length;
+
+    alertRows.sort((a,b)=>{
+      if(a.state.key!==b.state.key)return a.state.key==="out"?-1:1;
+      return a.stock-b.stock;
+    });
+
+    topAlerts.innerHTML=`
+      <div class="inventory-alert-summary">
+        <button type="button" class="inventory-alert-count out" onclick="filterInventoryAlerts('out')">
+          🔴 Out of Stock <strong>${outCount}</strong>
+        </button>
+        <button type="button" class="inventory-alert-count low" onclick="filterInventoryAlerts('low')">
+          🟡 Low Stock <strong>${lowCount}</strong>
+        </button>
+        <button type="button" class="inventory-alert-count all" onclick="filterInventoryAlerts('all')">
+          ⚠️ Attention Needed <strong>${outCount+lowCount}</strong>
+        </button>
+      </div>
+
+      ${alertRows.length?`
+        <div class="inventory-alert-list">
+          ${alertRows.map(x=>`
+            <button
+              type="button"
+              class="inventory-alert-item ${x.state.key}"
+              data-alert-state="${x.state.key}"
+              onclick="goToInventoryCategory('${escapeAttr(String(x.product.category||"Others"))}')"
+              title="Go to this product category"
+            >
+              <span>${x.state.key==="out"?"🔴":"🟡"}</span>
+              <strong>${escapeHtml(x.product.name)}</strong>
+              <span>${escapeHtml(x.pack.size)}</span>
+              <span>Stock: ${x.stock}</span>
+            </button>
+          `).join("")}
+        </div>
+      `:`<div class="inventory-all-good">🟢 All inventory packs are above the low-stock level.</div>`}
+    `;
   }
 
   if(summary){
@@ -12160,7 +12360,14 @@ function renderInventoryCore(){
     categoryProducts.forEach(product=>{
       (product.packs||[]).forEach((pack,packIndex)=>{
         const row=document.createElement("div");
-        row.className="inventory-row";
+        const rawStockState=inventoryStockState(pack.stock);
+        const alertMuted=isInventoryAlertMuted(product);
+        const stockState=alertMuted
+          ? {key:"available",label:"⚪ INDICATION OFF"}
+          : rawStockState;
+        row.className="inventory-row inventory-stock-row "+stockState.key;
+        row.dataset.productAlertKey=inventoryAlertMuteKey(product);
+        row.dataset.alertMuted=alertMuted?"true":"false";
         row.innerHTML=`
           <div>
             <strong>${escapeHtml(product.name)}</strong><br>
@@ -12171,6 +12378,7 @@ function renderInventoryCore(){
             type="number"
             min="0"
             value="${Number(pack.stock||0)}"
+            oninput="updateInventoryRowHighlight(this)"
           >
           <div class="inventory-stock-actions">
             <button class="btn btn-light" onclick="adjustInventoryInput(${product.id},${packIndex},-10)">−10</button>
@@ -12179,9 +12387,15 @@ function renderInventoryCore(){
             <button class="btn btn-light" onclick="adjustInventoryInput(${product.id},${packIndex},10)">+10</button>
           </div>
           <div class="inventory-save-cell">
-            <span class="inventory-stock-badge ${Number(pack.stock||0)<=0?'out':Number(pack.stock||0)<=5?'low':'available'}">
-              ${Number(pack.stock||0)<=0?'🔴 Out':Number(pack.stock||0)<=5?'🟡 Low':'🟢 Available'}
-            </span>
+            <span class="inventory-stock-badge ${stockState.key}">${stockState.label}</span>
+          <button
+            type="button"
+            class="inventory-alert-toggle ${isInventoryAlertMuted(product)?'off':'on'}"
+            onclick="setInventoryProductAlert('${escapeAttr(inventoryAlertMuteKey(product))}',${isInventoryAlertMuted(product)?'true':'false'})"
+            title="${isInventoryAlertMuted(product)?'Turn stock indication ON for this product':'Turn stock indication OFF for this product'}"
+          >
+            ${isInventoryAlertMuted(product)?'🔕 Alert OFF':'🔔 Alert ON'}
+          </button>
             <button
               class="btn btn-green"
               onclick="savePackStock(${product.id},${packIndex})"
