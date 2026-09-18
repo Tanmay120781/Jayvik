@@ -1310,6 +1310,26 @@ footer{
 #inventoryAdmin .inventory-row:last-child{border-bottom:0}
 #inventoryAdmin .inventory-row input{width:100%}
 @media(max-width:760px){#inventoryAdmin .inventory-row{grid-template-columns:1fr 100px}}
+
+/* INVENTORY TAB HARD VISIBILITY FIX */
+#inventoryAdmin.admin-section.active,
+#inventoryAdmin.active{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  width:100% !important;
+  min-height:300px !important;
+}
+#inventoryAdmin .admin-card{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+#inventoryAdmin #inventoryList{
+  display:block !important;
+  visibility:visible !important;
+  min-height:80px;
+}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -1973,7 +1993,7 @@ window.jayvikConfirm=function(message,options={}){
 
       <button
         class="admin-tab"
-        onclick="showAdminTab('inventoryAdmin',this);openInventoryManagement()"
+        onclick="openInventoryAdminTab(this)"
       >
         📦 Inventory Management
       </button>
@@ -11718,7 +11738,50 @@ async function add10ToAllInventory(){
 }
 
 
+function openInventoryAdminTab(button){
+  /*
+    Hard visibility fix:
+    1. Let the existing generic tab function do its normal work.
+    2. Explicitly hide all Admin sections.
+    3. Explicitly show Inventory Management.
+    4. Explicitly mark its tab active.
+    This prevents CSS/class mismatches from leaving the content area blank.
+  */
+  try{
+    if(typeof showAdminTab==="function"){
+      showAdminTab("inventoryAdmin",button);
+    }
+  }catch(err){
+    console.error("Generic Admin tab switch failed:",err);
+  }
+
+  document.querySelectorAll(".admin-section").forEach(section=>{
+    section.classList.remove("active");
+    section.style.display="none";
+  });
+
+  const inventorySection=document.getElementById("inventoryAdmin");
+  if(inventorySection){
+    inventorySection.classList.add("active");
+    inventorySection.style.display="block";
+    inventorySection.style.visibility="visible";
+    inventorySection.style.opacity="1";
+  }
+
+  document.querySelectorAll(".admin-tab").forEach(tab=>{
+    tab.classList.remove("active");
+  });
+  if(button)button.classList.add("active");
+
+  void openInventoryManagement();
+}
+
 async function openInventoryManagement(){
+  const box=document.getElementById("inventoryList");
+  if(box){
+    box.innerHTML=`<div class="notice">Loading category-wise inventory…</div>`;
+  }
+
   renderInventory();
   try{
     if(typeof refreshAdminInventoryFromFirebase==="function"){
@@ -11731,6 +11794,23 @@ async function openInventoryManagement(){
 }
 
 function renderInventory(){
+  try{
+    renderInventoryCore();
+  }catch(err){
+    console.error("Inventory render failed:",err);
+    const box=document.getElementById("inventoryList");
+    if(box){
+      box.innerHTML=`
+        <div class="notice" style="border-color:#c62828">
+          <strong>Inventory could not be displayed.</strong><br>
+          ${escapeHtml(String(err?.message||err||"Unknown inventory error"))}
+        </div>
+      `;
+    }
+  }
+}
+
+function renderInventoryCore(){
   const box=document.getElementById("inventoryList");
   const summary=document.getElementById("inventoryCategorySummary");
   if(!box)return;
