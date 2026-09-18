@@ -9422,7 +9422,8 @@ function isOrderInDispatchedFolder(order){
     (
       status==="partial" &&
       readyStage==="dispatched" &&
-      order?.readySavedToDispatchedFolder===true
+      order?.readySavedToDispatchedFolder===true &&
+      order?.readyDispatchedClosed!==true
     )
   );
 }
@@ -11661,12 +11662,58 @@ async function deletePaidDispatchedOrder(orderId,skipConfirm=false){
     const pendingQty=(order.fulfillment||[]).reduce(
       (sum,item)=>sum+Number(item.pendingQty||0),0
     );
+
     if(pendingQty>0){
-      alert(
-        "This is a partial order and still has Pending items. "+
-        "The complete order cannot be deleted from Firebase until the pending portion is completed."
-      );
-      return;
+      if(!skipConfirm){
+        const ok=await jayvikConfirm(
+          "Close the paid dispatched portion of Order "+order.id+"?\n\n"+
+          "Pending items will remain active in Pending Orders."
+        );
+        if(!ok)return;
+      }
+
+      try{
+        if(!firebaseReady || !db)throw new Error("Firebase is not ready.");
+        const now=new Date().toISOString();
+
+        const archiveRecord={
+          ...order,
+          archiveType:"partial-dispatch",
+          archivedAt:now,
+          partialDispatchedClosed:true,
+          pendingQtyRemaining:pendingQty
+        };
+
+        await db.ref("store/salesArchive/"+String(order.id)).set(archiveRecord);
+        const verify=await db.ref("store/salesArchive/"+String(order.id)).once("value");
+        if(!verify.exists())throw new Error("Sales Archive did not confirm the record.");
+
+        await db.ref("orders/"+String(order.id)).update({
+          readySavedToDispatchedFolder:false,
+          readyDispatchedClosed:true,
+          readyDispatchedClosedAt:now,
+          updatedAt:now
+        });
+
+        const local=orders.find(o=>String(o.id)===String(order.id));
+        if(local){
+          local.readySavedToDispatchedFolder=false;
+          local.readyDispatchedClosed=true;
+          local.readyDispatchedClosedAt=now;
+          local.updatedAt=now;
+        }
+
+        renderOrders(false);
+        await renderDispatchedOrdersFolder();
+        showSaveNotification(
+          "Paid dispatched portion closed. Pending items remain active for Order "+order.id+"."
+        );
+        return;
+      }catch(err){
+        console.error("Partial dispatched close failed:",err);
+        alert("Could not close the dispatched portion. Pending items were kept safe. "+(err?.message||""));
+        return;
+      }
     }
   }
 
