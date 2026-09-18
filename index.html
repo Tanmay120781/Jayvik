@@ -5724,11 +5724,24 @@ function startCustomerOrderArchiveListener(){
   if(!firebaseReady||!db)return;
   if(customerOrderArchiveRef)customerOrderArchiveRef.off("value");
   customerOrderArchiveRef=db.ref("store/public/orderHistoryArchived");
-  customerOrderArchiveRef.on("value",snap=>{
+  customerOrderArchiveRef.on("value",async snap=>{
     const map=snap.val()||{};
+    let deletedMap={};
+
+    try{
+      const deletedSnap=await db.ref(
+        "store/public/orderHistoryDeleted"
+      ).once("value");
+      deletedMap=deletedSnap.val()||{};
+    }catch(e){}
+
     customerArchivedOrderIds=new Set(
-      Object.keys(map).filter(id=>map[id]?.archived===true)
+      Object.keys(map).filter(id=>
+        map[id]?.archived===true &&
+        deletedMap[id]?.deleted!==true
+      )
     );
+
     renderCustomerOrderHistory();
   },err=>console.error("Customer archived-order listener failed:",err));
 }
@@ -5775,10 +5788,15 @@ function renderCustomerOrderHistory(
       return bt-at;
     });
 
-  section.style.display=ordersForPhone.length?"block":"none";
+  section.style.display="block";
 
   if(!ordersForPhone.length){
-    box.innerHTML="";
+    box.innerHTML=`
+      <div class="notice" style="margin-top:8px">
+        <strong>No completed orders in My Order History yet.</strong><br>
+        Previous completed orders will appear here after they are synchronized from Sales Archive.
+      </div>
+    `;
     return;
   }
 
@@ -10935,6 +10953,60 @@ function openDispatchedPaymentPending(){
   },150);
 }
 
+async function backfillCustomerArchivedOrderMarkers(){
+  if(
+    !firebaseReady ||
+    !db ||
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  )return;
+
+  try{
+    const [archiveSnap,deletedSnap]=await Promise.all([
+      db.ref("store/salesArchive").once("value"),
+      db.ref("store/public/orderHistoryDeleted").once("value")
+    ]);
+
+    const archiveMap=archiveSnap.val()||{};
+    const deletedMap=deletedSnap.val()||{};
+    const updates={};
+
+    Object.keys(archiveMap).forEach(orderId=>{
+      const archived=archiveMap[orderId]||{};
+
+      // Explicitly deleted history must never be restored.
+      if(deletedMap[orderId]?.deleted===true)return;
+
+      /*
+        Partial-dispatch snapshots are not permanent customer history while
+        pending quantities remain. Only completed/full archive records are marked.
+      */
+      if(
+        String(archived.archiveType||"").toLowerCase()==="partial-dispatch" &&
+        Number(archived.pendingQtyRemaining||0)>0
+      )return;
+
+      updates[
+        "store/public/orderHistoryArchived/"+String(orderId)
+      ]={
+        archived:true,
+        archivedAt:String(
+          archived.archivedAt||
+          archived.paymentReceivedAt||
+          archived.updatedAt||
+          new Date().toISOString()
+        )
+      };
+    });
+
+    if(Object.keys(updates).length){
+      await db.ref().update(updates);
+    }
+  }catch(err){
+    console.error("Archived customer history backfill failed:",err);
+  }
+}
+
 async function repairCustomerLiveStatusMirrors(){
   if(
     !firebaseReady ||
@@ -11041,6 +11113,7 @@ async function renderOrders(refreshInventory=true){
     orders created before the current mirror logic.
   */
   repairCustomerLiveStatusMirrors();
+  backfillCustomerArchivedOrderMarkers();
 
   if(refreshInventory){
     try{
@@ -13289,6 +13362,8 @@ async function bulkDeleteSalesArchiveOrders(){
 
 
 async function renderSalesArchive(){
+  backfillCustomerArchivedOrderMarkers();
+
 
   await loadSalesArchive();
 
