@@ -7588,7 +7588,12 @@ async function refreshCustomerPendingPaymentsDashboard(){
                     : "-"
                 )}</td>
                 <td><strong>₹${formatMoney(Number(order.amount||0))}</strong></td>
-                <td>${escapeHtml(customerStatusLabel(order))}</td>
+                <td>${escapeHtml(
+                  customerStatusLabel(
+                    String(order.status||""),
+                    String(order.readyStage||"")
+                  )
+                )}</td>
                 <td><strong>💳 Payment Pending</strong></td>
               </tr>
             `).join("")}
@@ -15938,10 +15943,16 @@ function collectCustomerPaymentInterlockRows(){
       row.paymentStatus=String(order.paymentStatus||"pending");
     }
 
+    const orderStatus=String(order?.status||"").toLowerCase();
+    const readyStage=String(order?.readyStage||"").toLowerCase();
+    const paymentState=String(order?.paymentStatus||"pending").toLowerCase();
+
     const paymentPending=
-      String(order?.paymentStatus||"pending").toLowerCase()!=="received" &&
-      !["history","deleted"].includes(
-        String(order?.status||"").toLowerCase()
+      paymentState!=="received" &&
+      !["history","deleted"].includes(orderStatus) &&
+      (
+        ["pending","partial","ready","packing","dispatched"].includes(orderStatus) ||
+        readyStage==="dispatched"
       );
 
     if(paymentPending){
@@ -16210,6 +16221,44 @@ async function refreshPaymentControlFromOrders(){
 }
 
 async function renderPaymentInterlockAdmin(){
+  /*
+    Enrich Payment Control from the same public payment ledger used by
+    the customer dashboard, so Admin and customer totals cannot disagree.
+  */
+  try{
+    const source=Array.isArray(paymentControlOrders)&&paymentControlOrders.length
+      ? paymentControlOrders
+      : (Array.isArray(orders)?orders:[]);
+
+    for(const order of source){
+      const phone=normalizeCustomerPhone(
+        order?.customer?.phone ||
+        order?.customerPhone ||
+        order?.phone ||
+        ""
+      );
+      if(phone.length!==10 || !order?.id)continue;
+
+      const snap=await db.ref(
+        "store/public/paymentLedger/"+phone+"/"+String(order.id)
+      ).once("value");
+      const ledger=snap.val();
+
+      if(ledger){
+        if(Number(order.total||0)<=0 && Number(ledger.amount||0)>0){
+          order.orderTotal=Number(ledger.amount||0);
+        }
+        if(
+          String(ledger.paymentStatus||"pending").toLowerCase()!=="received"
+        ){
+          order.paymentStatus="pending";
+        }
+      }
+    }
+  }catch(e){
+    console.warn("Payment Control ledger enrichment warning:",e);
+  }
+
   if(!Array.isArray(paymentControlOrders)){
     paymentControlOrders=[];
   }
