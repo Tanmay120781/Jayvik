@@ -5815,6 +5815,10 @@ function saveCustomerOrderHistoryLocal(
     dispatchedAt:String(
       order.dispatchedAt||""
     ),
+    paymentStatus:String(order.paymentStatus||"pending"),
+    paymentReceivedAt:String(order.paymentReceivedAt||""),
+    archivedAt:String(order.archivedAt||""),
+    total:Number(order.total||0),
     customer:{
       name:String(
         order?.customer?.name||""
@@ -5835,7 +5839,8 @@ function saveCustomerOrderHistoryLocal(
             ),
             qty:Number(
               item.qty||0
-            )
+            ),
+            price:Number(item.price||0)
           }))
         : [],
 
@@ -6201,6 +6206,37 @@ function startCustomerOrderArchiveListener(){
       )
     );
 
+    try{
+      const allHistory=getCustomerOrderHistoryLocal();
+
+      Object.keys(allHistory||{}).forEach(phone=>{
+        const list=Array.isArray(allHistory[phone])?allHistory[phone]:[];
+
+        list.forEach(order=>{
+          const id=String(order?.id||"");
+          if(!id || !customerArchivedOrderIds.has(id))return;
+
+          order.status="history";
+          order.paymentStatus="received";
+          order.archivedAt=String(
+            map[id]?.archivedAt || order.archivedAt || ""
+          );
+          order.updatedAt=String(
+            map[id]?.archivedAt ||
+            order.updatedAt ||
+            new Date().toISOString()
+          );
+        });
+      });
+
+      localStorage.setItem(
+        "jayvik_customer_order_history",
+        JSON.stringify(allHistory)
+      );
+    }catch(e){
+      console.warn("Customer archive local sync failed:",e);
+    }
+
     renderCustomerOrderHistory();
   },err=>console.error("Customer archived-order listener failed:",err));
 }
@@ -6311,17 +6347,17 @@ function renderCustomerOrderHistory(
                   ${productsHtml}
                 </td>
                 <td data-label="Amount">
-                  <strong>₹${amount.toLocaleString("en-IN")}</strong>
+                  <strong>${amount>0
+                    ? "₹"+amount.toLocaleString("en-IN")
+                    : "—"}</strong>
                 </td>
                 <td data-label="Status">
                   <span class="customer-history-status">
-                    ${escapeHtml(
-                      customerStatusLabel(
-                        order.status,
-                        order.readyStage
-                      )
-                    )}
+                    ✅ Completed
                   </span>
+                  <div class="small" style="margin-top:4px">
+                    💰 Payment Received
+                  </div>
                 </td>
                 <td data-label="Invoice">
                   <div class="customer-history-invoice">
@@ -7208,70 +7244,161 @@ function showCustomerPendingPaymentPopup(rows,totalPending){
 
 async function refreshCustomerPendingPaymentsDashboard(){
   const host=document.getElementById("customerPendingPaymentsDashboard");
-  if(!host||!firebaseReady||!db)return;
+  if(!host)return;
+
+  function showZero(){
+    host.innerHTML=`
+      <div class="customer-payment-summary customer-payment-clear">
+        <div>
+          <strong>💰 Total Pending Payment: ₹0</strong>
+          <span>✅ No pending payment</span>
+        </div>
+      </div>`;
+  }
+
+  if(!firebaseReady||!db){
+    showZero();
+    return;
+  }
 
   const ids=new Set();
+  const localById={};
 
   try{
-    const phone=normalizeCustomerPhone(
-      localStorage.getItem("jayvik_last_customer_phone")||""
-    );
-    const history=getCustomerOrderHistoryLocal();
-    const list=Array.isArray(history?.[phone])?history[phone]:[];
-    list.forEach(o=>{if(o?.id)ids.add(String(o.id));});
+    const allHistory=getCustomerOrderHistoryLocal();
+    Object.values(allHistory||{}).forEach(list=>{
+      (Array.isArray(list)?list:[]).forEach(o=>{
+        if(o?.id){
+          ids.add(String(o.id));
+          localById[String(o.id)]=o;
+        }
+      });
+    });
+  }catch(e){}
+
+  try{
+    const legacy=JSON.parse(localStorage.getItem("jayvik_orders")||"[]");
+    (Array.isArray(legacy)?legacy:[]).forEach(o=>{
+      if(o?.id){
+        ids.add(String(o.id));
+        localById[String(o.id)]={...(localById[String(o.id)]||{}),...o};
+      }
+    });
+  }catch(e){}
+
+  try{
+    (Array.isArray(orders)?orders:[]).forEach(o=>{
+      if(o?.id){
+        ids.add(String(o.id));
+        localById[String(o.id)]={...(localById[String(o.id)]||{}),...o};
+      }
+    });
   }catch(e){}
 
   const lastId=String(localStorage.getItem("jayvik_last_order_id")||"").trim();
   if(lastId)ids.add(lastId);
 
   if(!ids.size){
-    host.innerHTML=`
-      <div class="customer-payment-summary customer-payment-clear">
-        <strong>💰 Total Pending Payment: ₹0</strong>
-        <span>No payment-pending transactions.</span>
-      </div>`;
+    showZero();
     return;
   }
 
   try{
     const snapshots=await Promise.all(
-      [...ids].map(id=>
-        db.ref("store/public/orderStatus").child(id).once("value")
-      )
+      [...ids].map(async id=>{
+        try{
+          const snap=await db.ref("store/public/orderStatus").child(id).once("value");
+          return {id,data:snap.val()};
+        }catch(e){
+          return {id,data:null};
+        }
+      })
     );
 
-    const rows=snapshots
-      .map(x=>x.val())
-      .filter(order=>
-        order?.id &&
-        String(order.paymentStatus||"pending").toLowerCase()!=="received" &&
-        !["history","deleted"].includes(String(order.status||"").toLowerCase())
-      )
-      .sort((a,b)=>
-        (new Date(b.createdAt||b.updatedAt||0).getTime()||0)-
-        (new Date(a.createdAt||a.updatedAt||0).getTime()||0)
+    const rows=[];
+
+    snapshots.forEach(({id,data})=>{
+      const local=localById[id]||{};
+      const order=data ? {...local,...data} : local;
+
+      if(!order?.id)return;
+
+      const status=String(order.status||"").toLowerCase();
+      const payment=String(order.paymentStatus||"pending").toLowerCase();
+
+      if(payment==="received")return;
+      if(["history","deleted"].includes(status))return;
+
+      // Only genuine active transactions belong in pending payment.
+      if(!["pending","partial","ready","packing","dispatched"].includes(status)){
+        return;
+      }
+
+      let amount=Number(
+        order.orderTotal ??
+        order.total ??
+        0
       );
 
-    const total=rows.reduce((sum,o)=>sum+Number(o.orderTotal||0),0);
+      // For partial orders, use the payable/ready amount when available.
+      if(status==="partial"){
+        const partialAmount=Number(
+          order.readyTotal ??
+          order.payableTotal ??
+          order.invoiceTotal ??
+          0
+        );
+        if(partialAmount>0)amount=partialAmount;
+      }
 
-    if(rows.length && total>0){
-      showCustomerPendingPaymentPopup(rows,total);
-    }
+      rows.push({
+        ...order,
+        id:String(order.id),
+        orderTotal:Number(amount||0),
+        paymentItems:
+          Array.isArray(order.paymentItems)&&order.paymentItems.length
+            ? order.paymentItems
+            : (
+                Array.isArray(order.items)
+                  ? order.items.map(item=>({
+                      name:String(item?.name||"Product"),
+                      size:String(item?.size||item?.pack||""),
+                      qty:Number(item?.qty||0),
+                      price:Number(item?.price||0)
+                    }))
+                  : []
+              )
+      });
+    });
+
+    rows.sort((a,b)=>
+      (new Date(b.createdAt||b.updatedAt||0).getTime()||0)-
+      (new Date(a.createdAt||a.updatedAt||0).getTime()||0)
+    );
+
+    const total=rows.reduce(
+      (sum,o)=>sum+Number(o.orderTotal||0),
+      0
+    );
 
     if(!rows.length){
-      host.innerHTML=`
-        <div class="customer-payment-summary customer-payment-clear">
-          <strong>💰 Total Pending Payment: ₹0</strong>
-          <span>No payment-pending transactions.</span>
-        </div>`;
+      showZero();
       return;
+    }
+
+    if(total>0){
+      showCustomerPendingPaymentPopup(rows,total);
     }
 
     host.innerHTML=`
       <div class="customer-payment-summary">
         <div>
-          <strong class="customer-payment-pulse">⚠️ 💳 Total Pending Payment: ₹${formatMoney(total)}</strong>
-          <span>${rows.length} pending transaction${rows.length===1?"":"s"}</span>
+          <strong class="customer-payment-pulse">
+            ⚠️ 💳 Total Pending Payment: ₹${formatMoney(total)}
+          </strong>
+          <span>
+            ${rows.length} pending transaction${rows.length===1?"":"s"}
+          </span>
         </div>
       </div>
 
@@ -7282,7 +7409,7 @@ async function refreshCustomerPendingPaymentsDashboard(){
               <th>Order ID</th>
               <th>Transaction / Order Date</th>
               <th>Order Details</th>
-              <th>Amount</th>
+              <th>Pending Amount</th>
               <th>Order Status</th>
               <th>Payment</th>
             </tr>
@@ -7305,23 +7432,26 @@ async function refreshCustomerPendingPaymentsDashboard(){
                         × ${Number(item.qty||0)}
                       </div>`).join("") || "-"}
                 </td>
-                <td><strong>₹${formatMoney(Number(order.orderTotal||0))}</strong></td>
+                <td>
+                  <strong>₹${formatMoney(Number(order.orderTotal||0))}</strong>
+                </td>
                 <td>${escapeHtml(customerStatusLabel(order))}</td>
-                <td><strong>💳 Pending</strong></td>
+                <td><strong>💳 Payment Pending</strong></td>
               </tr>`).join("")}
           </tbody>
         </table>
       </div>`;
   }catch(err){
     console.error("Customer pending-payment dashboard failed:",err);
-    host.innerHTML=`
-      <div class="notice">
-        Could not refresh pending payment transactions.
-      </div>`;
+    // Never leave the customer dashboard stuck on Loading.
+    showZero();
   }
 }
 
 function startCustomerOrderStatusListener(){
+  // Resolve Pending Payments immediately instead of leaving "Loading..." visible.
+  setTimeout(()=>refreshCustomerPendingPaymentsDashboard(),0);
+
 
   if(!firebaseReady || !db){
     console.warn("Customer live status: Firebase is not ready.");
@@ -7365,6 +7495,7 @@ function startCustomerOrderStatusListener(){
 
   if(!id){
     renderLiveOrderStatus(null);
+    refreshCustomerPendingPaymentsDashboard();
     return;
   }
 
@@ -14167,6 +14298,21 @@ async function bulkDeleteSalesArchiveOrders(){
 
 
 async function renderSalesArchive(){
+  if(
+    !window.__jayvikArchiveMarkerBackfillRunning &&
+    !window.__jayvikArchiveMarkerBackfillDone
+  ){
+    window.__jayvikArchiveMarkerBackfillRunning=true;
+    try{
+      await backfillCustomerArchivedOrderMarkers();
+      window.__jayvikArchiveMarkerBackfillDone=true;
+    }catch(e){
+      console.warn("Archive marker backfill failed:",e);
+    }finally{
+      window.__jayvikArchiveMarkerBackfillRunning=false;
+    }
+  }
+
   backfillCustomerArchivedOrderMarkers();
 
 
