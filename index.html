@@ -5975,9 +5975,7 @@ function startCustomerOrderHistoryDeletionListener(){
           deletedMap
         );
 
-      if(changed){
-        renderCustomerOrderHistory();
-      }
+      renderCustomerOrderHistory();
 
     },
     err=>{
@@ -10926,16 +10924,28 @@ async function repairCustomerLiveStatusMirrors(){
   )return;
 
   try{
+    /*
+      Never recreate a customer-facing status/history entry after Admin
+      has explicitly deleted that order from Sales Archive.
+    */
+    const deletedSnap=await db.ref(
+      "store/public/orderHistoryDeleted"
+    ).once("value");
+
+    const deletedMap=deletedSnap.val()||{};
     const updates={};
 
     (orders||[]).forEach(order=>{
       if(!order?.id)return;
 
+      const id=String(order.id);
       const status=String(order.status||"").toLowerCase();
+
       if(["history","deleted"].includes(status))return;
+      if(deletedMap[id]?.deleted===true)return;
 
       updates[
-        "store/public/orderStatus/"+String(order.id)
+        "store/public/orderStatus/"+id
       ]=publicOrderStatusPayload(order);
     });
 
@@ -13458,7 +13468,7 @@ async function deleteArchivedHistoryOrder(orderId){
       " for "+
       String(customer.name||"this customer")+
       "?\n\n"+
-      "This will remove this order from Sales Archive, Customer Consumption reports and future Excel exports."
+      "This will remove this order from Sales Archive, Customer Consumption reports, future Excel exports and the customer's My Order History."
     );
 
   if(!confirmed){
