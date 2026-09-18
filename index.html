@@ -1552,6 +1552,30 @@ footer{
     border-bottom:0;
   }
 }
+
+/* CUSTOMER LIVE PAYMENT INDICATION */
+.customer-payment-status{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin:14px 0;
+  padding:13px 16px;
+  border:1px solid;
+  border-radius:12px;
+}
+.customer-payment-status strong{font-size:16px}
+.customer-payment-status span{font-size:13px}
+.customer-payment-status.payment-pending{
+  background:#fff7dc;
+  border-color:#e4bd43;
+  color:#725000;
+}
+.customer-payment-status.payment-received{
+  background:#edf9ef;
+  border-color:#59a566;
+  color:#175c25;
+}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -3253,7 +3277,7 @@ window.jayvikConfirm=function(message,options={}){
           </span>
 
           <span class="notice" style="margin:0">
-            🔒 Delete locked until payment is received
+            🗄 Complete Order after payment to move to Sales Archive
           </span>
         </div>
 
@@ -5084,6 +5108,9 @@ async function saveOrderToFirebase(order){
       Existing Firebase Rules allow public first-time creation at /orders/{id}.
       Keep the customer write limited to that path.
     */
+    order.paymentStatus=String(order.paymentStatus||"pending");
+    order.paymentReceivedAt=String(order.paymentReceivedAt||"");
+
     await db
       .ref("orders/" + String(order.id))
       .set(order);
@@ -6098,6 +6125,12 @@ function publicOrderStatusPayload(order){
         order.dispatchedAt||""
       ),
 
+    paymentStatus:
+      String(order.paymentStatus||"pending"),
+
+    paymentReceivedAt:
+      String(order.paymentReceivedAt||""),
+
     /*
       Customer-facing last-order details intentionally exclude:
       • unit price
@@ -6384,6 +6417,36 @@ function renderLiveOrderStatus(data){
               margin-bottom:8px
             "
           >
+      <div class="customer-payment-status ${
+        String(data.paymentStatus||"pending").toLowerCase()==="received"
+          ? "payment-received"
+          : "payment-pending"
+      }">
+        <strong>
+          ${
+            String(data.paymentStatus||"pending").toLowerCase()==="received"
+              ? "💰 Payment Received"
+              : "💳 Payment Pending"
+          }
+        </strong>
+        <span>
+          ${
+            String(data.paymentStatus||"pending").toLowerCase()==="received"
+              ? (
+                  data.paymentReceivedAt
+                    ? "Payment confirmed on "+
+                      escapeHtml(new Date(data.paymentReceivedAt).toLocaleString("en-IN"))
+                    : "Your payment has been received and confirmed."
+                )
+              : (
+                  String(data.status||"").toLowerCase()==="dispatched"
+                    ? "Your order has been dispatched. Payment is pending."
+                    : "Payment confirmation is pending."
+                )
+          }
+        </span>
+      </div>
+
             🧾 Last Order Details
           </div>
 
@@ -9874,19 +9937,16 @@ async function renderDispatchedOrdersFolder(){
                        class="btn btn-green"
                        onclick="markPaymentReceived('${escapeAttr(String(order.id))}')"
                      >💰 Payment Received</button>`
-                  : ""
+                  : `<button
+                       class="btn btn-green"
+                       onclick="completeOrderAndMoveToSalesArchive('${escapeAttr(String(order.id))}')"
+                     >✅ Complete Order &amp; Move to Sales Archive</button>`
               }
 
               <button
                 class="btn btn-light"
                 onclick="downloadCustomerInvoicePdf('${escapeAttr(String(order.id))}')"
               >🧾 Invoice</button>
-
-              <button
-                class="btn btn-danger"
-                ${paymentReceived?"":"disabled"}
-                onclick="deletePaidDispatchedOrder('${escapeAttr(String(order.id))}')"
-              >🗑 Delete</button>
             </div>
           </td>
         </tr>
@@ -11944,6 +12004,14 @@ async function markPaymentReceived(orderId){
         updatedAt:now
       });
 
+    await db
+      .ref("store/public/orderStatus/"+String(order.id))
+      .update({
+        paymentStatus:"received",
+        paymentReceivedAt:now,
+        updatedAt:now
+      });
+
     localStorage.setItem(
       "jayvik_orders",
       JSON.stringify(orders)
@@ -11971,6 +12039,101 @@ async function markPaymentReceived(orderId){
   }
 }
 
+
+
+async function completeOrderAndMoveToSalesArchive(orderId){
+  if(!firebaseReady||!db||!auth?.currentUser||
+     auth.currentUser.email!=="jayvik.india@gmail.com"){
+    alert("Admin login required.");
+    return;
+  }
+
+  const order=(orders||[]).find(o=>String(o.id)===String(orderId));
+  if(!order){alert("Order not found.");return;}
+
+  if(String(order.paymentStatus||"").toLowerCase()!=="received"){
+    alert("Please mark Payment Received first.");
+    return;
+  }
+
+  const status=String(order.status||"").toLowerCase();
+  const stage=String(order.readyStage||"").toLowerCase();
+
+  if(status!=="dispatched" && !(status==="partial" && stage==="dispatched")){
+    alert("Only dispatched orders can be completed.");
+    return;
+  }
+
+  if(status==="partial"){
+    const pendingQty=(order.fulfillment||[]).reduce(
+      (sum,item)=>sum+Number(item.pendingQty||0),0
+    );
+    if(pendingQty>0){
+      alert(
+        "This partial order still has Pending items. "+
+        "Its complete order cannot move to Sales Archive until the pending portion is completed."
+      );
+      return;
+    }
+  }
+
+  const ok=await jayvikConfirm(
+    "Complete Order "+order.id+" and move it to Sales Archive?\\n\\n"+
+    "It will leave active Dispatched Orders and become available in Customer My Order History."
+  );
+  if(!ok)return;
+
+  try{
+    const now=new Date().toISOString();
+
+    const archiveRecord={
+      ...order,
+      status:"history",
+      archivedAt:now,
+      completedAt:now,
+      paymentStatus:"received",
+      paymentReceivedAt:String(order.paymentReceivedAt||now)
+    };
+
+    await db.ref("store/salesArchive/"+String(order.id)).set(archiveRecord);
+
+    const verify=await db.ref(
+      "store/salesArchive/"+String(order.id)
+    ).once("value");
+
+    if(!verify.exists()){
+      throw new Error("Sales Archive did not confirm the order.");
+    }
+
+    const updates={};
+    updates["/store/public/orderHistoryArchived/"+String(order.id)]={
+      archived:true,
+      archivedAt:now
+    };
+    updates["/store/public/orderStatus/"+String(order.id)]=null;
+    updates["/store/public/orderHistoryDeleted/"+String(order.id)]=null;
+    updates["/orders/"+String(order.id)]=null;
+
+    await db.ref().update(updates);
+
+    orders=(orders||[]).filter(o=>String(o.id)!==String(order.id));
+
+    renderOrders(false);
+    try{renderSalesArchive();}catch(e){}
+    try{renderCustomerConsumption();}catch(e){}
+    await renderDispatchedOrdersFolder();
+
+    showSaveNotification(
+      "Order "+order.id+" completed and moved to Sales Archive."
+    );
+  }catch(err){
+    console.error("Complete order / Sales Archive failed:",err);
+    alert(
+      "Could not complete the order. Active order was kept safe. "+
+      (err?.message||"")
+    );
+  }
+}
 
 async function deletePaidDispatchedOrder(orderId,skipConfirm=false){
 
