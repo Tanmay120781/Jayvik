@@ -6048,6 +6048,44 @@ function publicOrderStatusPayload(order){
 }
 
 
+
+async function syncCustomerLiveOrderStatus(order){
+  if(!firebaseReady||!db||!order?.id){
+    throw new Error("Firebase/customer status is not ready.");
+  }
+
+  const id=String(order.id);
+  const payload=publicOrderStatusPayload(order);
+  const ref=db.ref("store/public/orderStatus/"+id);
+
+  await ref.set(payload);
+
+  const verify=await ref.once("value");
+  const saved=verify.val();
+
+  if(!saved){
+    throw new Error("Customer Live Order Status was not saved.");
+  }
+
+  const expectedStatus=String(payload.status||"").toLowerCase();
+  const actualStatus=String(saved.status||"").toLowerCase();
+  const expectedReadyStage=String(payload.readyStage||"").toLowerCase();
+  const actualReadyStage=String(saved.readyStage||"").toLowerCase();
+
+  if(actualStatus!==expectedStatus){
+    throw new Error("Customer status mirror did not confirm "+expectedStatus+".");
+  }
+
+  if(
+    expectedStatus==="partial" &&
+    actualReadyStage!==expectedReadyStage
+  ){
+    throw new Error("Customer partial-order stage did not confirm "+expectedReadyStage+".");
+  }
+
+  return saved;
+}
+
 let customerOrderStatusRef=null;
 
 
@@ -6161,14 +6199,47 @@ function renderLiveOrderStatus(data){
     ["dispatched","🚚 Dispatched","Your order has been dispatched"]
   ];
 
+  /*
+    A partial order remains status="partial" while some items are pending.
+    The available items use readyStage for the customer workflow.
+  */
+  const rawStatus=String(data.status||"").toLowerCase();
+  const rawReadyStage=String(data.readyStage||"ready").toLowerCase();
+
+  let customerWorkflowStatus=rawStatus;
+
+  if(rawStatus==="partial"){
+    customerWorkflowStatus=
+      ["ready","packing","dispatched"].includes(rawReadyStage)
+        ? rawReadyStage
+        : "ready";
+  }
+
+  // Compatibility with older orders from the former Packed stage.
+  if(customerWorkflowStatus==="packed"){
+    customerWorkflowStatus="packing";
+  }
+
   const current=
     steps.findIndex(
-      s=>s[0]===data.status
+      step=>step[0]===customerWorkflowStatus
     );
 
   const statusText=
-    steps[current]?.[1]||
-    "📦 Status unavailable";
+    rawStatus==="partial"
+      ? `⚠️ Partial Order — Ready Items: ${
+          customerWorkflowStatus==="ready"
+            ? "🟢 Ready"
+            : customerWorkflowStatus==="packing"
+              ? "📦 Packing"
+              : customerWorkflowStatus==="dispatched"
+                ? "🚚 Dispatched"
+                : "🟢 Ready"
+        }`
+      : (
+          steps[current]?.[1]||
+          "📦 Status unavailable"
+        );
 
   const items=
     Array.isArray(data.items)
@@ -6293,6 +6364,12 @@ function renderLiveOrderStatus(data){
         <strong>
           ${escapeHtml(statusText)}
         </strong>
+        ${rawStatus==="partial"?`
+          <div style="margin-top:7px;font-size:13px">
+            Available items continue through Ready → Packing → Dispatched.
+            Unavailable items remain under Pending Items until stock becomes available.
+          </div>
+        `:""}
       </div>
 
       <div class="order-status-steps">
@@ -6489,6 +6566,12 @@ function startCustomerOrderStatusListener(){
       const data = snap.val();
 
       if(data){
+        try{
+          localStorage.setItem(
+            "jayvik_last_order_status",
+            JSON.stringify(data)
+          );
+        }catch(e){}
 
         /*
           Older Firebase status records may not yet contain item details.
@@ -10135,8 +10218,7 @@ async function deletePendingOrderLine(orderId,productId,size){
       await db.ref("orders/"+String(order.id)).set(updated);
 
       try{
-        await db.ref("store/public/orderStatus/"+String(order.id))
-          .set(publicOrderStatusPayload(updated));
+        await syncCustomerLiveOrderStatus(updated);
       }catch(mirrorErr){
         console.error("Customer status update failed:",mirrorErr);
       }
@@ -10207,8 +10289,7 @@ async function recheckAndMovePendingOrderToReady(orderId){
       localStorage.setItem("jayvik_orders",JSON.stringify(orders));
 
       try{
-        await db.ref("store/public/orderStatus/"+String(order.id))
-          .set(publicOrderStatusPayload(saved));
+        await syncCustomerLiveOrderStatus(saved);
       }catch(mirrorErr){
         console.error("Customer status mirror failed:",mirrorErr);
       }
@@ -10234,8 +10315,7 @@ async function recheckAndMovePendingOrderToReady(orderId){
     localStorage.setItem("jayvik_orders",JSON.stringify(orders));
 
     try{
-      await db.ref("store/public/orderStatus/"+String(order.id))
-        .set(publicOrderStatusPayload(refreshed));
+      await syncCustomerLiveOrderStatus(refreshed);
     }catch(mirrorErr){
       console.error("Customer status mirror failed:",mirrorErr);
     }
@@ -10551,8 +10631,7 @@ async function deletePartialReadyDispatchedInvoice(orderId){
     await db.ref("orders/"+String(order.id)).set(updated);
 
     try{
-      await db.ref("store/public/orderStatus/"+String(order.id))
-        .set(publicOrderStatusPayload(updated));
+      await syncCustomerLiveOrderStatus(updated);
     }catch(mirrorErr){
       console.error("Customer status mirror update failed:",mirrorErr);
     }
@@ -10846,7 +10925,7 @@ async function moveOrder(orderId,newStatus){
     if(!savedRaw||String(savedRaw.status||"").toLowerCase()!==next)throw new Error("Firebase did not confirm "+next+".");
     const saved={...savedRaw,id:String(savedRaw.id||orderId)}; orders[index]=saved;
     localStorage.setItem("jayvik_orders",JSON.stringify(orders));
-    try{await db.ref("store/public/orderStatus/"+String(orderId)).set(publicOrderStatusPayload(saved));}catch(e){console.error(e);}
+    await syncCustomerLiveOrderStatus(saved);
     orderFilter="all"; document.querySelectorAll(".order-filter").forEach(b=>b.classList.toggle("active",String(b.dataset.filter||"").toLowerCase()==="all"));
     await renderOrders(false); if(typeof renderDispatchedOrdersFolder==="function")renderDispatchedOrdersFolder();
     alert("Order moved to "+next.charAt(0).toUpperCase()+next.slice(1)+"."); return true;
@@ -11805,12 +11884,7 @@ async function movePartialReadyItems(orderId,nextStage){
     orders[index]=saved;
     localStorage.setItem("jayvik_orders",JSON.stringify(orders));
 
-    try{
-      await db.ref("store/public/orderStatus/"+String(orderId))
-        .set(publicOrderStatusPayload(saved));
-    }catch(mirrorErr){
-      console.error("Customer status mirror failed:",mirrorErr);
-    }
+    await syncCustomerLiveOrderStatus(saved);
 
     orderFilter="all";
     document.querySelectorAll(".order-filter").forEach(btn=>{
@@ -16639,7 +16713,19 @@ renderProducts();
 
 renderCart();
 
+
 startCustomerOrderStatusListener();
+
+window.addEventListener("focus",()=>{
+  try{startCustomerOrderStatusListener();}catch(e){}
+});
+
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"){
+    try{startCustomerOrderStatusListener();}catch(e){}
+  }
+});
+
 
 
 document.addEventListener(
