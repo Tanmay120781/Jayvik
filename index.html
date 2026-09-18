@@ -15886,6 +15886,7 @@ function formatMoney(value){
 
 let paymentControlOrders=[];
 let paymentControlLedgerByPhone={};
+let paymentControlPendingByPhone={};
 
 function paymentControlOrderAmount(order){
   const directCandidates=[
@@ -15917,6 +15918,85 @@ function paymentControlOrderAmount(order){
   },0);
 
   return Number.isFinite(itemTotal)?itemTotal:0;
+}
+
+async function rebuildPaymentControlPendingFromCustomerSource(){
+  paymentControlPendingByPhone={};
+  if(!firebaseReady||!db)return;
+
+  const sourceOrders=
+    Array.isArray(paymentControlOrders)&&paymentControlOrders.length
+      ? paymentControlOrders
+      : (Array.isArray(orders)?orders:[]);
+
+  const phones=[...new Set(sourceOrders.map(order=>normalizeCustomerPhone(
+    order?.customer?.phone||order?.customerPhone||order?.phone||""
+  )).filter(phone=>phone.length===10))];
+
+  for(const phone of phones){
+    let rows=[];
+
+    // EXACT SAME PRIMARY SOURCE USED BY CUSTOMER PENDING PAYMENTS.
+    try{
+      const snap=await db.ref("store/public/paymentLedger/"+phone).once("value");
+      rows=Object.values(snap.val()||{});
+    }catch(e){
+      console.warn("Payment Control customer ledger read warning:",phone,e);
+    }
+
+    // Same fallback principle as customer dashboard: public order status.
+    if(!rows.length){
+      const customerOrders=sourceOrders.filter(order=>normalizeCustomerPhone(
+        order?.customer?.phone||order?.customerPhone||order?.phone||""
+      )===phone);
+
+      for(const order of customerOrders){
+        const id=String(order?.id||"");
+        if(!id)continue;
+        try{
+          const statusSnap=await db.ref("store/public/orderStatus/"+id).once("value");
+          const publicRow=statusSnap.val();
+          if(publicRow){
+            rows.push({
+              id:String(publicRow.id||id),
+              status:String(publicRow.status||order.status||"pending"),
+              readyStage:String(publicRow.readyStage||order.readyStage||""),
+              paymentStatus:String(publicRow.paymentStatus||order.paymentStatus||"pending"),
+              amount:Number(publicRow.orderTotal||paymentControlOrderAmount(order)||0),
+              createdAt:String(publicRow.createdAt||order.createdAt||""),
+              updatedAt:String(publicRow.updatedAt||order.updatedAt||"")
+            });
+          }
+        }catch(e){}
+      }
+    }
+
+    const pendingRows=rows.filter(row=>
+      row?.id &&
+      String(row.paymentStatus||"pending").toLowerCase()!=="received" &&
+      !["history","deleted"].includes(String(row.status||"").toLowerCase())
+    );
+
+    // Fill missing amounts from public orderStatus, then Admin order as final fallback.
+    for(const row of pendingRows){
+      if(Number(row.amount||0)>0)continue;
+      try{
+        const statusSnap=await db.ref("store/public/orderStatus/"+String(row.id)).once("value");
+        const statusRow=statusSnap.val()||{};
+        const mirrored=Number(statusRow.orderTotal||0);
+        if(mirrored>0){row.amount=mirrored;continue;}
+      }catch(e){}
+
+      const adminOrder=sourceOrders.find(o=>String(o?.id||"")===String(row.id));
+      if(adminOrder)row.amount=paymentControlOrderAmount(adminOrder);
+    }
+
+    paymentControlPendingByPhone[phone]={
+      pending:pendingRows.reduce((sum,row)=>sum+Number(row.amount||0),0),
+      pendingOrders:pendingRows.length,
+      pendingOrderIds:pendingRows.map(row=>String(row.id))
+    };
+  }
 }
 
 function collectCustomerPaymentInterlockRows(){
@@ -16059,6 +16139,16 @@ function collectCustomerPaymentInterlockRows(){
         lastOrderStatus:"",
         paymentStatus:""
       };
+    }
+  });
+
+  Object.values(byPhone).forEach(row=>{
+    const exact=paymentControlPendingByPhone[row.phone];
+    if(exact){
+      row.pending=Number(exact.pending||0);
+      row.pendingOrders=Number(exact.pendingOrders||0);
+      row.pendingOrderIds=Array.isArray(exact.pendingOrderIds)?exact.pendingOrderIds.slice():[];
+      if(row.pendingOrders>0)row.paymentStatus="pending";
     }
   });
 
@@ -16330,6 +16420,7 @@ async function renderPaymentInterlockAdmin(){
     }
   }
 
+  await rebuildPaymentControlPendingFromCustomerSource();
   renderCustomerPaymentInterlockTable();
   updatePaymentControlSummary();
 }
