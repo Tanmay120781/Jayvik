@@ -1393,6 +1393,24 @@ footer{
   border-color:#267a35 !important;
   color:#fff !important;
 }
+
+/* JAYVIK WORKFLOW OPTIMIZATION */
+.jayvik-action-dashboard{margin-bottom:16px}
+.action-dashboard-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.action-dashboard-head h3{margin:0 0 3px}
+.action-dashboard-grid{display:grid;grid-template-columns:repeat(5,minmax(135px,1fr));gap:10px;margin-top:14px}
+.action-counter{border:1px solid #dce8dc;border-radius:12px;background:#f7fbf7;padding:12px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700}
+.action-counter strong{font-size:22px;color:#17351d}
+.action-counter:hover{border-color:#267a35;background:#eef7ef}
+.inventory-stock-actions{display:flex;gap:5px;flex-wrap:wrap}
+.inventory-stock-actions .btn{padding:7px 9px!important;min-width:42px!important}
+.inventory-save-cell{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.inventory-stock-badge{font-size:12px;font-weight:800;padding:5px 8px;border-radius:999px;white-space:nowrap}
+.inventory-stock-badge.available{background:#e8f5e9;color:#1f6d2d}
+.inventory-stock-badge.low{background:#fff6dc;color:#8a6410}
+.inventory-stock-badge.out{background:#fdecec;color:#a72828}
+@media(max-width:1000px){.action-dashboard-grid{grid-template-columns:repeat(2,minmax(140px,1fr))}}
+@media(max-width:600px){.action-dashboard-grid{grid-template-columns:1fr}}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -2877,6 +2895,23 @@ window.jayvikConfirm=function(message,options={}){
       id="ordersAdmin"
       class="admin-section"
     >
+  <div class="admin-card jayvik-action-dashboard">
+    <div class="action-dashboard-head">
+      <div>
+        <h3>⚡ Order Action Dashboard</h3>
+        <small>Click a status to go directly to those orders.</small>
+      </div>
+      <button class="btn btn-light" type="button" onclick="renderOrders()">↻ Refresh</button>
+    </div>
+    <div class="action-dashboard-grid">
+      <button class="action-counter" type="button" onclick="jumpToOrderStage('pending')"><span>🕒 Pending</span><strong id="actionPendingCount">0</strong></button>
+      <button class="action-counter" type="button" onclick="jumpToOrderStage('ready')"><span>🟢 Ready</span><strong id="actionReadyCount">0</strong></button>
+      <button class="action-counter" type="button" onclick="jumpToOrderStage('packing')"><span>📦 Packing</span><strong id="actionPackingCount">0</strong></button>
+      <button class="action-counter" type="button" onclick="jumpToOrderStage('dispatched')"><span>🚚 Dispatched</span><strong id="actionDispatchedCount">0</strong></button>
+      <button class="action-counter" type="button" onclick="openDispatchedPaymentPending()"><span>💰 Payment Pending</span><strong id="actionPaymentPendingCount">0</strong></button>
+    </div>
+  </div>
+
 
       <div class="order-summary-grid">
 
@@ -10474,7 +10509,72 @@ function startJayvikAdminOrdersListener(){
 }
 
 
+function setActionCount(id,value){
+  const el=document.getElementById(id);
+  if(el)el.textContent=String(Number(value||0));
+}
+
+function updateOrderActionDashboard(){
+  const source=Array.isArray(orders)?orders:[];
+  let pending=0,ready=0,packing=0,dispatched=0,paymentPending=0;
+
+  source.forEach(order=>{
+    const status=String(order.status||"").toLowerCase();
+    const readyStage=String(order.readyStage||"").toLowerCase();
+
+    if(status==="pending")pending++;
+
+    if(status==="partial"){
+      const pendingQty=(order.fulfillment||[]).reduce(
+        (sum,item)=>sum+Number(item.pendingQty||0),0
+      );
+      if(pendingQty>0)pending++;
+      if(readyStage==="ready")ready++;
+      if(readyStage==="packing"||readyStage==="packed")packing++;
+      if(readyStage==="dispatched")dispatched++;
+    }else{
+      if(status==="ready")ready++;
+      if(status==="packing"||status==="packed")packing++;
+      if(status==="dispatched")dispatched++;
+    }
+
+    if(
+      (status==="dispatched"||status==="history"||
+       (status==="partial"&&readyStage==="dispatched")) &&
+      String(order.paymentStatus||"pending").toLowerCase()!=="received"
+    ) paymentPending++;
+  });
+
+  setActionCount("actionPendingCount",pending);
+  setActionCount("actionReadyCount",ready);
+  setActionCount("actionPackingCount",packing);
+  setActionCount("actionDispatchedCount",dispatched);
+  setActionCount("actionPaymentPendingCount",paymentPending);
+}
+
+function jumpToOrderStage(stage){
+  const wanted=String(stage||"").toLowerCase();
+  const buttons=[...document.querySelectorAll("#ordersAdmin button")];
+  const target=buttons.find(btn=>{
+    const text=String(btn.textContent||"").toLowerCase();
+    return text.includes(wanted) && !text.includes("dashboard");
+  });
+  if(target){
+    target.click();
+    setTimeout(()=>target.scrollIntoView({behavior:"smooth",block:"center"}),50);
+  }
+}
+
+function openDispatchedPaymentPending(){
+  jumpToOrderStage("dispatched");
+  setTimeout(()=>{
+    const folder=document.getElementById("dispatchedOrdersBoard");
+    if(folder)folder.scrollIntoView({behavior:"smooth",block:"start"});
+  },150);
+}
+
 async function renderOrders(refreshInventory=true){
+  updateOrderActionDashboard();
 
   if(refreshInventory){
     try{
@@ -11968,16 +12068,22 @@ function renderInventoryCore(){
             min="0"
             value="${Number(pack.stock||0)}"
           >
-          <button
-            class="btn btn-light"
-            onclick="increasePackStock(${product.id},${packIndex},10)"
-            title="Add 10 to this pack stock"
-          >+10 Stock</button>
-          <button
-            class="btn btn-green"
-            onclick="savePackStock(${product.id},${packIndex})"
-            title="Save the quantity entered manually"
-          >Save</button>
+          <div class="inventory-stock-actions">
+            <button class="btn btn-light" onclick="adjustInventoryInput(${product.id},${packIndex},-10)">−10</button>
+            <button class="btn btn-light" onclick="adjustInventoryInput(${product.id},${packIndex},-1)">−1</button>
+            <button class="btn btn-light" onclick="adjustInventoryInput(${product.id},${packIndex},1)">+1</button>
+            <button class="btn btn-light" onclick="adjustInventoryInput(${product.id},${packIndex},10)">+10</button>
+          </div>
+          <div class="inventory-save-cell">
+            <span class="inventory-stock-badge ${Number(pack.stock||0)<=0?'out':Number(pack.stock||0)<=5?'low':'available'}">
+              ${Number(pack.stock||0)<=0?'🔴 Out':Number(pack.stock||0)<=5?'🟡 Low':'🟢 Available'}
+            </span>
+            <button
+              class="btn btn-green"
+              onclick="savePackStock(${product.id},${packIndex})"
+              title="Save the quantity entered manually"
+            >Save</button>
+          </div>
         `;
         rows.appendChild(row);
       });
@@ -12009,6 +12115,14 @@ function renderInventoryCore(){
         return false;
       };
     });
+}
+
+function adjustInventoryInput(productId,packIndex,delta){
+  const input=document.getElementById(`stock-${productId}-${packIndex}`);
+  if(!input)return;
+  const current=Math.max(0,Number(input.value||0));
+  input.value=Math.max(0,current+Number(delta||0));
+  input.focus();
 }
 
 async function increasePackStock(
