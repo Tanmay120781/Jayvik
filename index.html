@@ -5294,27 +5294,45 @@ function customerPhoneChanged(showMessage=false){
 
 
 function getCustomerOrderHistoryLocal(){
+  let history={};
 
   try{
+    const raw=JSON.parse(
+      localStorage.getItem("jayvik_customer_order_history")||"{}"
+    );
+    if(raw && typeof raw==="object" && !Array.isArray(raw)){
+      history=raw;
+    }
+  }catch(e){}
 
-    const value=
-      JSON.parse(
-        localStorage.getItem(
-          "jayvik_customer_order_history"
-        )||"{}"
-      );
+  try{
+    const legacy=JSON.parse(
+      localStorage.getItem("jayvik_orders")||"[]"
+    );
 
-    return (
-      value &&
-      typeof value==="object"
-    )
-      ? value
-      : {};
+    if(Array.isArray(legacy)){
+      legacy.forEach(order=>{
+        if(!order?.id)return;
 
-  }catch(_err){
-    return {};
-  }
+        const phone=normalizeCustomerPhone(
+          order?.customer?.phone||
+          order?.customerPhone||
+          order?.phone||
+          localStorage.getItem("jayvik_last_customer_phone")||
+          ""
+        );
 
+        if(phone.length!==10)return;
+        if(!Array.isArray(history[phone]))history[phone]=[];
+
+        if(!history[phone].some(x=>String(x.id)===String(order.id))){
+          history[phone].push(order);
+        }
+      });
+    }
+  }catch(e){}
+
+  return history;
 }
 
 
@@ -17101,6 +17119,8 @@ window.addEventListener("focus",()=>{
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState==="visible"){
     try{startCustomerOrderStatusListener();
+try{startCustomerOrderArchiveListener();}catch(e){}
+setTimeout(()=>{try{renderCustomerOrderHistory();}catch(e){}},500);
 try{renderCustomerOrderHistory();}catch(e){console.warn("My Orders startup refresh failed:",e);}
 }catch(e){}
   }
