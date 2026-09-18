@@ -1708,7 +1708,7 @@ footer{
 }
 .customer-interlock-table{
   width:100%;
-  min-width:820px;
+  min-width:1250px;
   border-collapse:collapse;
 }
 .customer-interlock-table th,
@@ -1762,6 +1762,27 @@ footer{
 }
 @media(max-width:760px){
   .payment-control-summary{grid-template-columns:1fr}
+}
+
+.payment-control-status{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:999px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.payment-control-status.pending{
+  background:#fff1d6;
+  color:#8a5900;
+}
+.payment-control-status.received{
+  background:#e9f8ec;
+  color:#176329;
+}
+.customer-payment-address{
+  max-width:260px;
+  margin-top:5px;
+  line-height:1.35;
 }
 </style>
 
@@ -5322,46 +5343,30 @@ async function loadFirebaseStore(){
 
 
 
-function getKnownCustomerOrderIdsForPaymentDashboard(){
+async function getKnownCustomerOrderIdsForPaymentDashboard(){
   const ids=new Set();
 
-  /*
-    Current customer's device-local history.
-    This avoids reading another customer's private order list.
-  */
+  const currentPhone=normalizeCustomerPhone(
+    (
+      document.getElementById("customerPhone")?.value ||
+      localStorage.getItem("jayvik_last_customer_phone") ||
+      ""
+    )
+  );
+
   try{
-    const phone=normalizeCustomerPhone(
-      (
-        document.getElementById("customerPhone")?.value ||
-        localStorage.getItem("jayvik_last_customer_phone") ||
-        ""
-      )
-    );
-
     const allHistory=getCustomerOrderHistoryLocal();
-
-    if(phone.length===10 && Array.isArray(allHistory?.[phone])){
-      allHistory[phone].forEach(order=>{
+    if(
+      currentPhone.length===10 &&
+      Array.isArray(allHistory?.[currentPhone])
+    ){
+      allHistory[currentPhone].forEach(order=>{
         if(order?.id)ids.add(String(order.id));
       });
     }
-  }catch(e){
-    console.warn("Could not read customer order history IDs:",e);
-  }
+  }catch(e){}
 
-  /*
-    Backward compatibility with older Jayvik browser storage.
-    Only include orders belonging to the current customer's phone when known.
-  */
   try{
-    const currentPhone=normalizeCustomerPhone(
-      (
-        document.getElementById("customerPhone")?.value ||
-        localStorage.getItem("jayvik_last_customer_phone") ||
-        ""
-      )
-    );
-
     const legacy=JSON.parse(
       localStorage.getItem("jayvik_orders")||"[]"
     );
@@ -5391,8 +5396,28 @@ function getKnownCustomerOrderIdsForPaymentDashboard(){
   const lastId=String(
     localStorage.getItem("jayvik_last_order_id")||""
   ).trim();
-
   if(lastId)ids.add(lastId);
+
+  /*
+    Main fix: discover active payment order IDs by the customer's mobile.
+    This catches dispatched orders even when browser-local order history
+    missed the ID.
+  */
+  if(currentPhone.length===10 && firebaseReady && db){
+    try{
+      const snap=await db.ref(
+        "store/public/customerPaymentOrders/"+currentPhone
+      ).once("value");
+
+      const map=snap.val()||{};
+      Object.keys(map).forEach(id=>{
+        if(map[id]?.id)ids.add(String(map[id].id));
+        else ids.add(String(id));
+      });
+    }catch(err){
+      console.warn("Customer payment mobile index lookup failed:",err);
+    }
+  }
 
   return ids;
 }
@@ -5476,7 +5501,7 @@ async function customerHasPendingPaymentBeforeNewOrder(){
     };
   }
 
-  const ids=getKnownCustomerOrderIdsForPaymentDashboard();
+  const ids=await getKnownCustomerOrderIdsForPaymentDashboard();
   const lastId=String(
     localStorage.getItem("jayvik_last_order_id")||""
   ).trim();
@@ -6670,6 +6695,14 @@ function publicOrderStatusPayload(order){
     paymentReceivedAt:
       String(order.paymentReceivedAt||""),
 
+    customerPhoneKey:
+      normalizeCustomerPhone(
+        order?.customer?.phone ||
+        order?.customerPhone ||
+        order?.phone ||
+        ""
+      ),
+
     orderTotal:
       Number(order.total||0),
 
@@ -6752,6 +6785,45 @@ async function syncCustomerLiveOrderStatus(order){
   const ref=db.ref("store/public/orderStatus/"+id);
 
   await ref.set(payload);
+
+  /*
+    Privacy-safe payment lookup index.
+    It contains no customer name/address/product details.
+    It allows the customer's own mobile number to discover active order IDs
+    for Pending Payment calculation.
+  */
+  const phoneKey=normalizeCustomerPhone(
+    order?.customer?.phone ||
+    order?.customerPhone ||
+    order?.phone ||
+    ""
+  );
+
+  if(phoneKey.length===10){
+    const paymentIndexRef=db.ref(
+      "store/public/customerPaymentOrders/"+phoneKey+"/"+String(order.id)
+    );
+
+    const status=String(order.status||"").toLowerCase();
+    const paymentStatus=String(order.paymentStatus||"pending").toLowerCase();
+
+    if(
+      paymentStatus==="received" ||
+      status==="history" ||
+      status==="deleted"
+    ){
+      await paymentIndexRef.remove();
+    }else{
+      await paymentIndexRef.set({
+        id:String(order.id),
+        status:String(order.status||"pending"),
+        readyStage:String(order.readyStage||""),
+        paymentStatus:String(order.paymentStatus||"pending"),
+        orderTotal:Number(order.total||0),
+        updatedAt:String(order.updatedAt||new Date().toISOString())
+      });
+    }
+  }
 
   const verify=await ref.once("value");
   const saved=verify.val();
@@ -12867,6 +12939,21 @@ async function markPaymentReceived(orderId){
         updatedAt:now
       });
 
+    const paymentPhone=normalizeCustomerPhone(
+      order?.customer?.phone ||
+      order?.customerPhone ||
+      order?.phone ||
+      ""
+    );
+    if(paymentPhone.length===10){
+      await db.ref(
+        "store/public/customerPaymentOrders/"+
+        paymentPhone+"/"+
+        String(orderId)
+      ).remove();
+    }
+
+
     localStorage.setItem(
       "jayvik_orders",
       JSON.stringify(orders)
@@ -15816,9 +15903,36 @@ function collectCustomerPaymentInterlockRows(){
           order?.customerName ||
           "Customer"
         ),
+        address:String(
+          order?.customer?.address ||
+          order?.address ||
+          ""
+        ),
         pending:0,
-        pendingOrders:0
+        pendingOrders:0,
+        totalOrders:0,
+        orderIds:[],
+        lastOrderAt:"",
+        lastOrderStatus:"",
+        paymentStatus:""
       };
+    }
+
+    const row=byPhone[phone];
+    row.totalOrders+=1;
+    row.orderIds.push(String(order.id||""));
+
+    const orderTime=String(
+      order.createdAt||order.updatedAt||""
+    );
+    if(
+      !row.lastOrderAt ||
+      (new Date(orderTime).getTime()||0)>
+      (new Date(row.lastOrderAt).getTime()||0)
+    ){
+      row.lastOrderAt=orderTime;
+      row.lastOrderStatus=String(order.status||"");
+      row.paymentStatus=String(order.paymentStatus||"pending");
     }
 
     const paymentPending=
@@ -15828,8 +15942,8 @@ function collectCustomerPaymentInterlockRows(){
       );
 
     if(paymentPending){
-      byPhone[phone].pending+=Number(order?.total||0);
-      byPhone[phone].pendingOrders+=1;
+      row.pending+=Number(order?.total||0);
+      row.pendingOrders+=1;
     }
   });
 
@@ -15841,8 +15955,14 @@ function collectCustomerPaymentInterlockRows(){
           customerPaymentInterlocks[phone]?.customerName||
           "Customer"
         ),
+        address:"",
         pending:0,
-        pendingOrders:0
+        pendingOrders:0,
+        totalOrders:0,
+        orderIds:[],
+        lastOrderAt:"",
+        lastOrderStatus:"",
+        paymentStatus:""
       };
     }
   });
@@ -15853,6 +15973,61 @@ function collectCustomerPaymentInterlockRows(){
   );
 }
 
+
+
+async function repairCustomerPaymentOrderIndex(){
+  if(
+    !firebaseReady ||
+    !db ||
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  )return;
+
+  try{
+    const activeSnap=await db.ref("orders").once("value");
+    const active=activeSnap.val()||{};
+    const updates={};
+
+    Object.keys(active).forEach(id=>{
+      const order=active[id]||{};
+      const phone=normalizeCustomerPhone(
+        order?.customer?.phone ||
+        order?.customerPhone ||
+        order?.phone ||
+        ""
+      );
+      if(phone.length!==10)return;
+
+      const status=String(order.status||"").toLowerCase();
+      const payment=String(order.paymentStatus||"pending").toLowerCase();
+      const path=
+        "store/public/customerPaymentOrders/"+phone+"/"+String(order.id||id);
+
+      if(
+        payment==="received" ||
+        status==="history" ||
+        status==="deleted"
+      ){
+        updates[path]=null;
+      }else{
+        updates[path]={
+          id:String(order.id||id),
+          status:String(order.status||"pending"),
+          readyStage:String(order.readyStage||""),
+          paymentStatus:String(order.paymentStatus||"pending"),
+          orderTotal:Number(order.total||0),
+          updatedAt:String(order.updatedAt||order.createdAt||new Date().toISOString())
+        };
+      }
+    });
+
+    if(Object.keys(updates).length){
+      await db.ref().update(updates);
+    }
+  }catch(err){
+    console.warn("Customer payment index repair failed:",err);
+  }
+}
 
 function updatePaymentControlSummary(){
   const rows=collectCustomerPaymentInterlockRows();
@@ -15951,9 +16126,11 @@ function renderCustomerPaymentInterlockTable(){
       <table class="customer-interlock-table">
         <thead>
           <tr>
-            <th>Customer</th>
+            <th>Customer Details</th>
             <th>Mobile</th>
+            <th>Order Details</th>
             <th>Pending Payment</th>
+            <th>Payment Status</th>
             <th>Interlock</th>
             <th>Action</th>
           </tr>
@@ -15964,14 +16141,43 @@ function renderCustomerPaymentInterlockTable(){
             const explicit=state.source==="customer";
             return `
               <tr>
-                <td><strong>${escapeHtml(row.name)}</strong></td>
-                <td>${escapeHtml(row.phone)}</td>
+                <td>
+                  <strong>${escapeHtml(row.name)}</strong>
+                  ${row.address?`
+                    <div class="small customer-payment-address">
+                      📍 ${escapeHtml(row.address)}
+                    </div>`:""}
+                </td>
+
+                <td>
+                  <strong>${escapeHtml(row.phone)}</strong>
+                </td>
+
+                <td>
+                  <div><strong>${row.totalOrders}</strong> active order${row.totalOrders===1?"":"s"}</div>
+                  ${row.orderIds.filter(Boolean).slice(0,4).map(id=>`
+                    <div class="small">📦 ${escapeHtml(id)}</div>
+                  `).join("")}
+                  ${row.lastOrderAt?`
+                    <div class="small">
+                      Last: ${escapeHtml(new Date(row.lastOrderAt).toLocaleString("en-IN"))}
+                    </div>`:""}
+                </td>
+
                 <td>
                   <strong>₹${formatMoney(row.pending)}</strong>
                   <div class="small">
                     ${row.pendingOrders} pending transaction${row.pendingOrders===1?"":"s"}
                   </div>
                 </td>
+
+                <td>
+                  ${row.pendingOrders>0
+                    ? `<span class="payment-control-status pending">💳 Payment Pending</span>`
+                    : `<span class="payment-control-status received">💰 No Pending Payment</span>`
+                  }
+                </td>
+
                 <td>
                   <span class="customer-interlock-badge ${state.enabled?"locked":"unlocked"}">
                     ${state.enabled?"🔒 ON":"🔓 OFF"}
@@ -15980,6 +16186,7 @@ function renderCustomerPaymentInterlockTable(){
                     ${explicit?"Customer override":"Default setting"}
                   </div>
                 </td>
+
                 <td>
                   <button
                     type="button"
@@ -16207,12 +16414,15 @@ function showAdminTab(id,button){
   }
 
   if(id==="paymentControlAdmin"){
-    renderPaymentInterlockAdmin();
+    repairCustomerPaymentOrderIndex().then(()=>{
+      renderPaymentInterlockAdmin();
+    });
   }
 
   if(id==="ordersAdmin"){
     renderOrders();
     updatePaymentControlSummary();
+    repairCustomerPaymentOrderIndex();
   }
 }
 
