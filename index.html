@@ -5576,6 +5576,49 @@ function customerInvoiceActionHtml(orderId){
   return `<div style="margin-top:12px"><button type="button" class="btn btn-green" onclick="downloadCustomerInvoicePdf('${escapeAttr(orderId)}')">🧾 Download Invoice PDF</button></div>`;
 }
 
+
+function getCustomerMyOrdersHistory(){
+  let history=[];
+
+  try{
+    const raw=JSON.parse(
+      localStorage.getItem("jayvik_customer_order_history")||"[]"
+    );
+
+    if(Array.isArray(raw)){
+      history=raw.filter(x=>x && x.id);
+    }else if(raw && typeof raw==="object"){
+      history=Object.values(raw).filter(x=>x && x.id);
+    }
+  }catch(e){}
+
+  /*
+    Older Jayvik versions also kept customer-created orders in jayvik_orders.
+    Merge those records so an upgrade does not make previous My Orders vanish.
+  */
+  try{
+    const legacy=JSON.parse(
+      localStorage.getItem("jayvik_orders")||"[]"
+    );
+
+    if(Array.isArray(legacy)){
+      legacy.forEach(order=>{
+        if(order?.id && !history.some(x=>String(x.id)===String(order.id))){
+          history.push(order);
+        }
+      });
+    }
+  }catch(e){}
+
+  history.sort((a,b)=>{
+    const bt=new Date(b.createdAt||b.updatedAt||0).getTime()||0;
+    const at=new Date(a.createdAt||a.updatedAt||0).getTime()||0;
+    return bt-at;
+  });
+
+  return history;
+}
+
 function renderCustomerOrderHistory(
   phoneValue=null
 ){
@@ -9050,6 +9093,7 @@ Order ID: ${order.id}`;
       console.error("Customer status display error after order save:",uiErr);
     }
     startCustomerOrderStatusListener();
+    try{renderCustomerOrderHistory();}catch(e){console.warn("My Orders refresh failed:",e);}
 
     showSaveNotification(
       "Order "+order.id+
@@ -16850,7 +16894,9 @@ window.addEventListener("focus",()=>{
 
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState==="visible"){
-    try{startCustomerOrderStatusListener();}catch(e){}
+    try{startCustomerOrderStatusListener();
+try{renderCustomerOrderHistory();}catch(e){console.warn("My Orders startup refresh failed:",e);}
+}catch(e){}
   }
 });
 
