@@ -15888,11 +15888,11 @@ let paymentControlOrders=[];
 
 function collectCustomerPaymentInterlockRows(){
   const byPhone={};
-
   const sourceOrders=
     Array.isArray(paymentControlOrders) && paymentControlOrders.length
       ? paymentControlOrders
       : (Array.isArray(orders)?orders:[]);
+
   sourceOrders.forEach(order=>{
     const phone=interlockPhoneKey(
       order?.customer?.phone ||
@@ -15930,9 +15930,7 @@ function collectCustomerPaymentInterlockRows(){
     row.totalOrders+=1;
     row.orderIds.push(String(order.id||""));
 
-    const orderTime=String(
-      order.createdAt||order.updatedAt||""
-    );
+    const orderTime=String(order.createdAt||order.updatedAt||"");
     if(
       !row.lastOrderAt ||
       (new Date(orderTime).getTime()||0)>
@@ -15943,9 +15941,14 @@ function collectCustomerPaymentInterlockRows(){
       row.paymentStatus=String(order.paymentStatus||"pending");
     }
 
+    const ledger=order.__paymentLedger||null;
     const orderStatus=String(order?.status||"").toLowerCase();
     const readyStage=String(order?.readyStage||"").toLowerCase();
-    const paymentState=String(order?.paymentStatus||"pending").toLowerCase();
+    const paymentState=String(
+      ledger?.paymentStatus ??
+      order?.paymentStatus ??
+      "pending"
+    ).toLowerCase();
 
     const paymentPending=
       paymentState!=="received" &&
@@ -15957,6 +15960,7 @@ function collectCustomerPaymentInterlockRows(){
 
     if(paymentPending){
       row.pending+=Number(
+        ledger?.amount ??
         order?.total ??
         order?.orderTotal ??
         order?.payableTotal ??
@@ -15971,10 +15975,7 @@ function collectCustomerPaymentInterlockRows(){
     if(!byPhone[phone]){
       byPhone[phone]={
         phone,
-        name:String(
-          customerPaymentInterlocks[phone]?.customerName||
-          "Customer"
-        ),
+        name:String(customerPaymentInterlocks[phone]?.customerName||"Customer"),
         address:"",
         pending:0,
         pendingOrders:0,
@@ -15988,8 +15989,7 @@ function collectCustomerPaymentInterlockRows(){
   });
 
   return Object.values(byPhone).sort((a,b)=>
-    b.pending-a.pending ||
-    a.name.localeCompare(b.name)
+    b.pending-a.pending || a.name.localeCompare(b.name)
   );
 }
 
@@ -16222,13 +16222,14 @@ async function refreshPaymentControlFromOrders(){
 
 async function renderPaymentInterlockAdmin(){
   /*
-    Enrich Payment Control from the same public payment ledger used by
-    the customer dashboard, so Admin and customer totals cannot disagree.
+    Payment Ledger is the master payment source for this Admin table.
+    The same ledger is used by the customer Pending Payments dashboard.
   */
   try{
-    const source=Array.isArray(paymentControlOrders)&&paymentControlOrders.length
-      ? paymentControlOrders
-      : (Array.isArray(orders)?orders:[]);
+    const source=
+      Array.isArray(paymentControlOrders)&&paymentControlOrders.length
+        ? paymentControlOrders
+        : (Array.isArray(orders)?orders:[]);
 
     for(const order of source){
       const phone=normalizeCustomerPhone(
@@ -16242,21 +16243,24 @@ async function renderPaymentInterlockAdmin(){
       const snap=await db.ref(
         "store/public/paymentLedger/"+phone+"/"+String(order.id)
       ).once("value");
+
       const ledger=snap.val();
+      order.__paymentLedger=ledger||null;
 
       if(ledger){
-        if(Number(order.total||0)<=0 && Number(ledger.amount||0)>0){
-          order.orderTotal=Number(ledger.amount||0);
-        }
-        if(
-          String(ledger.paymentStatus||"pending").toLowerCase()!=="received"
-        ){
-          order.paymentStatus="pending";
-        }
+        order.orderTotal=Number(
+          ledger.amount ??
+          order.orderTotal ??
+          order.total ??
+          0
+        );
+        order.paymentStatus=String(
+          ledger.paymentStatus||order.paymentStatus||"pending"
+        );
       }
     }
   }catch(e){
-    console.warn("Payment Control ledger enrichment warning:",e);
+    console.warn("Payment Control ledger read warning:",e);
   }
 
   if(!Array.isArray(paymentControlOrders)){
