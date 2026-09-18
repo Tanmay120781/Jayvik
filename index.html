@@ -7528,6 +7528,18 @@ async function refreshCustomerPendingPaymentsDashboard(){
         (new Date(a.createdAt||a.updatedAt||0).getTime()||0)
       );
 
+    for(const row of rows){
+      if(Number(row.amount||0)>0)continue;
+      try{
+        const statusSnap=await db.ref(
+          "store/public/orderStatus/"+String(row.id)
+        ).once("value");
+        const statusRow=statusSnap.val()||{};
+        const mirroredAmount=Number(statusRow.orderTotal||0);
+        if(mirroredAmount>0)row.amount=mirroredAmount;
+      }catch(e){}
+    }
+
     const total=rows.reduce(
       (sum,o)=>sum+Number(o.amount||0),0
     );
@@ -15923,7 +15935,9 @@ function collectCustomerPaymentInterlockRows(){
       );
 
     if(paymentPending){
-      row.pending+=Number(order?.total||0);
+      row.pending+=Number(
+        order?.total ?? order?.orderTotal ?? 0
+      );
       row.pendingOrders+=1;
     }
   });
@@ -16081,7 +16095,74 @@ function openOrdersForPaymentCustomer(phone){
 }
 
 
+
+async function repairDispatchedPendingPaymentsDirect(){
+  if(
+    !firebaseReady || !db || !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  )return;
+
+  try{
+    const snap=await db.ref("orders").once("value");
+    const map=snap.val()||{};
+
+    for(const key of Object.keys(map)){
+      const order={...map[key],id:String(map[key]?.id||key)};
+      const status=String(order.status||"").toLowerCase();
+      const readyStage=String(order.readyStage||"").toLowerCase();
+      const payment=String(order.paymentStatus||"pending").toLowerCase();
+
+      const dispatched=
+        status==="dispatched" ||
+        (status==="partial" && readyStage==="dispatched");
+
+      if(!dispatched || payment==="received")continue;
+
+      const phone=normalizeCustomerPhone(
+        order?.customer?.phone ||
+        order?.customerPhone ||
+        order?.phone ||
+        ""
+      );
+      if(phone.length!==10)continue;
+
+      const amount=Number(order.total ?? order.orderTotal ?? 0);
+      const id=String(order.id);
+
+      await db.ref(
+        "store/public/paymentLedger/"+phone+"/"+id
+      ).set({
+        id,
+        status:String(order.status||"dispatched"),
+        readyStage:String(order.readyStage||""),
+        paymentStatus:"pending",
+        amount,
+        createdAt:String(order.createdAt||""),
+        dispatchedAt:String(order.dispatchedAt||""),
+        updatedAt:String(order.updatedAt||order.dispatchedAt||new Date().toISOString())
+      });
+
+      await db.ref("store/public/orderStatus/"+id).update({
+        id,
+        status:String(order.status||"dispatched"),
+        readyStage:String(order.readyStage||""),
+        paymentStatus:"pending",
+        paymentReceivedAt:"",
+        orderTotal:amount,
+        customerPhoneKey:phone,
+        createdAt:String(order.createdAt||""),
+        dispatchedAt:String(order.dispatchedAt||""),
+        updatedAt:String(order.updatedAt||order.dispatchedAt||new Date().toISOString())
+      });
+    }
+  }catch(err){
+    console.error("Dispatched payment repair failed:",err);
+  }
+}
+
 async function refreshPaymentControlFromOrders(){
+  await repairDispatchedPendingPaymentsDirect();
+
   if(!firebaseReady||!db){
     alert("Firebase is not ready yet.");
     return;
@@ -16448,6 +16529,7 @@ function showAdminTab(id,button){
 
   if(id==="paymentControlAdmin"){
     (async()=>{
+      await repairDispatchedPendingPaymentsDirect();
       paymentControlOrders=Array.isArray(orders)?orders.slice():[];
       try{
         const snap=await db.ref("orders").once("value");
