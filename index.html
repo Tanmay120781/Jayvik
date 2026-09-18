@@ -15887,23 +15887,47 @@ function formatMoney(value){
 let paymentControlOrders=[];
 let paymentControlLedgerByPhone={};
 
+function paymentControlOrderAmount(order){
+  const directCandidates=[
+    order?.total,
+    order?.orderTotal,
+    order?.amount,
+    order?.payableTotal,
+    order?.invoiceTotal,
+    order?.readyInvoiceTotal,
+    order?.readyTotal
+  ];
+
+  for(const value of directCandidates){
+    const n=Number(value);
+    if(Number.isFinite(n) && n>0)return n;
+  }
+
+  const items=Array.isArray(order?.items)?order.items:[];
+  const itemTotal=items.reduce((sum,item)=>{
+    const qty=Number(item?.qty ?? item?.quantity ?? 0);
+    const price=Number(
+      item?.price ??
+      item?.unitPrice ??
+      item?.discountedPrice ??
+      item?.offerPrice ??
+      0
+    );
+    return sum + (Number.isFinite(qty)?qty:0) * (Number.isFinite(price)?price:0);
+  },0);
+
+  return Number.isFinite(itemTotal)?itemTotal:0;
+}
+
 function collectCustomerPaymentInterlockRows(){
   const byPhone={};
+
   const sourceOrders=
     Array.isArray(paymentControlOrders) && paymentControlOrders.length
       ? paymentControlOrders
       : (Array.isArray(orders)?orders:[]);
 
-  // First create customer detail rows from actual orders.
-  sourceOrders.forEach(order=>{
-    const phone=interlockPhoneKey(
-      order?.customer?.phone ||
-      order?.customerPhone ||
-      order?.phone ||
-      ""
-    );
-    if(!phone)return;
-
+  function ensureRow(phone,order){
     if(!byPhone[phone]){
       byPhone[phone]={
         phone,
@@ -15922,80 +15946,115 @@ function collectCustomerPaymentInterlockRows(){
         pendingOrders:0,
         totalOrders:0,
         orderIds:[],
+        pendingOrderIds:[],
         lastOrderAt:"",
         lastOrderStatus:"",
         paymentStatus:""
       };
     }
+    return byPhone[phone];
+  }
 
-    const row=byPhone[phone];
+  /*
+    Orders are the primary Admin source.
+    This makes Payment Control work even when an older order has not yet
+    been copied into store/public/paymentLedger.
+  */
+  sourceOrders.forEach(order=>{
+    const phone=interlockPhoneKey(
+      order?.customer?.phone ||
+      order?.customerPhone ||
+      order?.phone ||
+      ""
+    );
+    if(!phone)return;
+
+    const row=ensureRow(phone,order);
     row.totalOrders+=1;
-    if(order?.id)row.orderIds.push(String(order.id));
 
-    const orderTime=String(order.createdAt||order.updatedAt||"");
+    const id=String(order?.id||"");
+    if(id && !row.orderIds.includes(id))row.orderIds.push(id);
+
+    const orderTime=String(
+      order?.createdAt ||
+      order?.dispatchedAt ||
+      order?.updatedAt ||
+      ""
+    );
+
     if(
       !row.lastOrderAt ||
       (new Date(orderTime).getTime()||0)>
       (new Date(row.lastOrderAt).getTime()||0)
     ){
       row.lastOrderAt=orderTime;
-      row.lastOrderStatus=String(order.status||"");
-      row.paymentStatus=String(order.paymentStatus||"pending");
+      row.lastOrderStatus=String(order?.status||"");
+      row.paymentStatus=String(order?.paymentStatus||"pending");
+    }
+
+    const payment=String(order?.paymentStatus||"pending").toLowerCase();
+    const status=String(order?.status||"").toLowerCase();
+
+    if(
+      id &&
+      payment!=="received" &&
+      !["history","deleted"].includes(status)
+    ){
+      const amount=paymentControlOrderAmount(order);
+      row.pending+=amount;
+      row.pendingOrders+=1;
+      row.paymentStatus="pending";
+      row.pendingOrderIds.push(id);
     }
   });
 
-  // Payment Ledger is authoritative for Pending Payment amount/count.
-  Object.keys(paymentControlLedgerByPhone||{}).forEach(phone=>{
-    const ledgerMap=paymentControlLedgerByPhone[phone]||{};
+  /*
+    Merge Payment Ledger records that are not already represented by the
+    Admin Orders collection. This prevents double counting.
+  */
+  Object.keys(paymentControlLedgerByPhone||{}).forEach(rawPhone=>{
+    const phone=interlockPhoneKey(rawPhone);
+    if(!phone)return;
 
-    if(!byPhone[phone]){
-      byPhone[phone]={
-        phone,
-        name:"Customer",
-        address:"",
-        pending:0,
-        pendingOrders:0,
-        totalOrders:0,
-        orderIds:[],
-        lastOrderAt:"",
-        lastOrderStatus:"",
-        paymentStatus:""
-      };
-    }
-
-    const row=byPhone[phone];
+    const ledgerMap=paymentControlLedgerByPhone[rawPhone]||{};
+    const row=ensureRow(phone,null);
 
     Object.values(ledgerMap).forEach(item=>{
       if(!item?.id)return;
 
       const payment=String(item.paymentStatus||"pending").toLowerCase();
       const status=String(item.status||"").toLowerCase();
-
-      if(payment==="received" || ["history","deleted"].includes(status)){
-        return;
-      }
-
-      row.pending+=Number(item.amount||0);
-      row.pendingOrders+=1;
-      row.paymentStatus="pending";
-
       const id=String(item.id);
-      if(!row.orderIds.includes(id)){
-        row.orderIds.push(id);
+
+      if(
+        payment==="received" ||
+        ["history","deleted"].includes(status)
+      )return;
+
+      if(!row.pendingOrderIds.includes(id)){
+        row.pending+=Number(item.amount||item.orderTotal||0);
+        row.pendingOrders+=1;
+        row.pendingOrderIds.push(id);
+        row.paymentStatus="pending";
       }
+
+      if(!row.orderIds.includes(id))row.orderIds.push(id);
     });
   });
 
-  Object.keys(customerPaymentInterlocks||{}).forEach(phone=>{
+  Object.keys(customerPaymentInterlocks||{}).forEach(rawPhone=>{
+    const phone=interlockPhoneKey(rawPhone);
+    if(!phone)return;
     if(!byPhone[phone]){
       byPhone[phone]={
         phone,
-        name:String(customerPaymentInterlocks[phone]?.customerName||"Customer"),
+        name:String(customerPaymentInterlocks[rawPhone]?.customerName||"Customer"),
         address:"",
         pending:0,
         pendingOrders:0,
         totalOrders:0,
         orderIds:[],
+        pendingOrderIds:[],
         lastOrderAt:"",
         lastOrderStatus:"",
         paymentStatus:""
@@ -16007,8 +16066,6 @@ function collectCustomerPaymentInterlockRows(){
     b.pending-a.pending || a.name.localeCompare(b.name)
   );
 }
-
-
 
 
 async function repairUnifiedPaymentLedger(){
@@ -16166,7 +16223,7 @@ async function repairDispatchedPendingPaymentsDirect(){
       );
       if(phone.length!==10)continue;
 
-      const amount=Number(order.total ?? order.orderTotal ?? 0);
+      const amount=paymentControlOrderAmount(order);
       const id=String(order.id);
 
       await db.ref(
