@@ -1973,7 +1973,7 @@ window.jayvikConfirm=function(message,options={}){
 
       <button
         class="admin-tab"
-        onclick="showAdminTab('inventoryAdmin',this);refreshAdminInventoryFromFirebase().then(()=>renderInventory())"
+        onclick="showAdminTab('inventoryAdmin',this);openInventoryManagement()"
       >
         📦 Inventory Management
       </button>
@@ -3001,7 +3001,7 @@ window.jayvikConfirm=function(message,options={}){
         <button id="add10AllInventoryBtn" class="btn btn-green" type="button" onclick="add10ToAllInventory()">
           +10 to ALL Inventory
         </button>
-        <button class="btn btn-light" type="button" onclick="refreshAdminInventoryFromFirebase().then(()=>renderInventory())">
+        <button class="btn btn-light" type="button" onclick="openInventoryManagement()">
           ↻ Refresh Inventory
         </button>
       </div>
@@ -11718,6 +11718,18 @@ async function add10ToAllInventory(){
 }
 
 
+async function openInventoryManagement(){
+  renderInventory();
+  try{
+    if(typeof refreshAdminInventoryFromFirebase==="function"){
+      await refreshAdminInventoryFromFirebase();
+    }
+  }catch(err){
+    console.error("Inventory refresh failed:",err);
+  }
+  renderInventory();
+}
+
 function renderInventory(){
   const box=document.getElementById("inventoryList");
   const summary=document.getElementById("inventoryCategorySummary");
@@ -11727,28 +11739,40 @@ function renderInventory(){
   if(summary)summary.innerHTML="";
 
   const configuredCategories=(Array.isArray(categories)?categories:[])
-    .map(category=>String(category));
+    .map(category=>{
+      if(category && typeof category==="object"){
+        return String(category.name||category.title||category.label||"").trim();
+      }
+      return String(category||"").trim();
+    })
+    .filter(Boolean);
 
   const grouped={};
+  const displayName={};
+
   (products||[]).forEach(product=>{
     const category=String(product.category||"Others").trim()||"Others";
-    if(!grouped[category])grouped[category]=[];
-    grouped[category].push(product);
+    const key=category.toLowerCase();
+    if(!grouped[key])grouped[key]=[];
+    grouped[key].push(product);
+    displayName[key]=category;
   });
 
-  const categoryNames=[
-    ...configuredCategories.filter(category=>grouped[category]?.length),
-    ...Object.keys(grouped).filter(category=>!configuredCategories.includes(category))
+  const configuredKeys=configuredCategories.map(c=>c.toLowerCase());
+  const categoryKeys=[
+    ...configuredKeys.filter(key=>grouped[key]?.length),
+    ...Object.keys(grouped).filter(key=>!configuredKeys.includes(key))
   ];
+  const categoryNames=categoryKeys.map(key=>displayName[key]||key);
 
   if(!categoryNames.length){
-    box.innerHTML=`<div class="notice">No inventory products found.</div>`;
+    box.innerHTML=`<div class="notice"><strong>Inventory catalogue is not loaded.</strong><br>Click Refresh Inventory to load the latest Firebase stock.</div>`;
     return;
   }
 
   if(summary){
     summary.innerHTML=categoryNames.map(category=>{
-      const categoryProducts=grouped[category]||[];
+      const categoryProducts=grouped[String(category).toLowerCase()]||[];
       const packs=categoryProducts.reduce(
         (sum,product)=>sum+(Array.isArray(product.packs)?product.packs.length:0),0
       );
@@ -11757,7 +11781,7 @@ function renderInventory(){
   }
 
   categoryNames.forEach(category=>{
-    const categoryProducts=grouped[category]||[];
+    const categoryProducts=grouped[String(category).toLowerCase()]||[];
     const packs=categoryProducts.reduce(
       (sum,product)=>sum+(Array.isArray(product.packs)?product.packs.length:0),0
     );
