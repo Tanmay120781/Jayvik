@@ -5321,6 +5321,82 @@ async function loadFirebaseStore(){
 
 
 
+
+function getKnownCustomerOrderIdsForPaymentDashboard(){
+  const ids=new Set();
+
+  /*
+    Current customer's device-local history.
+    This avoids reading another customer's private order list.
+  */
+  try{
+    const phone=normalizeCustomerPhone(
+      (
+        document.getElementById("customerPhone")?.value ||
+        localStorage.getItem("jayvik_last_customer_phone") ||
+        ""
+      )
+    );
+
+    const allHistory=getCustomerOrderHistoryLocal();
+
+    if(phone.length===10 && Array.isArray(allHistory?.[phone])){
+      allHistory[phone].forEach(order=>{
+        if(order?.id)ids.add(String(order.id));
+      });
+    }
+  }catch(e){
+    console.warn("Could not read customer order history IDs:",e);
+  }
+
+  /*
+    Backward compatibility with older Jayvik browser storage.
+    Only include orders belonging to the current customer's phone when known.
+  */
+  try{
+    const currentPhone=normalizeCustomerPhone(
+      (
+        document.getElementById("customerPhone")?.value ||
+        localStorage.getItem("jayvik_last_customer_phone") ||
+        ""
+      )
+    );
+
+    const legacy=JSON.parse(
+      localStorage.getItem("jayvik_orders")||"[]"
+    );
+
+    if(Array.isArray(legacy)){
+      legacy.forEach(order=>{
+        if(!order?.id)return;
+
+        const orderPhone=normalizeCustomerPhone(
+          order?.customer?.phone ||
+          order?.customerPhone ||
+          order?.phone ||
+          ""
+        );
+
+        if(
+          currentPhone.length===10 &&
+          orderPhone.length===10 &&
+          orderPhone!==currentPhone
+        )return;
+
+        ids.add(String(order.id));
+      });
+    }
+  }catch(e){}
+
+  const lastId=String(
+    localStorage.getItem("jayvik_last_order_id")||""
+  ).trim();
+
+  if(lastId)ids.add(lastId);
+
+  return ids;
+}
+
 let paymentInterlockEnabled=true;
 let customerPaymentInterlocks={};
 
@@ -5450,7 +5526,17 @@ async function customerHasPendingPaymentBeforeNewOrder(){
 }
 
 async function saveOrderToFirebase(order){
-  const paymentLock=await customerHasPendingPaymentBeforeNewOrder();
+  let paymentLock={
+    blocked:false,
+    total:0,
+    orders:[]
+  };
+
+  try{
+    paymentLock=await customerHasPendingPaymentBeforeNewOrder();
+  }catch(interlockErr){
+    console.error("Payment interlock pre-check failed:",interlockErr);
+  }
 
   if(paymentLock.blocked){
     const ids=paymentLock.orders
