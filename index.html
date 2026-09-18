@@ -2784,7 +2784,31 @@ window.jayvikConfirm=function(message,options={}){
 
 
 
-    <!-- ORDERS -->
+    <!-- INVENTORY MANAGEMENT -->
+    <div id="inventoryAdmin" class="admin-section">
+      <div class="admin-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div>
+            <h3 style="margin:0 0 6px">📦 Inventory Management</h3>
+            <p class="notice" style="margin:0">
+              Category-wise pack inventory. Existing stock functions are retained.
+            </p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="add10AllInventoryBtn" class="btn btn-green" type="button" onclick="add10ToAllInventory()">
+              +10 to ALL Inventory
+            </button>
+            <button class="btn btn-light" type="button" onclick="openInventoryManagement()">
+              ↻ Refresh Inventory
+            </button>
+          </div>
+        </div>
+        <div id="inventoryCategorySummary" class="inventory-category-summary"></div>
+        <div id="inventoryList"></div>
+      </div>
+    </div>
+    
+        <!-- ORDERS -->
 
     <div
       id="ordersAdmin"
@@ -3006,30 +3030,6 @@ window.jayvikConfirm=function(message,options={}){
 </div>
 
 
-
-<!-- INVENTORY MANAGEMENT -->
-<div id="inventoryAdmin" class="admin-section">
-  <div class="admin-card">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-      <div>
-        <h3 style="margin:0 0 6px">📦 Inventory Management</h3>
-        <p class="notice" style="margin:0">
-          Category-wise pack inventory. Existing stock functions are retained.
-        </p>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button id="add10AllInventoryBtn" class="btn btn-green" type="button" onclick="add10ToAllInventory()">
-          +10 to ALL Inventory
-        </button>
-        <button class="btn btn-light" type="button" onclick="openInventoryManagement()">
-          ↻ Refresh Inventory
-        </button>
-      </div>
-    </div>
-    <div id="inventoryCategorySummary" class="inventory-category-summary"></div>
-    <div id="inventoryList"></div>
-  </div>
-</div>
 
 <!-- PRODUCT EDITOR -->
 
