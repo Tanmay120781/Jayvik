@@ -1364,6 +1364,35 @@ footer{
 .inventory-category-heading{
   scroll-margin-top:110px;
 }
+
+/* HARD FIX: Inventory category labels are real clickable buttons */
+#inventoryCategorySummary .inventory-category-nav-btn{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  display:inline-flex !important;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer !important;
+  pointer-events:auto !important;
+  position:relative;
+  z-index:20;
+  color:#17351d;
+  font:inherit;
+  font-weight:700;
+  padding:9px 13px;
+  border:1px solid #cfe0cf;
+  border-radius:999px;
+  background:#f5faf5;
+}
+#inventoryCategorySummary .inventory-category-nav-btn:hover{
+  background:#dff0e1 !important;
+  border-color:#267a35 !important;
+}
+#inventoryCategorySummary .inventory-category-nav-btn.active{
+  background:#267a35 !important;
+  border-color:#267a35 !important;
+  color:#fff !important;
+}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -11928,9 +11957,9 @@ function renderInventoryCore(){
       return `
         <button
           type="button"
-          class="inventory-category-chip"
+          class="inventory-category-chip inventory-category-nav-btn"
           data-category="${escapeAttr(category)}"
-          onclick="goToInventoryCategory('${escapeAttr(category)}')"
+          onclick="return false"
           title="Go directly to ${escapeAttr(category)} inventory"
         >
           ${escapeHtml(category)} · ${categoryProducts.length} products · ${packs} packs
@@ -11990,6 +12019,30 @@ function renderInventoryCore(){
 
     box.appendChild(block);
   });
+
+  // Robust category quick-navigation handlers.
+  document.querySelectorAll("#inventoryCategorySummary .inventory-category-nav-btn")
+    .forEach(button=>{
+      button.onclick=function(event){
+        event.preventDefault();
+        event.stopPropagation();
+
+        const category=String(this.getAttribute("data-category")||"");
+        const target=document.getElementById(inventoryCategoryDomId(category));
+
+        if(!target){
+          console.error("Inventory category target not found:",category);
+          return false;
+        }
+
+        document.querySelectorAll("#inventoryCategorySummary .inventory-category-nav-btn")
+          .forEach(tab=>tab.classList.remove("active"));
+
+        this.classList.add("active");
+        target.scrollIntoView({behavior:"smooth",block:"start"});
+        return false;
+      };
+    });
 }
 
 async function increasePackStock(
