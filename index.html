@@ -9242,7 +9242,8 @@ function orderMatchesAdminStage(order,stage){
     return status==="dispatched" ||
       (
         status==="partial" &&
-        readyStage==="dispatched"
+        readyStage==="dispatched" &&
+        order?.readySavedToDispatchedFolder!==true
       );
   }
 
@@ -9285,7 +9286,11 @@ function isOrderInDispatchedFolder(order){
   return (
     status==="dispatched" ||
     status==="history" ||
-    (status==="partial" && readyStage==="dispatched")
+    (
+      status==="partial" &&
+      readyStage==="dispatched" &&
+      order?.readySavedToDispatchedFolder===true
+    )
   );
 }
 
@@ -10359,7 +10364,7 @@ function buildPartialReadyDispatchedCard(order){
         class="btn btn-green"
         onclick="openOrderInDispatchedFolder('${escapeAttr(order.id)}')"
       >
-        📁 Move / View in Dispatched Orders
+        📁 Move to Dispatched Orders
       </button>
 
       <button
@@ -10388,22 +10393,68 @@ function buildPartialReadyDispatchedCard(order){
 }
 
 async function openOrderInDispatchedFolder(orderId){
+  if(
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    alert("Admin login required.");
+    return;
+  }
+
+  const order=(orders||[]).find(o=>String(o.id)===String(orderId));
+  if(!order){
+    alert("Order not found.");
+    return;
+  }
+
+  if(
+    String(order.status||"").toLowerCase()!=="partial" ||
+    String(order.readyStage||"").toLowerCase()!=="dispatched"
+  ){
+    alert("Only dispatched Ready items of a partial order can be moved to Dispatched Orders.");
+    return;
+  }
+
+  const now=new Date().toISOString();
+
   try{
-    if(typeof renderDispatchedOrdersFolder==="function"){
-      await renderDispatchedOrdersFolder();
+    if(!firebaseReady || !db){
+      throw new Error("Firebase is not ready.");
     }
 
-    const folder=document.getElementById("dispatchedOrdersBoard");
+    await db.ref("orders/"+String(order.id)).update({
+      readySavedToDispatchedFolder:true,
+      readySavedToDispatchedFolderAt:now,
+      paymentStatus:String(order.paymentStatus||"pending"),
+      updatedAt:now
+    });
+
+    order.readySavedToDispatchedFolder=true;
+    order.readySavedToDispatchedFolderAt=now;
+    order.paymentStatus=String(order.paymentStatus||"pending");
+    order.updatedAt=now;
+
+    localStorage.setItem("jayvik_orders",JSON.stringify(orders));
+
+    await renderOrders(false);
+    await renderDispatchedOrdersFolder();
+
+    const folder=document.getElementById("dispatchedOrdersFolder");
     if(folder){
       folder.scrollIntoView({behavior:"smooth",block:"start"});
     }
 
     showSaveNotification(
-      "Order "+String(orderId)+" is available in Dispatched Orders for payment update."
+      "Order "+String(order.id)+" moved to Dispatched Orders. Pending items remain in Pending Orders."
     );
+
   }catch(err){
-    console.error("Could not open Dispatched Orders:",err);
-    alert("Could not open Dispatched Orders. "+String(err?.message||err||""));
+    console.error("Move partial order to Dispatched Orders failed:",err);
+    showSaveNotification(
+      "Could not move Order "+String(order.id)+" to Dispatched Orders. "+
+      String(err?.message||err||""),
+      true
+    );
   }
 }
 
@@ -11475,6 +11526,19 @@ async function deletePaidDispatchedOrder(orderId,skipConfirm=false){
   if(String(order.paymentStatus||"pending")!=="received"){
     alert("Delete Locked: Payment has not been received yet.");
     return;
+  }
+
+  if(String(order.status||"").toLowerCase()==="partial"){
+    const pendingQty=(order.fulfillment||[]).reduce(
+      (sum,item)=>sum+Number(item.pendingQty||0),0
+    );
+    if(pendingQty>0){
+      alert(
+        "This is a partial order and still has Pending items. "+
+        "The complete order cannot be deleted from Firebase until the pending portion is completed."
+      );
+      return;
+    }
   }
 
   if(!skipConfirm){
