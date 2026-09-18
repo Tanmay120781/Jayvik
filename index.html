@@ -1576,6 +1576,193 @@ footer{
   border-color:#59a566;
   color:#175c25;
 }
+
+/* CUSTOMER ALL PENDING PAYMENTS */
+.customer-pending-payments-section{margin:24px 0}
+.customer-payment-summary{
+  padding:16px 18px;
+  margin:10px 0 12px;
+  border:1px solid #e4bd43;
+  border-radius:12px;
+  background:#fff7dc;
+  color:#725000;
+}
+.customer-payment-summary strong{font-size:19px}
+.customer-payment-summary span{display:block;margin-top:4px;font-size:13px}
+.customer-payment-summary.customer-payment-clear{
+  background:#edf9ef;
+  border-color:#59a566;
+  color:#175c25;
+}
+.customer-payment-table-wrap{
+  width:100%;
+  overflow-x:auto;
+  border:1px solid #dfe7df;
+  border-radius:12px;
+  background:#fff;
+}
+.customer-payment-table{
+  width:100%;
+  min-width:920px;
+  border-collapse:collapse;
+}
+.customer-payment-table th,
+.customer-payment-table td{
+  padding:12px;
+  text-align:left;
+  vertical-align:top;
+  border-bottom:1px solid #e5e9e5;
+}
+.customer-payment-table th{
+  background:#17351d;
+  color:#fff;
+  white-space:nowrap;
+}
+
+/* CUSTOMER PENDING PAYMENT POPUP */
+.customer-payment-popup-overlay{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(0,0,0,.55);
+}
+.customer-payment-popup-card{
+  position:relative;
+  width:min(520px,96vw);
+  max-height:90vh;
+  overflow:auto;
+  padding:28px;
+  border-radius:20px;
+  background:#fff;
+  box-shadow:0 24px 70px rgba(0,0,0,.28);
+  text-align:center;
+}
+.customer-payment-popup-close{
+  position:absolute;
+  top:10px;
+  right:14px;
+  border:0;
+  background:transparent;
+  font-size:32px;
+  line-height:1;
+  cursor:pointer;
+}
+.customer-payment-popup-icon{font-size:48px}
+.customer-payment-popup-card h2{
+  margin:8px 0;
+  color:#8a5a00;
+}
+.customer-payment-popup-total{
+  margin:14px 0 6px;
+  padding:14px;
+  border:1px solid #e4bd43;
+  border-radius:12px;
+  background:#fff7dc;
+  font-size:18px;
+}
+.customer-payment-popup-total strong{
+  display:block;
+  margin-top:4px;
+  font-size:27px;
+}
+.customer-payment-popup-count{
+  margin:8px 0 14px;
+  font-weight:700;
+}
+.customer-payment-popup-orders{
+  margin:0 0 16px;
+  text-align:left;
+}
+.customer-payment-popup-orders>div{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:9px 4px;
+  border-bottom:1px solid #e7e7e7;
+}
+.customer-payment-popup-view{
+  margin:4px 6px 4px 0;
+}
+.customer-payment-pulse{
+  display:inline-block;
+  font-size:20px!important;
+  font-weight:900;
+}
+@media (max-width:600px){
+  .customer-payment-popup-card{padding:24px 18px}
+  .customer-payment-popup-total strong{font-size:23px}
+}
+
+/* CUSTOMER-WISE PAYMENT INTERLOCK ADMIN */
+.customer-interlock-table-wrap{
+  width:100%;
+  overflow-x:auto;
+  margin-top:10px;
+  border:1px solid #dfe7df;
+  border-radius:12px;
+  background:#fff;
+}
+.customer-interlock-table{
+  width:100%;
+  min-width:820px;
+  border-collapse:collapse;
+}
+.customer-interlock-table th,
+.customer-interlock-table td{
+  padding:11px;
+  text-align:left;
+  vertical-align:middle;
+  border-bottom:1px solid #e6ebe6;
+}
+.customer-interlock-table th{
+  background:#17351d;
+  color:#fff;
+  white-space:nowrap;
+}
+.customer-interlock-badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:999px;
+  font-weight:850;
+}
+.customer-interlock-badge.locked{
+  background:#ffe8e8;
+  color:#a51f1f;
+}
+.customer-interlock-badge.unlocked{
+  background:#e9f8ec;
+  color:#176329;
+}
+
+/* PAYMENT CONTROL TAB */
+.payment-control-summary{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(180px,1fr));
+  gap:12px;
+  margin:16px 0;
+}
+.payment-control-summary>div{
+  padding:16px;
+  border:1px solid #dfe7df;
+  border-radius:12px;
+  background:#f8fbf8;
+}
+.payment-control-summary strong{
+  display:block;
+  font-size:22px;
+  margin-bottom:4px;
+}
+.payment-control-summary span{
+  font-size:13px;
+  color:#5d685f;
+}
+@media(max-width:760px){
+  .payment-control-summary{grid-template-columns:1fr}
+}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -1845,6 +2032,15 @@ window.jayvikConfirm=function(message,options={}){
 </section>
 
 <!-- CUSTOMER ORDER HISTORY -->
+
+<section class="customer-pending-payments-section">
+  <h2>💳 Pending Payments</h2>
+  <div id="customerPendingPaymentsDashboard">
+    <div class="customer-payment-summary">
+      <strong>Loading pending payment transactions...</strong>
+    </div>
+  </div>
+</section>
 
 <section
   class="container"
@@ -2274,6 +2470,13 @@ window.jayvikConfirm=function(message,options={}){
 
       <button
         class="admin-tab"
+        onclick="showAdminTab('paymentControlAdmin',this)"
+      >
+        💳 Payment Control
+      </button>
+
+      <button
+        class="admin-tab"
         onclick="showAdminTab('consumptionAdmin',this);renderConsumptionAnalytics()"
       >
         📈 Customer Consumption
@@ -2581,7 +2784,10 @@ window.jayvikConfirm=function(message,options={}){
 
       </div>
 
-    </div>
+    
+      
+
+</div>
 
 
     <!-- SALE & OFFERS -->
@@ -3062,7 +3268,65 @@ window.jayvikConfirm=function(message,options={}){
     
         <!-- ORDERS -->
 
+    
+    <!-- PAYMENT CONTROL -->
+
     <div
+      id="paymentControlAdmin"
+      class="admin-section"
+    >
+      <div class="admin-card">
+        <h3>💳 Payment Control & Customer Interlock</h3>
+
+        <p class="notice">
+          This tab is connected with Order Management. Review customer pending
+          payments and control whether each customer can place the next order.
+        </p>
+
+        <div class="payment-control-summary">
+          <div>
+            <strong id="paymentControlPendingCustomers">0</strong>
+            <span>Customers with Pending Payment</span>
+          </div>
+          <div>
+            <strong id="paymentControlPendingAmount">₹0</strong>
+            <span>Total Pending Payment</span>
+          </div>
+          <div>
+            <strong id="paymentControlLockedCustomers">0</strong>
+            <span>Customers Locked</span>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0">
+          <button
+            type="button"
+            id="paymentInterlockToggleBtn"
+            class="btn btn-green"
+            onclick="togglePaymentInterlockAdmin()"
+          >
+            🔒 Default Interlock ON
+          </button>
+
+          <strong id="paymentInterlockAdminStatus">
+            Previous payment must be received before next order.
+          </strong>
+
+          <button
+            type="button"
+            class="btn btn-light"
+            onclick="showAdminTab('ordersAdmin',document.querySelector('[onclick*=\\'ordersAdmin\\']'))"
+          >
+            📦 Open Order Management
+          </button>
+        </div>
+
+        <h4>👤 Customer-wise Payment & Interlock Control</h4>
+        <div id="customerPaymentInterlockTable"></div>
+      </div>
+    </div>
+
+<div
       id="ordersAdmin"
       class="admin-section"
     >
@@ -5052,7 +5316,157 @@ async function loadFirebaseStore(){
 }
 
 
+
+
+let paymentInterlockEnabled=true;
+let customerPaymentInterlocks={};
+
+function interlockPhoneKey(phone){
+  return String(phone||"").replace(/\D/g,"").slice(-10);
+}
+
+async function refreshPaymentInterlockSetting(){
+  if(!firebaseReady||!db)return paymentInterlockEnabled;
+
+  try{
+    const [globalSnap,customerSnap]=await Promise.all([
+      db.ref("store/public/website/paymentInterlockEnabled").once("value"),
+      db.ref("store/public/paymentInterlocks").once("value")
+    ]);
+
+    paymentInterlockEnabled=
+      globalSnap.exists()?globalSnap.val()!==false:true;
+
+    customerPaymentInterlocks=
+      customerSnap.val()||{};
+  }catch(e){}
+
+  return paymentInterlockEnabled;
+}
+
+function getCustomerInterlockState(phone){
+  const key=interlockPhoneKey(phone);
+  const row=customerPaymentInterlocks?.[key];
+
+  if(row && typeof row.enabled==="boolean"){
+    return {
+      enabled:row.enabled,
+      source:"customer",
+      key
+    };
+  }
+
+  return {
+    enabled:paymentInterlockEnabled,
+    source:"default",
+    key
+  };
+}
+
+function currentCustomerPhoneForInterlock(){
+  let phone="";
+
+  try{
+    phone=localStorage.getItem("jayvik_last_customer_phone")||"";
+  }catch(e){}
+
+  if(!phone){
+    const possible=[
+      document.getElementById("customerPhone"),
+      document.getElementById("custPhone"),
+      document.getElementById("phone")
+    ].find(Boolean);
+    phone=possible?.value||"";
+  }
+
+  return interlockPhoneKey(phone);
+}
+
+async function customerHasPendingPaymentBeforeNewOrder(){
+  await refreshPaymentInterlockSetting();
+
+  const phone=currentCustomerPhoneForInterlock();
+  const lock=getCustomerInterlockState(phone);
+
+  if(!lock.enabled){
+    return {
+      blocked:false,
+      total:0,
+      orders:[],
+      interlock:lock
+    };
+  }
+
+  const ids=getKnownCustomerOrderIdsForPaymentDashboard();
+  const lastId=String(
+    localStorage.getItem("jayvik_last_order_id")||""
+  ).trim();
+  if(lastId)ids.add(lastId);
+
+  if(!ids.size){
+    return {
+      blocked:false,
+      total:0,
+      orders:[],
+      interlock:lock
+    };
+  }
+
+  try{
+    const snaps=await Promise.all(
+      [...ids].map(id=>
+        db.ref("store/public/orderStatus").child(id).once("value")
+      )
+    );
+
+    const pending=snaps.map(x=>x.val()).filter(o=>
+      o?.id &&
+      String(o.paymentStatus||"pending").toLowerCase()!=="received" &&
+      !["history","deleted"].includes(
+        String(o.status||"").toLowerCase()
+      )
+    );
+
+    return {
+      blocked:pending.length>0,
+      total:pending.reduce(
+        (sum,o)=>sum+Number(o.orderTotal||0),0
+      ),
+      orders:pending,
+      interlock:lock
+    };
+  }catch(err){
+    console.error("Payment interlock check failed:",err);
+    return {
+      blocked:false,
+      total:0,
+      orders:[],
+      interlock:lock
+    };
+  }
+}
+
 async function saveOrderToFirebase(order){
+  const paymentLock=await customerHasPendingPaymentBeforeNewOrder();
+
+  if(paymentLock.blocked){
+    const ids=paymentLock.orders
+      .map(o=>String(o.id))
+      .join(", ");
+
+    alert(
+      "🔒 NEXT ORDER LOCKED\\n\\n"+
+      "Previous payment is still pending. Please complete the pending payment before placing your next order.\\n\\n"+
+      "Total Pending: ₹"+formatMoney(paymentLock.total)+"\\n"+
+      "Order(s): "+ids
+    );
+
+    throw new Error(
+      "New order blocked because previous payment is pending."
+    );
+  }
+
+
 
   if(!firebaseReady || !db){
     return false;
@@ -6131,6 +6545,17 @@ function publicOrderStatusPayload(order){
     paymentReceivedAt:
       String(order.paymentReceivedAt||""),
 
+    orderTotal:
+      Number(order.total||0),
+
+    paymentItems:
+      (Array.isArray(order.items)?order.items:[]).map(item=>({
+        name:String(item?.name||"Product"),
+        size:String(item?.size||item?.pack||""),
+        qty:Number(item?.qty||0),
+        price:Number(item?.price||0)
+      })),
+
     /*
       Customer-facing last-order details intentionally exclude:
       • unit price
@@ -6699,6 +7124,203 @@ function scheduleCustomerHistoryMove(data=null){
   );
 }
 
+
+
+function showCustomerPendingPaymentPopup(rows,totalPending){
+  if(!Array.isArray(rows)||!rows.length||Number(totalPending||0)<=0)return;
+
+  /*
+    Show once per browser session for the current combination of pending
+    orders/amount. If the pending list or amount changes, show it again.
+  */
+  const signature=rows
+    .map(o=>String(o.id)+":"+Number(o.orderTotal||0))
+    .sort()
+    .join("|")+"|"+Number(totalPending||0);
+
+  if(
+    sessionStorage.getItem("jayvik_pending_payment_popup_signature")===
+    signature
+  )return;
+
+  sessionStorage.setItem(
+    "jayvik_pending_payment_popup_signature",
+    signature
+  );
+
+  const existing=document.getElementById("customerPendingPaymentPopup");
+  if(existing)existing.remove();
+
+  const overlay=document.createElement("div");
+  overlay.id="customerPendingPaymentPopup";
+  overlay.className="customer-payment-popup-overlay";
+
+  overlay.innerHTML=`
+    <div class="customer-payment-popup-card" role="dialog" aria-modal="true">
+      <button
+        type="button"
+        class="customer-payment-popup-close"
+        aria-label="Close"
+        onclick="document.getElementById('customerPendingPaymentPopup')?.remove()"
+      >×</button>
+
+      <div class="customer-payment-popup-icon">💳</div>
+      <h2>Payment Pending</h2>
+
+      <div class="customer-payment-popup-total">
+        Total Pending Payment:
+        <strong>₹${formatMoney(Number(totalPending||0))}</strong>
+      </div>
+
+      <div class="customer-payment-popup-count">
+        ${rows.length} pending transaction${rows.length===1?"":"s"}
+      </div>
+
+      <div class="customer-payment-popup-orders">
+        ${rows.slice(0,5).map(order=>`
+          <div>
+            <strong>${escapeHtml(String(order.id))}</strong>
+            <span>₹${formatMoney(Number(order.orderTotal||0))}</span>
+          </div>
+        `).join("")}
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-green customer-payment-popup-view"
+        onclick="
+          document.getElementById('customerPendingPaymentPopup')?.remove();
+          document.getElementById('customerPendingPaymentsDashboard')
+            ?.scrollIntoView({behavior:'smooth',block:'start'});
+        "
+      >View Pending Payment Details</button>
+
+      <button
+        type="button"
+        class="btn btn-light"
+        onclick="document.getElementById('customerPendingPaymentPopup')?.remove()"
+      >Close</button>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+}
+
+async function refreshCustomerPendingPaymentsDashboard(){
+  const host=document.getElementById("customerPendingPaymentsDashboard");
+  if(!host||!firebaseReady||!db)return;
+
+  const ids=new Set();
+
+  try{
+    const phone=normalizeCustomerPhone(
+      localStorage.getItem("jayvik_last_customer_phone")||""
+    );
+    const history=getCustomerOrderHistoryLocal();
+    const list=Array.isArray(history?.[phone])?history[phone]:[];
+    list.forEach(o=>{if(o?.id)ids.add(String(o.id));});
+  }catch(e){}
+
+  const lastId=String(localStorage.getItem("jayvik_last_order_id")||"").trim();
+  if(lastId)ids.add(lastId);
+
+  if(!ids.size){
+    host.innerHTML=`
+      <div class="customer-payment-summary customer-payment-clear">
+        <strong>💰 Total Pending Payment: ₹0</strong>
+        <span>No payment-pending transactions.</span>
+      </div>`;
+    return;
+  }
+
+  try{
+    const snapshots=await Promise.all(
+      [...ids].map(id=>
+        db.ref("store/public/orderStatus").child(id).once("value")
+      )
+    );
+
+    const rows=snapshots
+      .map(x=>x.val())
+      .filter(order=>
+        order?.id &&
+        String(order.paymentStatus||"pending").toLowerCase()!=="received" &&
+        !["history","deleted"].includes(String(order.status||"").toLowerCase())
+      )
+      .sort((a,b)=>
+        (new Date(b.createdAt||b.updatedAt||0).getTime()||0)-
+        (new Date(a.createdAt||a.updatedAt||0).getTime()||0)
+      );
+
+    const total=rows.reduce((sum,o)=>sum+Number(o.orderTotal||0),0);
+
+    if(rows.length && total>0){
+      showCustomerPendingPaymentPopup(rows,total);
+    }
+
+    if(!rows.length){
+      host.innerHTML=`
+        <div class="customer-payment-summary customer-payment-clear">
+          <strong>💰 Total Pending Payment: ₹0</strong>
+          <span>No payment-pending transactions.</span>
+        </div>`;
+      return;
+    }
+
+    host.innerHTML=`
+      <div class="customer-payment-summary">
+        <div>
+          <strong class="customer-payment-pulse">⚠️ 💳 Total Pending Payment: ₹${formatMoney(total)}</strong>
+          <span>${rows.length} pending transaction${rows.length===1?"":"s"}</span>
+        </div>
+      </div>
+
+      <div class="customer-payment-table-wrap">
+        <table class="customer-payment-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Transaction / Order Date</th>
+              <th>Order Details</th>
+              <th>Amount</th>
+              <th>Order Status</th>
+              <th>Payment</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(order=>`
+              <tr>
+                <td><strong>${escapeHtml(String(order.id))}</strong></td>
+                <td>${escapeHtml(
+                  order.createdAt
+                    ? new Date(order.createdAt).toLocaleString("en-IN")
+                    : "-"
+                )}</td>
+                <td>
+                  ${(Array.isArray(order.paymentItems)?order.paymentItems:[])
+                    .map(item=>`
+                      <div>
+                        <strong>${escapeHtml(item.name||"Product")}</strong>
+                        ${item.size?" — "+escapeHtml(item.size):""}
+                        × ${Number(item.qty||0)}
+                      </div>`).join("") || "-"}
+                </td>
+                <td><strong>₹${formatMoney(Number(order.orderTotal||0))}</strong></td>
+                <td>${escapeHtml(customerStatusLabel(order))}</td>
+                <td><strong>💳 Pending</strong></td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>`;
+  }catch(err){
+    console.error("Customer pending-payment dashboard failed:",err);
+    host.innerHTML=`
+      <div class="notice">
+        Could not refresh pending payment transactions.
+      </div>`;
+  }
+}
+
 function startCustomerOrderStatusListener(){
 
   if(!firebaseReady || !db){
@@ -6773,6 +7395,7 @@ function startCustomerOrderStatusListener(){
       }catch(e){}
       cachedStatus=fresh;
       renderLiveOrderStatus(fresh);
+      refreshCustomerPendingPaymentsDashboard();
     }
   }).catch(err=>{
     console.warn("Initial customer status refresh failed:",err);
@@ -6859,6 +7482,7 @@ function startCustomerOrderStatusListener(){
         renderLiveOrderStatus(
           mergedData
         );
+        refreshCustomerPendingPaymentsDashboard();
 
         return;
       }
@@ -14924,6 +15548,367 @@ async function exportJayvikExcel(){
 }
 
 
+
+
+function collectCustomerPaymentInterlockRows(){
+  const byPhone={};
+
+  (Array.isArray(orders)?orders:[]).forEach(order=>{
+    const phone=interlockPhoneKey(
+      order?.customer?.phone ||
+      order?.customerPhone ||
+      order?.phone ||
+      ""
+    );
+    if(!phone)return;
+
+    if(!byPhone[phone]){
+      byPhone[phone]={
+        phone,
+        name:String(
+          order?.customer?.name ||
+          order?.customerName ||
+          "Customer"
+        ),
+        pending:0,
+        pendingOrders:0
+      };
+    }
+
+    const paymentPending=
+      String(order?.paymentStatus||"pending").toLowerCase()!=="received" &&
+      !["history","deleted"].includes(
+        String(order?.status||"").toLowerCase()
+      );
+
+    if(paymentPending){
+      byPhone[phone].pending+=Number(order?.total||0);
+      byPhone[phone].pendingOrders+=1;
+    }
+  });
+
+  Object.keys(customerPaymentInterlocks||{}).forEach(phone=>{
+    if(!byPhone[phone]){
+      byPhone[phone]={
+        phone,
+        name:String(
+          customerPaymentInterlocks[phone]?.customerName||
+          "Customer"
+        ),
+        pending:0,
+        pendingOrders:0
+      };
+    }
+  });
+
+  return Object.values(byPhone).sort((a,b)=>
+    b.pending-a.pending ||
+    a.name.localeCompare(b.name)
+  );
+}
+
+
+function updatePaymentControlSummary(){
+  const rows=collectCustomerPaymentInterlockRows();
+  const pendingRows=rows.filter(x=>Number(x.pending||0)>0);
+  const total=pendingRows.reduce((sum,x)=>sum+Number(x.pending||0),0);
+  const locked=rows.filter(x=>getCustomerInterlockState(x.phone).enabled).length;
+
+  const a=document.getElementById("paymentControlPendingCustomers");
+  const b=document.getElementById("paymentControlPendingAmount");
+  const c=document.getElementById("paymentControlLockedCustomers");
+
+  if(a)a.textContent=String(pendingRows.length);
+  if(b)b.textContent="₹"+formatMoney(total);
+  if(c)c.textContent=String(locked);
+}
+
+function openOrdersForPaymentCustomer(phone){
+  const btn=[...document.querySelectorAll(".admin-tab")]
+    .find(x=>String(x.getAttribute("onclick")||"").includes("ordersAdmin"));
+
+  showAdminTab("ordersAdmin",btn||null);
+
+  /*
+    Keep the customer reference visible to Admin and attempt to use an
+    existing order search field if the current Orders UI has one.
+  */
+  const normalized=interlockPhoneKey(phone);
+  const candidates=[
+    "orderSearch",
+    "ordersSearch",
+    "adminOrderSearch",
+    "orderSearchInput"
+  ];
+
+  for(const id of candidates){
+    const input=document.getElementById(id);
+    if(input){
+      input.value=normalized;
+      input.dispatchEvent(new Event("input",{bubbles:true}));
+      input.dispatchEvent(new Event("change",{bubbles:true}));
+      break;
+    }
+  }
+
+  showSaveNotification(
+    "Order Management opened for customer "+normalized+"."
+  );
+}
+
+async function renderPaymentInterlockAdmin(){
+  await refreshPaymentInterlockSetting();
+
+  const btn=document.getElementById(
+    "paymentInterlockToggleBtn"
+  );
+  const status=document.getElementById(
+    "paymentInterlockAdminStatus"
+  );
+
+  if(btn&&status){
+    if(paymentInterlockEnabled){
+      btn.textContent="🔒 Default Interlock ON";
+      btn.className="btn btn-green";
+      status.textContent=
+        "New customers are locked when payment is pending, unless individually overridden.";
+    }else{
+      btn.textContent="🔓 Default Interlock OFF";
+      btn.className="btn btn-danger";
+      status.textContent=
+        "New customers are allowed by default, unless individually locked.";
+    }
+  }
+
+  renderCustomerPaymentInterlockTable();
+  updatePaymentControlSummary();
+}
+
+function renderCustomerPaymentInterlockTable(){
+  const host=document.getElementById(
+    "customerPaymentInterlockTable"
+  );
+  if(!host)return;
+
+  const rows=collectCustomerPaymentInterlockRows();
+
+  if(!rows.length){
+    host.innerHTML=`
+      <div class="notice" style="margin-top:12px">
+        Customer-wise controls will appear here after customer orders are available.
+      </div>`;
+    return;
+  }
+
+  host.innerHTML=`
+    <div class="customer-interlock-table-wrap">
+      <table class="customer-interlock-table">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Mobile</th>
+            <th>Pending Payment</th>
+            <th>Interlock</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(row=>{
+            const state=getCustomerInterlockState(row.phone);
+            const explicit=state.source==="customer";
+            return `
+              <tr>
+                <td><strong>${escapeHtml(row.name)}</strong></td>
+                <td>${escapeHtml(row.phone)}</td>
+                <td>
+                  <strong>₹${formatMoney(row.pending)}</strong>
+                  <div class="small">
+                    ${row.pendingOrders} pending transaction${row.pendingOrders===1?"":"s"}
+                  </div>
+                </td>
+                <td>
+                  <span class="customer-interlock-badge ${state.enabled?"locked":"unlocked"}">
+                    ${state.enabled?"🔒 ON":"🔓 OFF"}
+                  </span>
+                  <div class="small">
+                    ${explicit?"Customer override":"Default setting"}
+                  </div>
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn ${state.enabled?"btn-danger":"btn-green"}"
+                    onclick="setCustomerPaymentInterlock(
+                      '${escapeAttr(row.phone)}',
+                      ${state.enabled?"false":"true"},
+                      '${escapeAttr(row.name)}'
+                    )"
+                  >
+                    ${state.enabled?"Turn OFF":"Turn ON"}
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn btn-light"
+                    onclick="openOrdersForPaymentCustomer('${escapeAttr(row.phone)}')"
+                  >
+                    📦 View Orders
+                  </button>
+
+                  ${explicit?`
+                    <button
+                      type="button"
+                      class="btn btn-light"
+                      onclick="removeCustomerPaymentInterlockOverride(
+                        '${escapeAttr(row.phone)}'
+                      )"
+                    >
+                      Use Default
+                    </button>
+                  `:""}
+                </td>
+              </tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function togglePaymentInterlockAdmin(){
+  if(
+    !firebaseReady||
+    !db||
+    !auth?.currentUser||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    alert("Admin login required.");
+    return;
+  }
+
+  const current=await refreshPaymentInterlockSetting();
+  const next=!current;
+
+  const ok=await jayvikConfirm(
+    next
+      ? "Turn DEFAULT Payment Interlock ON?\\n\\nCustomers without an individual override will need to clear pending payment before the next order."
+      : "Turn DEFAULT Payment Interlock OFF?\\n\\nCustomers without an individual override may place another order even with pending payment."
+  );
+  if(!ok)return;
+
+  try{
+    await db.ref(
+      "store/public/website/paymentInterlockEnabled"
+    ).set(next);
+
+    paymentInterlockEnabled=next;
+    await renderPaymentInterlockAdmin();
+
+    showSaveNotification(
+      next
+        ? "Default Payment Interlock ON."
+        : "Default Payment Interlock OFF."
+    );
+  }catch(err){
+    console.error("Payment interlock update failed:",err);
+    alert(
+      "Could not change Payment Interlock. "+
+      (err?.message||"")
+    );
+  }
+}
+
+async function setCustomerPaymentInterlock(phone,enabled,customerName){
+  if(
+    !firebaseReady||
+    !db||
+    !auth?.currentUser||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    alert("Admin login required.");
+    return;
+  }
+
+  const key=interlockPhoneKey(phone);
+  if(!key)return;
+
+  const ok=await jayvikConfirm(
+    (enabled
+      ? "Turn Interlock ON for this customer?"
+      : "Turn Interlock OFF for this customer?"
+    )+
+    "\\n\\nCustomer: "+String(customerName||"Customer")+
+    "\\nMobile: "+key
+  );
+  if(!ok)return;
+
+  try{
+    const payload={
+      enabled:enabled===true,
+      customerName:String(customerName||"Customer"),
+      updatedAt:new Date().toISOString()
+    };
+
+    await db.ref(
+      "store/public/paymentInterlocks/"+key
+    ).set(payload);
+
+    customerPaymentInterlocks[key]=payload;
+    renderCustomerPaymentInterlockTable();
+    updatePaymentControlSummary();
+
+    showSaveNotification(
+      enabled
+        ? "Customer Interlock ON."
+        : "Customer Interlock OFF."
+    );
+  }catch(err){
+    console.error("Customer interlock update failed:",err);
+    alert(
+      "Could not update customer interlock. "+
+      (err?.message||"")
+    );
+  }
+}
+
+async function removeCustomerPaymentInterlockOverride(phone){
+  if(
+    !firebaseReady||
+    !db||
+    !auth?.currentUser||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  ){
+    alert("Admin login required.");
+    return;
+  }
+
+  const key=interlockPhoneKey(phone);
+  if(!key)return;
+
+  const ok=await jayvikConfirm(
+    "Remove this customer's individual override?\\n\\nThe customer will use the Default Payment Interlock setting."
+  );
+  if(!ok)return;
+
+  try{
+    await db.ref(
+      "store/public/paymentInterlocks/"+key
+    ).remove();
+
+    delete customerPaymentInterlocks[key];
+    renderCustomerPaymentInterlockTable();
+    updatePaymentControlSummary();
+    showSaveNotification(
+      "Customer now uses Default Payment Interlock."
+    );
+  }catch(err){
+    console.error("Remove customer interlock override failed:",err);
+    alert(
+      "Could not remove customer override. "+
+      (err?.message||"")
+    );
+  }
+}
+
 function showAdminTab(id,button){
   /*
     One authoritative Admin tab switcher.
@@ -14973,6 +15958,15 @@ function showAdminTab(id,button){
     }
   }catch(err){
     console.error("Admin tab render failed:",id,err);
+  }
+
+  if(id==="paymentControlAdmin"){
+    renderPaymentInterlockAdmin();
+  }
+
+  if(id==="ordersAdmin"){
+    renderOrders();
+    updatePaymentControlSummary();
   }
 }
 
