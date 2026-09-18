@@ -1298,6 +1298,18 @@ footer{
   max-width:none !important;
   min-width:0;
 }
+
+#inventoryAdmin .admin-card{width:100%;max-width:none}
+.inventory-category-summary{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 10px}
+.inventory-category-chip{padding:7px 10px;border:1px solid #d9e6d9;border-radius:999px;background:#f5faf5;font-size:13px;font-weight:600}
+.inventory-category-block{margin:16px 0;border:1px solid #dce7dc;border-radius:14px;overflow:hidden;background:#fff}
+.inventory-category-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:#eef7ef;color:#17351d;font-weight:800;font-size:17px;border-bottom:1px solid #dce7dc}
+.inventory-category-count{font-size:12px;font-weight:700;padding:4px 8px;border-radius:999px;background:#fff;border:1px solid #d5e3d5}
+.inventory-category-rows{padding:4px 12px 10px}
+#inventoryAdmin .inventory-row{display:grid;grid-template-columns:minmax(220px,2fr) minmax(90px,120px) auto auto;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid #edf1ed}
+#inventoryAdmin .inventory-row:last-child{border-bottom:0}
+#inventoryAdmin .inventory-row input{width:100%}
+@media(max-width:760px){#inventoryAdmin .inventory-row{grid-template-columns:1fr 100px}}
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -1957,6 +1969,13 @@ window.jayvikConfirm=function(message,options={}){
         onclick="showAdminTab('categoriesAdmin',this);renderCategorySequenceManager()"
       >
         🗂️ Categories
+      </button>
+
+      <button
+        class="admin-tab"
+        onclick="showAdminTab('inventoryAdmin',this);refreshAdminInventoryFromFirebase().then(()=>renderInventory())"
+      >
+        📦 Inventory Management
       </button>
 
       <button
@@ -2956,31 +2975,7 @@ window.jayvikConfirm=function(message,options={}){
 
       </div>
 
-      <div class="admin-card">
-
-        <h3>
-          📊 Pack-wise Inventory
-        </h3>
-
-        <p class="notice">
-          Inventory is maintained separately for every pack size.
-          Example: 500 g and 1 kg are different stock items.
-        </p>
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 16px">
-  <button
-    id="add10AllInventoryBtn"
-    class="btn btn-green"
-    type="button"
-    onclick="add10ToAllInventory()"
-  >
-    +10 to ALL Inventory
-  </button>
-</div>
-
-<div id="inventoryList"></div>
-
-      </div>
+      
 
     </div>
 
@@ -2990,6 +2985,31 @@ window.jayvikConfirm=function(message,options={}){
 
 </div>
 
+
+
+<!-- INVENTORY MANAGEMENT -->
+<div id="inventoryAdmin" class="admin-section">
+  <div class="admin-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+      <div>
+        <h3 style="margin:0 0 6px">📦 Inventory Management</h3>
+        <p class="notice" style="margin:0">
+          Category-wise pack inventory. Existing stock functions are retained.
+        </p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="add10AllInventoryBtn" class="btn btn-green" type="button" onclick="add10ToAllInventory()">
+          +10 to ALL Inventory
+        </button>
+        <button class="btn btn-light" type="button" onclick="refreshAdminInventoryFromFirebase().then(()=>renderInventory())">
+          ↻ Refresh Inventory
+        </button>
+      </div>
+    </div>
+    <div id="inventoryCategorySummary" class="inventory-category-summary"></div>
+    <div id="inventoryList"></div>
+  </div>
+</div>
 
 <!-- PRODUCT EDITOR -->
 
@@ -11699,84 +11719,94 @@ async function add10ToAllInventory(){
 
 
 function renderInventory(){
-
-  const box=
-    document.getElementById(
-      "inventoryList"
-    );
-
+  const box=document.getElementById("inventoryList");
+  const summary=document.getElementById("inventoryCategorySummary");
   if(!box)return;
 
   box.innerHTML="";
+  if(summary)summary.innerHTML="";
 
-  products.forEach(
-    product=>
-      product.packs.forEach(
-        (pack,packIndex)=>{
+  const configuredCategories=(Array.isArray(categories)?categories:[])
+    .map(category=>String(category));
 
-          const row=
-            document.createElement(
-              "div"
-            );
+  const grouped={};
+  (products||[]).forEach(product=>{
+    const category=String(product.category||"Others").trim()||"Others";
+    if(!grouped[category])grouped[category]=[];
+    grouped[category].push(product);
+  });
 
-          row.className=
-            "inventory-row";
+  const categoryNames=[
+    ...configuredCategories.filter(category=>grouped[category]?.length),
+    ...Object.keys(grouped).filter(category=>!configuredCategories.includes(category))
+  ];
 
-          row.innerHTML=`
+  if(!categoryNames.length){
+    box.innerHTML=`<div class="notice">No inventory products found.</div>`;
+    return;
+  }
 
-            <div>
+  if(summary){
+    summary.innerHTML=categoryNames.map(category=>{
+      const categoryProducts=grouped[category]||[];
+      const packs=categoryProducts.reduce(
+        (sum,product)=>sum+(Array.isArray(product.packs)?product.packs.length:0),0
+      );
+      return `<span class="inventory-category-chip">${escapeHtml(category)} · ${categoryProducts.length} products · ${packs} packs</span>`;
+    }).join("");
+  }
 
-              <strong>
-                ${escapeHtml(
-                  product.name
-                )}
-              </strong>
+  categoryNames.forEach(category=>{
+    const categoryProducts=grouped[category]||[];
+    const packs=categoryProducts.reduce(
+      (sum,product)=>sum+(Array.isArray(product.packs)?product.packs.length:0),0
+    );
 
-              <br>
+    const block=document.createElement("div");
+    block.className="inventory-category-block";
+    block.innerHTML=`
+      <div class="inventory-category-heading">
+        <span>🗂️ ${escapeHtml(category)}</span>
+        <span class="inventory-category-count">${categoryProducts.length} products · ${packs} packs</span>
+      </div>
+      <div class="inventory-category-rows"></div>
+    `;
 
-              <small>
-                ${escapeHtml(
-                  pack.size
-                )}
-              </small>
+    const rows=block.querySelector(".inventory-category-rows");
 
-            </div>
+    categoryProducts.forEach(product=>{
+      (product.packs||[]).forEach((pack,packIndex)=>{
+        const row=document.createElement("div");
+        row.className="inventory-row";
+        row.innerHTML=`
+          <div>
+            <strong>${escapeHtml(product.name)}</strong><br>
+            <small>${escapeHtml(pack.size)}</small>
+          </div>
+          <input
+            id="stock-${product.id}-${packIndex}"
+            type="number"
+            min="0"
+            value="${Number(pack.stock||0)}"
+          >
+          <button
+            class="btn btn-light"
+            onclick="increasePackStock(${product.id},${packIndex},10)"
+            title="Add 10 to this pack stock"
+          >+10 Stock</button>
+          <button
+            class="btn btn-green"
+            onclick="savePackStock(${product.id},${packIndex})"
+            title="Save the quantity entered manually"
+          >Save</button>
+        `;
+        rows.appendChild(row);
+      });
+    });
 
-            <input
-              id="stock-${product.id}-${packIndex}"
-              type="number"
-              min="0"
-              value="${Number(
-                pack.stock||0
-              )}"
-            >
-
-            <button
-              class="btn btn-light"
-              onclick="increasePackStock(${product.id},${packIndex},10)"
-              title="Add 10 to this pack stock"
-            >
-              +10 Stock
-            </button>
-
-            <button
-              class="btn btn-green"
-              onclick="savePackStock(${product.id},${packIndex})"
-              title="Save the quantity entered manually"
-            >
-              Save
-            </button>
-
-          `;
-
-          box.appendChild(row);
-
-        }
-      )
-  );
-
+    box.appendChild(block);
+  });
 }
-
 
 async function increasePackStock(
   productId,
