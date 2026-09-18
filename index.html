@@ -6533,9 +6533,35 @@ function startCustomerOrderStatusListener(){
     return;
   }
 
-  const id = String(
+  let id = String(
     localStorage.getItem("jayvik_last_order_id") || ""
   ).trim();
+
+  /*
+    Recover the true latest customer order from local order history.
+    This prevents an older/stale jayvik_last_order_id from controlling
+    the Live Order Status card.
+  */
+  try{
+    const history=JSON.parse(
+      localStorage.getItem("jayvik_customer_order_history")||"[]"
+    );
+
+    if(Array.isArray(history) && history.length){
+      const newest=[...history]
+        .filter(x=>x && x.id)
+        .sort((a,b)=>{
+          const bt=new Date(b.createdAt||b.updatedAt||0).getTime()||0;
+          const at=new Date(a.createdAt||a.updatedAt||0).getTime()||0;
+          return bt-at;
+        })[0];
+
+      if(newest?.id){
+        id=String(newest.id).trim();
+        localStorage.setItem("jayvik_last_order_id",id);
+      }
+    }
+  }catch(e){}
 
   if(customerOrderStatusRef){
     customerOrderStatusRef.off("value");
@@ -6559,6 +6585,25 @@ function startCustomerOrderStatusListener(){
 
   customerOrderStatusRef =
     db.ref("store/public/orderStatus").child(id);
+
+  /*
+    Immediate fresh read for the latest order, then keep the realtime listener.
+  */
+  customerOrderStatusRef.once("value").then(snap=>{
+    const fresh=snap.val();
+    if(fresh){
+      try{
+        localStorage.setItem(
+          "jayvik_last_order_status",
+          JSON.stringify(fresh)
+        );
+      }catch(e){}
+      cachedStatus=fresh;
+      renderLiveOrderStatus(fresh);
+    }
+  }).catch(err=>{
+    console.warn("Initial customer status refresh failed:",err);
+  });
 
   customerOrderStatusRef.on(
     "value",
@@ -10794,8 +10839,44 @@ function openDispatchedPaymentPending(){
   },150);
 }
 
+async function repairCustomerLiveStatusMirrors(){
+  if(
+    !firebaseReady ||
+    !db ||
+    !auth?.currentUser ||
+    auth.currentUser.email!=="jayvik.india@gmail.com"
+  )return;
+
+  try{
+    const updates={};
+
+    (orders||[]).forEach(order=>{
+      if(!order?.id)return;
+
+      const status=String(order.status||"").toLowerCase();
+      if(["history","deleted"].includes(status))return;
+
+      updates[
+        "store/public/orderStatus/"+String(order.id)
+      ]=publicOrderStatusPayload(order);
+    });
+
+    if(Object.keys(updates).length){
+      await db.ref().update(updates);
+    }
+  }catch(err){
+    console.error("Customer Live Order Status repair failed:",err);
+  }
+}
+
 async function renderOrders(refreshInventory=true){
   updateOrderActionDashboard();
+
+  /*
+    Keep customer-facing Live Order Status synchronized even for older
+    orders created before the current mirror logic.
+  */
+  repairCustomerLiveStatusMirrors();
 
   if(refreshInventory){
     try{
