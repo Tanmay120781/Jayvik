@@ -5262,6 +5262,12 @@ function saveCustomerOrderHistoryLocal(
     status:String(
       order.status||"pending"
     ),
+    readyStage:String(
+      order.readyStage||""
+    ),
+    updatedAt:String(
+      order.updatedAt||order.createdAt||""
+    ),
     dispatchedAt:String(
       order.dispatchedAt||""
     ),
@@ -5374,7 +5380,20 @@ function updateCustomerOrderHistoryStatusLocal(
   }
 }
 
-function customerStatusLabel(status){
+function customerStatusLabel(status,readyStage=""){
+
+  const normalized=String(status||"").toLowerCase();
+  const stage=String(readyStage||"").toLowerCase();
+
+  if(normalized==="partial"){
+    const partialMap={
+      ready:"⚠️ Partial • 🟢 Ready",
+      packing:"⚠️ Partial • 📦 Packing",
+      packed:"⚠️ Partial • 📦 Packing",
+      dispatched:"⚠️ Partial • 🚚 Dispatched"
+    };
+    return partialMap[stage]||"⚠️ Partial Order";
+  }
 
   const map={
     pending:"🔴 Pending",
@@ -5384,13 +5403,7 @@ function customerStatusLabel(status){
     dispatched:"🚚 Dispatched"
   };
 
-  return (
-    map[
-      String(status||"").toLowerCase()
-    ]||
-    "📦 "+String(status||"Pending")
-  );
-
+  return map[normalized]||"📦 "+String(status||"Pending");
 }
 
 
@@ -5670,32 +5683,18 @@ function renderCustomerOrderHistory(
       ? allHistory[phone]
       : [];
 
-  const delayMs=
-    getOrderHistoryDelayMinutes()*60*1000;
-
-  const now=Date.now();
-
+  /*
+    My Orders should show every order for this customer.
+    Previously it showed only Dispatched orders after the configured delay.
+  */
   const ordersForPhone=
-    rawOrdersForPhone.filter(order=>{
-
-      if(String(order.status)!=="dispatched"){
-        return false;
-      }
-
-      const dispatchedAt=
-        new Date(
-          order.dispatchedAt||
-          order.updatedAt||
-          order.createdAt||
-          0
-        ).getTime();
-
-      if(!Number.isFinite(dispatchedAt)){
-        return false;
-      }
-
-      return now-dispatchedAt>=delayMs;
-    });
+    [...rawOrdersForPhone]
+      .filter(order=>order && order.id)
+      .sort((a,b)=>{
+        const bt=new Date(b.createdAt||b.updatedAt||0).getTime()||0;
+        const at=new Date(a.createdAt||a.updatedAt||0).getTime()||0;
+        return bt-at;
+      });
 
   section.style.display=
     ordersForPhone.length
@@ -5765,7 +5764,8 @@ function renderCustomerOrderHistory(
               <strong>
                 ${escapeHtml(
                   customerStatusLabel(
-                    order.status
+                    order.status,
+                    order.readyStage
                   )
                 )}
               </strong>
@@ -6699,6 +6699,27 @@ function startCustomerOrderStatusListener(){
           mergedData.status,
           mergedData.dispatchedAt||""
         );
+
+        try{
+          const allHistory=getCustomerOrderHistoryLocal();
+          Object.keys(allHistory).forEach(phone=>{
+            const list=Array.isArray(allHistory[phone])?allHistory[phone]:[];
+            list.forEach(order=>{
+              if(String(order.id)===String(mergedData.id)){
+                order.readyStage=String(
+                  mergedData.readyStage||order.readyStage||""
+                );
+                order.updatedAt=String(
+                  mergedData.updatedAt||new Date().toISOString()
+                );
+              }
+            });
+          });
+          localStorage.setItem(
+            "jayvik_customer_order_history",
+            JSON.stringify(allHistory)
+          );
+        }catch(e){}
 
         renderCustomerOrderHistory();
 
