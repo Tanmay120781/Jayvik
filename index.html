@@ -15885,6 +15885,7 @@ function formatMoney(value){
 }
 
 let paymentControlOrders=[];
+let paymentControlLedgerByPhone={};
 
 function collectCustomerPaymentInterlockRows(){
   const byPhone={};
@@ -15893,6 +15894,7 @@ function collectCustomerPaymentInterlockRows(){
       ? paymentControlOrders
       : (Array.isArray(orders)?orders:[]);
 
+  // First create customer detail rows from actual orders.
   sourceOrders.forEach(order=>{
     const phone=interlockPhoneKey(
       order?.customer?.phone ||
@@ -15928,7 +15930,7 @@ function collectCustomerPaymentInterlockRows(){
 
     const row=byPhone[phone];
     row.totalOrders+=1;
-    row.orderIds.push(String(order.id||""));
+    if(order?.id)row.orderIds.push(String(order.id));
 
     const orderTime=String(order.createdAt||order.updatedAt||"");
     if(
@@ -15940,35 +15942,48 @@ function collectCustomerPaymentInterlockRows(){
       row.lastOrderStatus=String(order.status||"");
       row.paymentStatus=String(order.paymentStatus||"pending");
     }
+  });
 
-    const ledger=order.__paymentLedger||null;
-    const orderStatus=String(order?.status||"").toLowerCase();
-    const readyStage=String(order?.readyStage||"").toLowerCase();
-    const paymentState=String(
-      ledger?.paymentStatus ??
-      order?.paymentStatus ??
-      "pending"
-    ).toLowerCase();
+  // Payment Ledger is authoritative for Pending Payment amount/count.
+  Object.keys(paymentControlLedgerByPhone||{}).forEach(phone=>{
+    const ledgerMap=paymentControlLedgerByPhone[phone]||{};
 
-    const paymentPending=
-      paymentState!=="received" &&
-      !["history","deleted"].includes(orderStatus) &&
-      (
-        ["pending","partial","ready","packing","dispatched"].includes(orderStatus) ||
-        readyStage==="dispatched"
-      );
-
-    if(paymentPending){
-      row.pending+=Number(
-        ledger?.amount ??
-        order?.total ??
-        order?.orderTotal ??
-        order?.payableTotal ??
-        order?.readyTotal ??
-        0
-      );
-      row.pendingOrders+=1;
+    if(!byPhone[phone]){
+      byPhone[phone]={
+        phone,
+        name:"Customer",
+        address:"",
+        pending:0,
+        pendingOrders:0,
+        totalOrders:0,
+        orderIds:[],
+        lastOrderAt:"",
+        lastOrderStatus:"",
+        paymentStatus:""
+      };
     }
+
+    const row=byPhone[phone];
+
+    Object.values(ledgerMap).forEach(item=>{
+      if(!item?.id)return;
+
+      const payment=String(item.paymentStatus||"pending").toLowerCase();
+      const status=String(item.status||"").toLowerCase();
+
+      if(payment==="received" || ["history","deleted"].includes(status)){
+        return;
+      }
+
+      row.pending+=Number(item.amount||0);
+      row.pendingOrders+=1;
+      row.paymentStatus="pending";
+
+      const id=String(item.id);
+      if(!row.orderIds.includes(id)){
+        row.orderIds.push(id);
+      }
+    });
   });
 
   Object.keys(customerPaymentInterlocks||{}).forEach(phone=>{
@@ -16221,51 +16236,19 @@ async function refreshPaymentControlFromOrders(){
 }
 
 async function renderPaymentInterlockAdmin(){
-  /*
-    Payment Ledger is the master payment source for this Admin table.
-    The same ledger is used by the customer Pending Payments dashboard.
-  */
-  try{
-    const source=
-      Array.isArray(paymentControlOrders)&&paymentControlOrders.length
-        ? paymentControlOrders
-        : (Array.isArray(orders)?orders:[]);
-
-    for(const order of source){
-      const phone=normalizeCustomerPhone(
-        order?.customer?.phone ||
-        order?.customerPhone ||
-        order?.phone ||
-        ""
-      );
-      if(phone.length!==10 || !order?.id)continue;
-
-      const snap=await db.ref(
-        "store/public/paymentLedger/"+phone+"/"+String(order.id)
-      ).once("value");
-
-      const ledger=snap.val();
-      order.__paymentLedger=ledger||null;
-
-      if(ledger){
-        order.orderTotal=Number(
-          ledger.amount ??
-          order.orderTotal ??
-          order.total ??
-          0
-        );
-        order.paymentStatus=String(
-          ledger.paymentStatus||order.paymentStatus||"pending"
-        );
-      }
-    }
-  }catch(e){
-    console.warn("Payment Control ledger read warning:",e);
-  }
-
   if(!Array.isArray(paymentControlOrders)){
     paymentControlOrders=[];
   }
+
+  try{
+    const ledgerSnap=await db.ref("store/public/paymentLedger").once("value");
+    paymentControlLedgerByPhone=ledgerSnap.val()||{};
+  }catch(e){
+    console.warn("Payment Control ledger load warning:",e);
+    paymentControlLedgerByPhone={};
+  }
+
+
 
   await refreshPaymentInterlockSetting();
 
