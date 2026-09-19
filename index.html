@@ -12982,42 +12982,65 @@ async function completeOrderAndMoveToSalesArchive(orderId){
     return;
   }
 
-  const order=(orders||[]).find(o=>String(o.id)===String(orderId));
-  if(!order){alert("Order not found.");return;}
+  try{
+    /*
+      IMPORTANT:
+      Dispatched Orders is rendered directly from Firebase /orders.
+      Completion must therefore also read the CURRENT Firebase order,
+      instead of trusting the possibly stale local `orders` array.
+    */
+    const orderSnap=await db.ref("orders/"+String(orderId)).once("value");
+    if(!orderSnap.exists()){
+      alert("Order not found in active orders. Please refresh Orders and Sales Archive.");
+      return;
+    }
 
-  if(String(order.paymentStatus||"").toLowerCase()!=="received"){
-    alert("Please mark Payment Received first.");
-    return;
-  }
+    const rawOrder=orderSnap.val()||{};
+    const order={
+      ...rawOrder,
+      id:String(rawOrder.id||orderId)
+    };
 
-  const status=String(order.status||"").toLowerCase();
-  const stage=String(order.readyStage||"").toLowerCase();
+    if(String(order.paymentStatus||"").toLowerCase()!=="received"){
+      alert("Please mark Payment Received first.");
+      return;
+    }
 
-  if(status!=="dispatched" && !(status==="partial" && stage==="dispatched")){
-    alert("Only dispatched orders can be completed.");
-    return;
-  }
-
-  if(status==="partial"){
-    const pendingQty=(order.fulfillment||[]).reduce(
-      (sum,item)=>sum+Number(item.pendingQty||0),0
-    );
-    if(pendingQty>0){
+    /*
+      Use the SAME eligibility rule as the Dispatched Orders folder.
+      This prevents an order from showing the Complete button and then
+      being rejected as 'not dispatched' because local state is stale.
+    */
+    if(!isOrderInDispatchedFolder(order)){
       alert(
-        "This partial order still has Pending items. "+
-        "Its complete order cannot move to Sales Archive until the pending portion is completed."
+        "This order is not currently confirmed in the Dispatched Orders folder. "+
+        "Please refresh Order Management and try again."
       );
       return;
     }
-  }
 
-  const ok=await jayvikConfirm(
-    "Complete Order "+order.id+" and move it to Sales Archive?\\n\\n"+
-    "It will leave active Dispatched Orders and become available in Customer My Order History."
-  );
-  if(!ok)return;
+    const status=String(order.status||"").toLowerCase();
 
-  try{
+    /* Safety: never fully archive a partial order while pending quantity remains. */
+    if(status==="partial"){
+      const pendingQty=(order.fulfillment||[]).reduce(
+        (sum,item)=>sum+Number(item.pendingQty||0),0
+      );
+      if(pendingQty>0){
+        alert(
+          "This partial order still has Pending items. "+
+          "Its complete order cannot move to Sales Archive until the pending portion is completed."
+        );
+        return;
+      }
+    }
+
+    const ok=await jayvikConfirm(
+      "Complete Order "+order.id+" and move it to Sales Archive?\n\n"+
+      "It will leave active Dispatched Orders and become available in Customer My Order History."
+    );
+    if(!ok)return;
+
     const now=new Date().toISOString();
 
     const archiveRecord={
@@ -13029,6 +13052,7 @@ async function completeOrderAndMoveToSalesArchive(orderId){
       paymentReceivedAt:String(order.paymentReceivedAt||now)
     };
 
+    /* Archive first. Active order is removed only after archive verification. */
     await db.ref("store/salesArchive/"+String(order.id)).set(archiveRecord);
 
     const verify=await db.ref(
@@ -13055,6 +13079,7 @@ async function completeOrderAndMoveToSalesArchive(orderId){
     renderOrders(false);
     try{renderSalesArchive();}catch(e){}
     try{renderCustomerConsumption();}catch(e){}
+    try{renderPaymentControl();}catch(e){}
     await renderDispatchedOrdersFolder();
 
     showSaveNotification(
