@@ -70,13 +70,15 @@ header{
 }
 
 .logo{
-  width:78px;
-  height:78px;
-  border-radius:18px;
+  width:122px;
+  height:62px;
+  border-radius:16px;
   object-fit:contain;
+  object-position:center;
   background:#edf7ed;
   border:2px solid #d8ead8;
-  padding:5px;
+  padding:3px 6px;
+  display:block;
 }
 
 .brand-title{
@@ -164,24 +166,31 @@ header{
 .hero-card{
   background:white;
   border-radius:22px;
-  padding:25px;
+  padding:20px 24px;
   box-shadow:var(--shadow);
   border:1px solid #e4eee4;
+  width:100%;
+  max-width:430px;
+  justify-self:end;
+  align-self:center;
 }
 
 .hero-logo{
-  width:190px;
-  height:190px;
+  width:100%;
+  max-width:285px;
+  height:115px;
   object-fit:contain;
+  object-position:center;
   display:block;
-  margin:auto;
+  margin:0 auto 8px;
 }
 
 .store-address{
-  margin-top:15px;
+  margin-top:6px;
   text-align:center;
   color:#606a61;
-  line-height:1.6;
+  line-height:1.5;
+  font-size:15px;
 }
 
 .container{
@@ -834,16 +843,22 @@ footer{
   }
 
   .hero-logo{
-    width:150px;
-    height:150px;
+    width:100%;
+    max-width:245px;
+    height:100px;
+  }
+
+  .hero-card{
+    max-width:100%;
+    justify-self:stretch;
   }
 }
 
 @media(max-width:600px){
 
   .logo{
-    width:60px;
-    height:60px;
+    width:104px;
+    height:54px;
   }
 
   .brand-title{
@@ -973,7 +988,36 @@ footer{
 .sale-info-badge{display:inline-block;background:var(--green);color:white;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:800;margin-bottom:10px}
 .sale-admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:600px){.sale-admin-grid{grid-template-columns:1fr}.sale-info-window{padding:18px}.sale-info-window h2{font-size:21px}}
-.sale-offer-photo{width:100%;max-height:320px;object-fit:contain;background:#fff;border-radius:14px;border:1px solid #e4ebe4;margin:14px 0;display:none;padding:8px}
+.sale-offer-photo{
+  width:100%;
+  max-width:760px;
+  height:300px;
+  object-fit:contain;
+  object-position:center;
+  background:#fff;
+  border-radius:14px;
+  border:1px solid #e4ebe4;
+  margin:12px auto 10px;
+  display:none;
+  padding:8px;
+}
+.sale-offer-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.sale-offer-add-btn{
+  border:0;
+  border-radius:12px;
+  padding:12px 20px;
+  background:var(--green);
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+}
+.sale-offer-pack{color:#59635a;font-size:14px;font-weight:700}
 .order-card.packing{border-left:5px solid #d99b18}
 .order-status-steps{display:flex;flex-wrap:wrap;gap:7px;margin-top:15px}
 .order-status-step{flex:1 1 150px;border:1px solid #e2e8e2;border-radius:10px;padding:10px;background:#f7faf7;font-size:13px;color:#7b857d}
@@ -1784,6 +1828,495 @@ footer{
   margin-top:5px;
   line-height:1.35;
 }
+
+.sale-package-box{margin-top:14px;padding:14px;border:1px solid #dce8dc;border-radius:14px;background:#fff}
+.sale-package-items{display:grid;gap:8px;margin:10px 0}
+.sale-package-item{display:flex;justify-content:space-between;gap:12px;padding:8px 10px;border-radius:10px;background:#f6faf6}
+.sale-package-price{font-size:22px;font-weight:900;color:var(--green)}
+.sale-package-original{text-decoration:line-through;color:#777;margin-left:8px}
+.sale-package-builder{margin-top:16px;padding:14px;border:1px solid #dce8dc;border-radius:14px;background:#f9fcf9}
+.sale-package-row{display:grid;grid-template-columns:minmax(180px,2fr) minmax(130px,1fr) 90px auto;gap:8px;align-items:end;margin:8px 0}
+@media(max-width:760px){.sale-package-row{grid-template-columns:1fr}}
+
+/* Compact customer Sale & Offers presentation */
+.sale-offer{
+  max-width:1180px;
+  margin:18px auto;
+  padding:22px 26px;
+  border-radius:20px;
+}
+.sale-offer h2{
+  margin:10px 0 8px;
+  font-size:28px;
+}
+.sale-offer .sale-badge{
+  font-size:12px;
+  padding:8px 14px;
+}
+.sale-info-title{
+  font-size:21px;
+  margin-top:10px;
+}
+.sale-info-text{
+  line-height:1.55;
+}
+.sale-package-box{
+  max-width:760px;
+  margin:12px auto 0;
+  padding:14px 16px;
+}
+.sale-package-item{
+  padding:7px 10px;
+}
+.sale-package-price{
+  font-size:20px;
+}
+@media(max-width:760px){
+  .sale-offer{
+    margin:12px 10px;
+    padding:16px;
+    border-radius:16px;
+  }
+  .sale-offer h2{font-size:23px}
+  .sale-offer-photo{
+    max-width:100%;
+    height:240px;
+    padding:5px;
+  }
+  .sale-package-box{max-width:100%}
+}
+
+/* Final compact + auto-fit Sale & Offers customer window */
+.sale-offer{
+  width:min(94%,980px) !important;
+  max-width:980px !important;
+  margin:16px auto !important;
+  padding:16px 18px !important;
+  border-radius:18px !important;
+  overflow:hidden;
+}
+.sale-offer h2{
+  margin:8px 0 6px !important;
+  font-size:24px !important;
+}
+.sale-offer .sale-badge{
+  padding:6px 12px !important;
+  font-size:11px !important;
+}
+.sale-offer-photo{
+  display:none;
+  width:auto !important;
+  max-width:100% !important;
+  height:auto !important;
+  max-height:280px !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  margin:10px auto !important;
+  padding:4px !important;
+  border-radius:12px !important;
+  background:#fff;
+}
+.sale-package-box{
+  width:100% !important;
+  max-width:100% !important;
+  margin:10px 0 0 !important;
+  padding:12px 14px !important;
+}
+.sale-package-items{
+  margin:8px 0 !important;
+  gap:6px !important;
+}
+.sale-package-item{
+  padding:6px 9px !important;
+}
+.sale-package-price{
+  font-size:19px !important;
+}
+.sale-offer-actions{
+  margin-top:8px !important;
+}
+@media(max-width:760px){
+  .sale-offer{
+    width:calc(100% - 20px) !important;
+    margin:10px auto !important;
+    padding:13px !important;
+    border-radius:14px !important;
+  }
+  .sale-offer h2{font-size:21px !important}
+  .sale-offer-photo{
+    width:100% !important;
+    max-height:220px !important;
+    height:auto !important;
+    object-fit:contain !important;
+  }
+  .sale-package-item{
+    font-size:14px;
+  }
+}
+
+/* Professional Sale & Offers card: compact frame + prominent auto-fit artwork */
+.sale-offer{
+  width:min(96%,900px) !important;
+  max-width:900px !important;
+  margin:14px auto !important;
+  padding:14px 16px 16px !important;
+  border-radius:16px !important;
+  box-shadow:0 8px 24px rgba(0,0,0,.06) !important;
+  overflow:hidden !important;
+}
+.sale-offer h2{
+  margin:7px 0 8px !important;
+  font-size:22px !important;
+  line-height:1.2 !important;
+}
+.sale-offer .sale-badge{
+  padding:5px 11px !important;
+  font-size:11px !important;
+  margin:0 !important;
+}
+.sale-offer-photo{
+  display:none;
+  width:100% !important;
+  max-width:100% !important;
+  height:clamp(300px,42vw,520px) !important;
+  max-height:520px !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  margin:8px 0 10px !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:12px !important;
+  background:#fff !important;
+}
+.sale-package-box{
+  width:100% !important;
+  max-width:100% !important;
+  margin:8px 0 0 !important;
+  padding:11px 13px !important;
+  border-radius:12px !important;
+}
+.sale-info-title{
+  font-size:19px !important;
+  margin:4px 0 6px !important;
+}
+.sale-package-items{
+  gap:5px !important;
+  margin:7px 0 !important;
+}
+.sale-package-item{
+  padding:6px 9px !important;
+  min-height:auto !important;
+}
+.sale-package-price{
+  font-size:20px !important;
+}
+.sale-offer-add-btn{
+  padding:10px 15px !important;
+  border-radius:10px !important;
+}
+@media(max-width:760px){
+  .sale-offer{
+    width:calc(100% - 16px) !important;
+    margin:8px auto !important;
+    padding:11px !important;
+    border-radius:13px !important;
+  }
+  .sale-offer h2{font-size:20px !important}
+  .sale-offer-photo{
+    height:auto !important;
+    max-height:none !important;
+    aspect-ratio:auto !important;
+    object-fit:contain !important;
+    margin:7px auto 9px !important;
+  }
+  .sale-package-box{padding:10px !important}
+}
+
+/* FINAL Sale & Offers alignment — actual customer markup */
+#saleInfoSection{
+  width:100%;
+  max-width:100%;
+  padding-left:16px;
+  padding-right:16px;
+}
+#saleInfoWindow.sale-info-window{
+  width:min(100%,900px) !important;
+  max-width:900px !important;
+  margin:14px auto 22px !important;
+  padding:16px !important;
+  border-radius:16px !important;
+  overflow:hidden !important;
+}
+#saleInfoWindow #saleInfoPhoto.sale-offer-photo{
+  display:none;
+  width:100% !important;
+  max-width:100% !important;
+  height:auto !important;
+  max-height:none !important;
+  aspect-ratio:auto !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  margin:10px auto 12px !important;
+  padding:0 !important;
+  border:1px solid #e6ece6 !important;
+  border-radius:12px !important;
+  background:#fff !important;
+}
+#saleInfoHeadline,
+#saleInfoText,
+#saleOfferActions,
+#salePackageCustomerBox{
+  width:100% !important;
+  max-width:100% !important;
+  box-sizing:border-box !important;
+}
+#saleInfoHeadline:empty,
+#saleInfoText:empty{
+  display:none !important;
+}
+#salePackageCustomerBox{
+  margin:10px 0 0 !important;
+}
+@media(min-width:761px){
+  #saleInfoWindow #saleInfoPhoto.sale-offer-photo{
+    max-height:560px !important;
+  }
+}
+@media(max-width:760px){
+  #saleInfoSection{
+    padding-left:8px;
+    padding-right:8px;
+  }
+  #saleInfoWindow.sale-info-window{
+    width:100% !important;
+    margin:8px auto 16px !important;
+    padding:11px !important;
+    border-radius:13px !important;
+  }
+  #saleInfoWindow #saleInfoPhoto.sale-offer-photo{
+    width:100% !important;
+    height:auto !important;
+    max-height:none !important;
+    margin:8px auto 10px !important;
+  }
+}
+
+/* Keep Sale description immediately below the offer picture */
+#saleInfoWindow #saleInfoPhoto{
+  margin-bottom:0 !important;
+  border-bottom-left-radius:0 !important;
+  border-bottom-right-radius:0 !important;
+}
+#saleInfoWindow #saleInfoHeadline{
+  margin:0 !important;
+  padding:10px 2px 4px !important;
+  line-height:1.25 !important;
+}
+#saleInfoWindow #saleInfoText{
+  margin:0 !important;
+  padding:0 2px 10px !important;
+  line-height:1.45 !important;
+}
+#saleInfoWindow #saleInfoHeadline + #saleInfoText{
+  margin-top:0 !important;
+}
+#saleInfoWindow #salePackageCustomerBox{
+  margin-top:6px !important;
+}
+
+
+/* ===== Jayvik: Dispatched Orders — full row fit ===== */
+#dispatchedFolder{
+  width:100% !important;
+  max-width:100% !important;
+  height:auto !important;
+  max-height:none !important;
+  overflow:visible !important;
+}
+#dispatchedFolder .table-wrap,
+#dispatchedFolder .table-scroll,
+#dispatchedFolder .orders-table-wrap{
+  width:100% !important;
+  max-width:100% !important;
+  overflow:visible !important;
+}
+#dispatchedFolder table{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  table-layout:fixed !important;
+  border-collapse:collapse !important;
+}
+#dispatchedFolder th,
+#dispatchedFolder td{
+  min-width:0 !important;
+  max-width:none !important;
+  padding:8px 5px !important;
+  font-size:12px !important;
+  line-height:1.25 !important;
+  vertical-align:top !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+}
+#dispatchedFolder th:nth-child(1),#dispatchedFolder td:nth-child(1){width:3.5% !important;text-align:center;}
+#dispatchedFolder th:nth-child(2),#dispatchedFolder td:nth-child(2){width:11% !important;}
+#dispatchedFolder th:nth-child(3),#dispatchedFolder td:nth-child(3){width:10% !important;}
+#dispatchedFolder th:nth-child(4),#dispatchedFolder td:nth-child(4){width:10% !important;}
+#dispatchedFolder th:nth-child(5),#dispatchedFolder td:nth-child(5){width:10% !important;}
+#dispatchedFolder th:nth-child(6),#dispatchedFolder td:nth-child(6){width:23% !important;}
+#dispatchedFolder th:nth-child(7),#dispatchedFolder td:nth-child(7){width:9% !important;}
+#dispatchedFolder th:nth-child(8),#dispatchedFolder td:nth-child(8){width:10% !important;}
+#dispatchedFolder th:nth-child(9),#dispatchedFolder td:nth-child(9){width:13.5% !important;}
+#dispatchedFolder button{
+  max-width:100% !important;
+  white-space:normal !important;
+  padding:6px 7px !important;
+  font-size:11px !important;
+  line-height:1.2 !important;
+}
+@media(max-width:900px){
+  #dispatchedFolder{overflow-x:auto !important;}
+  #dispatchedFolder table{min-width:900px !important;}
+}
+
+
+/* ===== Jayvik: Dispatched Orders use the full large admin window ===== */
+#dispatchedFolder{
+  width:100% !important;
+  max-width:none !important;
+  display:block !important;
+  overflow:visible !important;
+}
+
+/* The generated table container must span the complete parent window. */
+#dispatchedFolder > div,
+#dispatchedFolder .table-wrap,
+#dispatchedFolder .table-scroll,
+#dispatchedFolder .orders-table-wrap{
+  width:100% !important;
+  max-width:none !important;
+}
+
+/* Desktop: remove the small inner-window effect and fit the complete row. */
+@media (min-width:901px){
+  #dispatchedFolder{
+    min-width:100% !important;
+  }
+
+  #dispatchedFolder table{
+    width:100% !important;
+    min-width:100% !important;
+    max-width:100% !important;
+    table-layout:fixed !important;
+  }
+
+  #dispatchedFolder th,
+  #dispatchedFolder td{
+    box-sizing:border-box !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+    white-space:normal !important;
+    overflow-wrap:anywhere !important;
+  }
+
+  /* Give Payment and Action enough room for the final controls. */
+  #dispatchedFolder th:nth-last-child(2),
+  #dispatchedFolder td:nth-last-child(2){
+    width:11% !important;
+  }
+
+  #dispatchedFolder th:last-child,
+  #dispatchedFolder td:last-child{
+    width:18% !important;
+  }
+
+  #dispatchedFolder td:last-child button{
+    width:100% !important;
+    max-width:100% !important;
+    display:block !important;
+    margin:0 0 7px 0 !important;
+  }
+}
+
+
+/* ===== FINAL FIX: Dispatched Orders must occupy the whole admin card ===== */
+/* Root cause: dispatchedOrdersBoard still had class="order-columns",
+   so the whole toolbar/table was being placed inside a narrow grid column. */
+#dispatchedOrdersBoard.order-columns,
+#dispatchedOrdersBoard{
+  display:block !important;
+  grid-template-columns:none !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  overflow:visible !important;
+}
+
+/* This is the ACTUAL generated inner window around the dispatched table. */
+#dispatchedOrdersBoard .dispatch-resizable-window{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  height:auto !important;
+  max-height:none !important;
+  overflow:visible !important;
+  border:1px solid #dfe7df !important;
+  border-radius:12px !important;
+  box-sizing:border-box !important;
+}
+
+/* Fit all nine columns across the large window on desktop. */
+#dispatchedOrdersBoard .dispatch-resizable-window table{
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  table-layout:fixed !important;
+  box-sizing:border-box !important;
+}
+
+#dispatchedOrdersBoard .dispatch-resizable-window th,
+#dispatchedOrdersBoard .dispatch-resizable-window td{
+  min-width:0 !important;
+  max-width:none !important;
+  padding:8px 6px !important;
+  font-size:12px !important;
+  line-height:1.25 !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+  vertical-align:top !important;
+}
+
+/* Column proportions */
+#dispatchedOrdersBoard .col-select{width:3% !important;}
+#dispatchedOrdersBoard .col-order{width:10% !important;}
+#dispatchedOrdersBoard .col-date{width:9% !important;}
+#dispatchedOrdersBoard .col-customer{width:10% !important;}
+#dispatchedOrdersBoard .col-mobile{width:9% !important;}
+#dispatchedOrdersBoard .col-products{width:23% !important;}
+#dispatchedOrdersBoard .col-amount{width:8% !important;}
+#dispatchedOrdersBoard .col-payment{width:10% !important;}
+#dispatchedOrdersBoard .col-action{width:18% !important;}
+
+#dispatchedOrdersBoard .col-action button,
+#dispatchedOrdersBoard td:last-child button{
+  width:100% !important;
+  max-width:100% !important;
+  display:block !important;
+  margin:0 0 6px !important;
+  white-space:normal !important;
+}
+
+/* Only small screens should horizontally scroll. */
+@media(max-width:900px){
+  #dispatchedOrdersBoard .dispatch-resizable-window{
+    overflow-x:auto !important;
+  }
+  #dispatchedOrdersBoard .dispatch-resizable-window table{
+    min-width:950px !important;
+  }
+}
+
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -2003,6 +2536,16 @@ window.jayvikConfirm=function(message,options={}){
     <img id="saleInfoPhoto" class="sale-offer-photo" alt="Special Offer">
     <div class="sale-info-title" id="saleInfoHeadline"></div>
     <div class="sale-info-text" id="saleInfoText"></div>
+    <div class="sale-offer-actions" id="saleOfferActions" style="display:none">
+      <button type="button" class="sale-offer-add-btn" id="saleOfferAddButton" onclick="addSaleOfferToCart()">🛒 Add Offer Item to Cart</button>
+      <span class="sale-offer-pack" id="saleOfferPackLabel"></span>
+    </div>
+    <div class="sale-package-box" id="salePackageCustomerBox" style="display:none">
+      <div class="sale-info-title" id="salePackageCustomerName"></div>
+      <div class="sale-package-items" id="salePackageCustomerItems"></div>
+      <div><span class="sale-package-price" id="salePackageCustomerPrice"></span><span class="sale-package-original" id="salePackageCustomerOriginal"></span></div>
+      <button type="button" class="sale-offer-add-btn" style="margin-top:12px" onclick="addSalePackageToCart()">🛒 Add Complete Offer to Cart</button>
+    </div>
   </div>
 </section>
 <!-- END SALE INFORMATION -->
@@ -2858,6 +3401,31 @@ window.jayvikConfirm=function(message,options={}){
             rows="8"
             placeholder="Enter sale details, special offers, festival offers, dates, delivery information, etc."
           ></textarea>
+          <label>Sale Product (from Products catalogue)</label>
+          <select id="editSaleProductId" onchange="loadSalePackOptions()">
+            <option value="">Auto-match from offer headline</option>
+          </select>
+
+          <label>Sale Pack (uses normal Inventory stock)</label>
+          <select id="editSalePackSize">
+            <option value="">First available pack</option>
+          </select>
+
+          <div class="notice">
+            Select an existing product and pack from Products. The Sale & Offers window uses the same product record, price, discount and pack-wise Inventory stock. No separate sale-product stock is created.
+          </div>
+          <div class="sale-package-builder">
+            <h3 style="margin-top:0">🎁 Combo / Package Offer</h3>
+            <div class="notice">Choose each component directly from Products and its existing pack. Inventory remains product/pack-wise. Enter only the final package sale price here.</div>
+            <label>Package / Offer Name</label>
+            <input id="editSalePackageName" placeholder="Example: Family Health Combo">
+            <div id="salePackageAdminRows"></div>
+            <button type="button" class="secondary" onclick="addSalePackageAdminRow()">＋ Add Product to Package</button>
+            <label style="margin-top:14px">Package Sale Price (₹)</label>
+            <input id="editSalePackagePrice" type="number" min="0" step="0.01" placeholder="1999">
+            <div id="salePackagePricePreview" class="notice" style="margin-top:10px"></div>
+          </div>
+
 
           <button
             class="btn btn-green"
@@ -3350,6 +3918,14 @@ window.jayvikConfirm=function(message,options={}){
           >
             🔄 Refresh Payment Control
           </button>
+          <button
+            type="button"
+            class="btn btn-light"
+            onclick="exportPaymentControlExcel()"
+          >
+            📊 Export to Excel
+          </button>
+
         </div>
 
         <h4>👤 Customer-wise Payment & Interlock Control</h4>
@@ -4526,7 +5102,215 @@ fill="#666">${escapeHtml(name)}</text>
 `);
 
 
+
+function getSaleOfferProduct(){
+  const configuredId=String(website.saleProductId||"").trim();
+  if(!configuredId)return null;
+
+  return products.find(p=>
+    String(p.id)===configuredId ||
+    String(p._firebaseKey||"")===configuredId
+  ) || null;
+}
+
+function getSaleOfferPack(product){
+  if(!product || !Array.isArray(product.packs) || !product.packs.length)return null;
+
+  const wanted=String(website.salePackSize||"").trim();
+  if(wanted){
+    const matched=product.packs.find(pack=>String(pack.size||"")===wanted);
+    if(matched)return matched;
+  }
+
+  return product.packs[0]||null;
+}
+
+function getSaleOfferPackStock(product,pack){
+  if(!product || !pack)return 0;
+
+  const stock=Number(pack.stock);
+  if(Number.isFinite(stock))return Math.max(0,stock);
+
+  const inventory=Number(pack.inventory);
+  if(Number.isFinite(inventory))return Math.max(0,inventory);
+
+  const qty=Number(pack.qty);
+  if(Number.isFinite(qty))return Math.max(0,qty);
+
+  return 0;
+}
+
+function renderSaleOfferCartAction(){
+  const actions=document.getElementById("saleOfferActions");
+  const button=document.getElementById("saleOfferAddButton");
+  const label=document.getElementById("saleOfferPackLabel");
+  if(!actions || !button || !label)return;
+
+  const product=getSaleOfferProduct();
+  const pack=getSaleOfferPack(product);
+
+  if(!product || !pack){
+    actions.style.display="none";
+    return;
+  }
+
+  actions.style.display="flex";
+
+  const stock=getSaleOfferPackStock(product,pack);
+  button.textContent="🛒 Add "+String(product.name||"Offer Item")+" to Cart";
+  label.textContent=String(pack.size||"");
+
+  // Keep the same customer behaviour as the normal catalogue:
+  // zero-stock products may still be ordered and will follow Pending/Partial routing.
+  button.disabled=false;
+}
+
+function addSaleOfferToCart(){
+  const product=getSaleOfferProduct();
+  const pack=getSaleOfferPack(product);
+
+  if(!product || !pack){
+    jayvikAlert("Please select the Sale Product and Pack in Admin → Sale & Offers.");
+    return;
+  }
+
+  // Use the exact same product ID/pack object as Products + Inventory.
+  selectedPacks[product.id]=pack;
+  addToCart(product.id);
+
+  if(typeof showSaveNotification==="function"){
+    showSaveNotification(
+      String(product.name||"Offer item")+" ("+String(pack.size||"")+") added to cart."
+    );
+  }
+
+  if(typeof scrollToCart==="function")scrollToCart();
+}
+
+function populateSaleProductOptions(){
+  const select=document.getElementById("editSaleProductId");
+  if(!select)return;
+
+  const current=String(website.saleProductId||"");
+  select.innerHTML='<option value="">Select product from Products</option>';
+
+  products.forEach(product=>{
+    const option=document.createElement("option");
+    option.value=String(product.id);
+    option.textContent=String(product.name||"Unnamed product");
+    if(
+      option.value===current ||
+      String(product._firebaseKey||"")===current
+    ){
+      option.selected=true;
+    }
+    select.appendChild(option);
+  });
+
+  loadSalePackOptions();
+}
+
+function loadSalePackOptions(){
+  const productSelect=document.getElementById("editSaleProductId");
+  const packSelect=document.getElementById("editSalePackSize");
+  if(!packSelect)return;
+
+  const selectedId=String(productSelect?.value||website.saleProductId||"");
+  const product=products.find(p=>
+    String(p.id)===selectedId ||
+    String(p._firebaseKey||"")===selectedId
+  );
+
+  const current=String(website.salePackSize||"");
+  packSelect.innerHTML='<option value="">Select pack</option>';
+
+  (product?.packs||[]).forEach(pack=>{
+    const option=document.createElement("option");
+    option.value=String(pack.size||"");
+    const stock=getSaleOfferPackStock(product,pack);
+    option.textContent=String(pack.size||"")+" — Stock: "+stock;
+    if(option.value===current)option.selected=true;
+    packSelect.appendChild(option);
+  });
+}
+
+
+function salePackagePackPrice(product,pack){
+  for(const v of [pack?.offerPrice,pack?.discountedPrice,pack?.price,pack?.sellingPrice]){
+    const n=Number(v); if(Number.isFinite(n)&&n>=0)return n;
+  }
+  return 0;
+}
+function resolveSalePackageItems(){
+  return (Array.isArray(website.salePackageItems)?website.salePackageItems:[]).map(item=>{
+    const product=products.find(p=>String(p.id)===String(item.productId||"")||String(p._firebaseKey||"")===String(item.productId||""));
+    const pack=(product?.packs||[]).find(x=>String(x.size||"")===String(item.packSize||""));
+    return product&&pack?{product,pack,qty:Math.max(1,Number(item.qty||1))}:null;
+  }).filter(Boolean);
+}
+function renderSalePackageCustomer(){
+  const box=document.getElementById("salePackageCustomerBox"); if(!box)return;
+  const items=resolveSalePackageItems(), sale=Number(website.salePackagePrice||0);
+  if(!items.length||sale<=0){box.style.display="none";return}
+  box.style.display="block";
+  document.getElementById("salePackageCustomerName").textContent=String(website.salePackageName||website.saleHeadline||"Special Package Offer");
+  let normal=0;
+  document.getElementById("salePackageCustomerItems").innerHTML=items.map(({product,pack,qty})=>{
+    normal+=salePackagePackPrice(product,pack)*qty;
+    return `<div class="sale-package-item"><span><strong>${escapeHtml(product.name||"")}</strong> — ${escapeHtml(pack.size||"")} × ${qty}</span></div>`;
+  }).join("");
+  document.getElementById("salePackageCustomerPrice").textContent="Offer Price: ₹"+formatMoney(sale);
+  document.getElementById("salePackageCustomerOriginal").textContent=normal>sale?"₹"+formatMoney(normal):"";
+}
+function addSalePackageToCart(){
+  const items=resolveSalePackageItems(), sale=Number(website.salePackagePrice||0);
+  if(!items.length||sale<=0){jayvikAlert("Package offer is not configured.");return}
+  const normal=items.reduce((sum,x)=>sum+salePackagePackPrice(x.product,x.pack)*x.qty,0);
+  items.forEach(({product,pack,qty})=>{selectedPacks[product.id]=pack;for(let i=0;i<qty;i++)addToCart(product.id)});
+  window.activeSalePackageAdjustment={
+    name:String(website.salePackageName||"Package Offer"),
+    normalTotal:normal,
+    salePrice:sale,
+    discount:Math.max(0,normal-sale),
+    components:items.map(({product,pack,qty})=>({
+      productId:String(product.id),
+      packSize:String(pack.size||""),
+      qty:Number(qty||1)
+    }))
+  };
+  try{localStorage.setItem("jayvik_sale_package_adjustment",JSON.stringify(window.activeSalePackageAdjustment))}catch(e){}
+  renderCart();
+  if(typeof showSaveNotification==="function")showSaveNotification("Complete offer added at ₹"+formatMoney(sale)+".");
+  if(typeof scrollToCart==="function")scrollToCart();
+}
+function addSalePackageAdminRow(item={productId:"",packSize:"",qty:1}){
+  const host=document.getElementById("salePackageAdminRows"); if(!host)return;
+  const row=document.createElement("div"); row.className="sale-package-row";
+  const productOptions='<option value="">Select product</option>'+products.map(p=>`<option value="${escapeHtml(String(p.id))}" ${String(p.id)===String(item.productId||"")?"selected":""}>${escapeHtml(p.name||"")}</option>`).join("");
+  row.innerHTML=`<div><label>Product</label><select class="salePkgProduct">${productOptions}</select></div><div><label>Pack</label><select class="salePkgPack"></select></div><div><label>Qty</label><input class="salePkgQty" type="number" min="1" value="${Math.max(1,Number(item.qty||1))}"></div><button type="button" class="danger">Remove</button>`;
+  host.appendChild(row);
+  const ps=row.querySelector(".salePkgProduct"), ks=row.querySelector(".salePkgPack");
+  const refresh=()=>{const p=products.find(x=>String(x.id)===String(ps.value));ks.innerHTML='<option value="">Select pack</option>'+(p?.packs||[]).map(pk=>`<option value="${escapeHtml(String(pk.size||""))}" ${String(pk.size||"")===String(item.packSize||"")?"selected":""}>${escapeHtml(pk.size||"")} — ₹${formatMoney(salePackagePackPrice(p,pk))} — Stock: ${getSaleOfferPackStock(p,pk)}</option>`).join("");updateSalePackagePricePreview()};
+  ps.onchange=refresh;ks.onchange=updateSalePackagePricePreview;row.querySelector(".salePkgQty").oninput=updateSalePackagePricePreview;row.querySelector("button").onclick=()=>{row.remove();updateSalePackagePricePreview()};refresh();
+}
+function readSalePackageAdminRows(){
+  return [...document.querySelectorAll("#salePackageAdminRows .sale-package-row")].map(r=>({productId:String(r.querySelector(".salePkgProduct")?.value||""),packSize:String(r.querySelector(".salePkgPack")?.value||""),qty:Math.max(1,Number(r.querySelector(".salePkgQty")?.value||1))})).filter(x=>x.productId&&x.packSize);
+}
+function updateSalePackagePricePreview(){
+  const el=document.getElementById("salePackagePricePreview");if(!el)return;
+  let normal=0;readSalePackageAdminRows().forEach(i=>{const p=products.find(x=>String(x.id)===i.productId),pk=(p?.packs||[]).find(x=>String(x.size||"")===i.packSize);normal+=salePackagePackPrice(p,pk)*i.qty});
+  const sale=Number(document.getElementById("editSalePackagePrice")?.value||0);
+  el.textContent="Normal total: ₹"+formatMoney(normal)+" | Sale price: ₹"+formatMoney(sale)+" | Saving: ₹"+formatMoney(Math.max(0,normal-sale));
+}
+function loadSalePackageEditor(){
+  const host=document.getElementById("salePackageAdminRows");if(!host)return;
+  document.getElementById("editSalePackageName").value=String(website.salePackageName||"");
+  const price=document.getElementById("editSalePackagePrice");price.value=Number(website.salePackagePrice||0)||"";price.oninput=updateSalePackagePricePreview;
+  host.innerHTML="";const items=Array.isArray(website.salePackageItems)?website.salePackageItems:[];(items.length?items:[{}]).forEach(addSalePackageAdminRow);updateSalePackagePricePreview();
+}
 function loadSaleEditor(){
+  setTimeout(loadSalePackageEditor,0);
+  setTimeout(populateSaleProductOptions,0);
 
   const title=document.getElementById("editSaleTitle");
   const headline=document.getElementById("editSaleHeadline");
@@ -4565,6 +5349,12 @@ function removeSalePhoto(){
 }
 
 async function saveSaleInfo(){
+  website.salePackageName=String(document.getElementById("editSalePackageName")?.value||"").trim();
+  website.salePackageItems=readSalePackageAdminRows();
+  website.salePackagePrice=Math.max(0,Number(document.getElementById("editSalePackagePrice")?.value||0));
+  website.saleProductId=String(document.getElementById("editSaleProductId")?.value||"");
+  website.salePackSize=String(document.getElementById("editSalePackSize")?.value||"");
+
   website.saleTitle=document.getElementById("editSaleTitle")?.value.trim()||"Special Offers";
   website.saleHeadline=document.getElementById("editSaleHeadline")?.value.trim()||"";
   website.saleText=document.getElementById("editSaleText")?.value.trim()||"";
@@ -5008,6 +5798,11 @@ let website=
   saleHeadline:"Fresh & Healthy Offers",
   saleText:"Check our latest offers, seasonal products and special deals at Jayvik.",
   salePhoto:"",
+  saleProductId:"",
+  salePackSize:"",
+  salePackageName:"",
+  salePackageItems:[],
+  salePackagePrice:0,
   orderHistoryDelayMinutes:60
 };
 
@@ -5015,6 +5810,8 @@ if(!website.saleTitle)website.saleTitle="Special Offers";
 if(typeof website.saleHeadline!=="string")website.saleHeadline="Fresh & Healthy Offers";
 if(typeof website.saleText!=="string")website.saleText="Check our latest offers, seasonal products and special deals at Jayvik.";
 if(typeof website.salePhoto!=="string")website.salePhoto="";
+if(typeof website.saleProductId!=="string")website.saleProductId=String(website.saleProductId||"");
+if(typeof website.salePackSize!=="string")website.salePackSize=String(website.salePackSize||"");
 if(!Number.isFinite(Number(website.orderHistoryDelayMinutes)) || Number(website.orderHistoryDelayMinutes)<0){
   website.orderHistoryDelayMinutes=60;
 }
@@ -6217,7 +7014,24 @@ async function downloadCustomerInvoicePdf(orderId){
       doc.text("Rs. "+rate.toFixed(2),153,y,{align:"right"});doc.text("Rs. "+lineAmount.toFixed(2),195,y,{align:"right"});
       y+=Math.max(7,productLines.length*5);
     }
-    y+=3;doc.line(120,y,195,y);y+=8;doc.setFont("helvetica","bold");doc.setFontSize(12);
+    const invoiceSubtotal=items.reduce(
+      (sum,item)=>sum+Number(item.price||0)*Number(item.qty||0),0
+    );
+    const invoiceDiscount=Math.max(0,invoiceSubtotal-amount);
+
+    y+=3;doc.line(120,y,195,y);y+=7;
+    if(invoiceDiscount>0){
+      doc.setFont("helvetica","normal");doc.setFontSize(10);
+      doc.text("Product Total",120,y);
+      doc.text("Rs. "+invoiceSubtotal.toFixed(2),195,y,{align:"right"});
+      y+=6;
+      doc.setFont("helvetica","bold");
+      doc.text("Sale / Combo Discount",120,y);
+      doc.text("- Rs. "+invoiceDiscount.toFixed(2),195,y,{align:"right"});
+      y+=7;
+      doc.line(120,y,195,y);y+=7;
+    }
+    doc.setFont("helvetica","bold");doc.setFontSize(12);
     doc.text("Total Payable",120,y);doc.text("Rs. "+amount.toFixed(2),195,y,{align:"right"});
     y+=10;
     doc.addImage(qrDataUrl,"PNG",15,y,42,42);
@@ -8049,6 +8863,10 @@ function applyWebsite(){
   renderCustomerOrderHistory();
   scheduleCustomerHistoryMove();
 
+
+  renderSaleOfferCartAction();
+
+  renderSalePackageCustomer();
 }
 
 
@@ -9508,6 +10326,8 @@ function renderProducts(){
 
   });
 
+
+  renderSaleOfferCartAction();
 }
 
 
@@ -9688,9 +10508,28 @@ function getReadyInvoiceOrder(order){
     const qty=Math.max(0,Number(f?.readyQty ?? item.qty ?? 0));
     if(qty>0)readyItems.push({...item,qty});
   }
-  const total=readyItems.reduce(
+  const readySubtotal=readyItems.reduce(
     (sum,item)=>sum+Number(item.price||0)*Number(item.qty||0),0
   );
+
+  const orderedQty=(order.items||[]).reduce(
+    (sum,item)=>sum+Math.max(0,Number(item.qty||0)),0
+  );
+  const readyQty=readyItems.reduce(
+    (sum,item)=>sum+Math.max(0,Number(item.qty||0)),0
+  );
+  const allItemsReady=orderedQty>0 && readyQty>=orderedQty;
+
+  /*
+    For a complete Sale/Combo order, preserve the final payable order.total.
+    The component rows still show their normal catalogue rates, while the
+    package discount is reflected in the invoice total.
+  */
+  const total=(
+    allItemsReady &&
+    Number(order.total||0)>0
+  ) ? Number(order.total) : readySubtotal;
+
   return {
     ...order,
     items:readyItems,
@@ -9700,6 +10539,27 @@ function getReadyInvoiceOrder(order){
 }
 
 
+
+function getActiveSalePackageAdjustment(){
+  try{
+    return window.activeSalePackageAdjustment ||
+      JSON.parse(localStorage.getItem("jayvik_sale_package_adjustment")||"null");
+  }catch(e){
+    return window.activeSalePackageAdjustment||null;
+  }
+}
+function getSalePackageCartDiscount(){
+  const adj=getActiveSalePackageAdjustment();
+  return adj ? Math.max(0,Number(adj.discount||0)) : 0;
+}
+function getCartNormalTotal(){
+  return (cart||[]).reduce((sum,item)=>
+    sum+Number(item.price||0)*Number(item.qty||0),0
+  );
+}
+function getCartPayableTotal(){
+  return Math.max(0,getCartNormalTotal()-getSalePackageCartDiscount());
+}
 function renderCart(){
 
   const box=
@@ -9818,12 +10678,29 @@ function renderCart(){
     }
   );
 
+  const packageAdjustment=getActiveSalePackageAdjustment();
+  const payableTotal=Math.max(0,total-(packageAdjustment?Number(packageAdjustment.discount||0):0));
+
   document.getElementById(
     "cartTotal"
   ).textContent=
-    total.toLocaleString(
+    payableTotal.toLocaleString(
       "en-IN"
     );
+
+  let packageNotice=document.getElementById("cartPackageOfferNotice");
+  if(packageAdjustment && Number(packageAdjustment.discount||0)>0){
+    if(!packageNotice){
+      packageNotice=document.createElement("div");
+      packageNotice.id="cartPackageOfferNotice";
+      packageNotice.style.cssText="margin:12px 0;padding:12px 14px;border-radius:12px;background:#eef8ee;color:#176b2a;font-weight:800";
+      box.parentNode.insertBefore(packageNotice,box.nextSibling);
+    }
+    packageNotice.style.display="block";
+    packageNotice.textContent="🎁 "+String(packageAdjustment.name||"Package Offer")+" applied — Offer Price ₹"+Number(packageAdjustment.salePrice||0).toLocaleString("en-IN")+" • Saving ₹"+Number(packageAdjustment.discount||0).toLocaleString("en-IN");
+  }else if(packageNotice){
+    packageNotice.style.display="none";
+  }
 
   document.getElementById(
     "cartCount"
@@ -10044,13 +10921,8 @@ async function sendWhatsAppOrder(){
         price:Number(item.price||0),
         qty:Number(item.qty||0)
       })),
-      total:cart.reduce(
-        (sum,item)=>
-          sum+
-          Number(item.price||0)*
-          Number(item.qty||0),
-        0
-      ),
+      total:getCartPayableTotal(),
+      salePackage:getActiveSalePackageAdjustment(),
       status:"pending",
       stockDeducted:false
     };
@@ -10075,6 +10947,10 @@ async function sendWhatsAppOrder(){
         : "";
       message+=`${index+1}. ${item.name} – ${item.size} × ${item.qty}${split} = ₹${Number(item.price||0)*Number(item.qty||0)}\n`;
     });
+
+    if(order.salePackage && Number(order.salePackage.discount||0)>0){
+      message+=`\n🎁 ${order.salePackage.name}: -₹${Number(order.salePackage.discount||0)}\n`;
+    }
 
     message+=`
 Total: ₹${order.total}
@@ -10103,6 +10979,8 @@ Order ID: ${order.id}`;
       "jayvik_orders",
       JSON.stringify(orders)
     );
+    window.activeSalePackageAdjustment=null;
+    localStorage.removeItem("jayvik_sale_package_adjustment");
 
     localStorage.setItem(
       "jayvik_last_order_id",
@@ -10694,49 +11572,12 @@ async function renderDispatchedOrdersFolder(){
 
     if(!dispatchedOrders.length){
       board.innerHTML=`
-        <div class="dispatch-dimension-controls">
-        <strong>⚙️ Window Dimensions:</strong>
-        <label>Width
-          <select id="dispatchWidthControl" onchange="setDispatchedWindowDimensions()">
-            <option value="80%">80%</option>
-            <option value="90%">90%</option>
-            <option value="100%">100%</option>
-            <option value="125%">125%</option>
-            <option value="150%">150%</option>
-            <option value="175%">175%</option>
-            <option value="200%">200%</option>
-            <option value="250%">250%</option>
-            <option value="300%">300%</option>
-            <option value="350%">350%</option>
-            <option value="400%">400%</option>
-            <option value="500%">500%</option>
-          </select>
-        </label>
-        <label>Height
-          <select id="dispatchHeightControl" onchange="setDispatchedWindowDimensions()">
-            <option value="450px">450 px</option>
-            <option value="550px">550 px</option>
-            <option value="650px">650 px</option>
-            <option value="750px">750 px</option>
-            <option value="900px">900 px</option>
-            <option value="none">Auto</option>
-          </select>
-        </label>
-        <label>Text
-          <select id="dispatchFontControl" onchange="setDispatchedWindowDimensions()">
-            <option value="12px">Small</option>
-            <option value="14px">Normal</option>
-            <option value="16px">Large</option>
-            <option value="18px">Extra Large</option>
-          </select>
-        </label>
-        <button type="button" class="btn btn-light" onclick="resetDispatchedWindowDimensions()">Reset</button>
-      </div>
+        
         <div class="empty-state">
           No dispatched orders found in Firebase.
         </div>
       `;
-      restoreDispatchedWindowDimensions();
+      /* Window Dimensions removed */
       return;
     }
 
@@ -10902,30 +11743,7 @@ async function renderDispatchedOrdersFolder(){
         >🗑 Delete Selected</button>
       </div>
 
-      <div class="dispatch-dimension-controls">
-        <strong>⚙️ Window Dimensions:</strong>
-        <label>Width
-          <select id="dispatchWidthControl" onchange="setDispatchedWindowDimensions()">
-            <option value="100%">100%</option><option value="95%">95%</option>
-            <option value="90%">90%</option><option value="85%">85%</option>
-            <option value="80%">80%</option>
-          </select>
-        </label>
-        <label>Height
-          <select id="dispatchHeightControl" onchange="setDispatchedWindowDimensions()">
-            <option value="450px">450 px</option><option value="550px">550 px</option>
-            <option value="650px">650 px</option><option value="750px">750 px</option>
-            <option value="900px">900 px</option><option value="none">Auto</option>
-          </select>
-        </label>
-        <label>Text
-          <select id="dispatchFontControl" onchange="setDispatchedWindowDimensions()">
-            <option value="12px">Small</option><option value="14px">Normal</option>
-            <option value="16px">Large</option><option value="18px">Extra Large</option>
-          </select>
-        </label>
-        <button type="button" class="btn btn-light" onclick="resetDispatchedWindowDimensions()">Reset</button>
-      </div>
+      
       <div class="dispatch-resizable-window">
         <table class="consumption-table" style="width:100%">
           <thead>
@@ -10955,7 +11773,7 @@ async function renderDispatchedOrdersFolder(){
       </div>
     `;
 
-    restoreDispatchedWindowDimensions();
+    /* Window Dimensions removed */
 
   }catch(err){
     console.error("Dispatched Orders direct Firebase load failed:",err);
@@ -12230,9 +13048,52 @@ async function moveOrder(orderId,newStatus){
     if(allowed[latestStatus]!==next)throw new Error("Firebase currently shows "+latestStatus+".");
     const now=new Date().toISOString(); const patch={status:next,updatedAt:now};
     if(next==="dispatched"){patch.dispatchedAt=latest.dispatchedAt||now;patch.paymentStatus=latest.paymentStatus||"pending";}
-    await db.ref("orders/"+String(orderId)).update(patch);
-    const verify=await db.ref("orders/"+String(orderId)).once("value"); const savedRaw=verify.val();
-    if(!savedRaw||String(savedRaw.status||"").toLowerCase()!==next)throw new Error("Firebase did not confirm "+next+".");
+    const orderRef=db.ref("orders/"+String(orderId));
+    await orderRef.update(patch);
+
+    /*
+      Firebase update() has already received a server acknowledgement here.
+      On some devices/connections an immediate follow-up read can briefly return
+      the previous cached stage. Give Firebase a short confirmation window
+      instead of incorrectly reporting that Dispatch failed.
+    */
+    let savedRaw=null;
+    for(let attempt=0;attempt<6;attempt++){
+      const verify=await orderRef.once("value");
+      const candidate=verify.val();
+
+      if(candidate && String(candidate.status||"").toLowerCase()===next){
+        savedRaw=candidate;
+        break;
+      }
+
+      if(attempt<5){
+        await new Promise(resolve=>setTimeout(resolve,200));
+      }
+    }
+
+    if(!savedRaw){
+      /*
+        Final server write retry. This is idempotent: it only writes the same
+        requested stage/timestamps and cannot create a duplicate order.
+      */
+      await orderRef.update(patch);
+
+      const finalVerify=await orderRef.once("value");
+      const finalRaw=finalVerify.val();
+
+      if(finalRaw && String(finalRaw.status||"").toLowerCase()===next){
+        savedRaw=finalRaw;
+      }
+    }
+
+    if(!savedRaw){
+      throw new Error(
+        "Firebase did not confirm "+next+
+        " after the server write. Please refresh Orders and try once more."
+      );
+    }
+
     const saved={...savedRaw,id:String(savedRaw.id||orderId)}; orders[index]=saved;
     localStorage.setItem("jayvik_orders",JSON.stringify(orders));
     await syncCustomerLiveOrderStatus(saved);
@@ -12285,12 +13146,17 @@ async function bulkMoveOrders(stage,nextStage){
       const order=orders.find(o=>String(o.id)===String(id));
       if(!order){failed++;continue;}
 
+      let ok=false;
       if(order.status==="partial"){
-        await movePartialReadyItems(id,nextStage);
+        ok=await movePartialReadyItems(id,nextStage);
       }else{
-        await moveOrder(id,nextStage);
+        ok=await moveOrder(id,nextStage);
       }
-      moved++;
+      if(ok===false){
+        failed++;
+      }else{
+        moved++;
+      }
     }catch(err){
       console.error("Bulk move failed for",id,err);
       failed++;
@@ -16369,6 +17235,84 @@ async function repairDispatchedPendingPaymentsDirect(){
     }
   }catch(err){
     console.error("Dispatched payment repair failed:",err);
+  }
+}
+
+
+function exportPaymentControlExcel(){
+  if(typeof XLSX==="undefined"){
+    alert("Excel export library is not available. Please refresh the page and try again.");
+    return;
+  }
+
+  const rows=collectCustomerPaymentInterlockRows();
+
+  if(!rows.length){
+    alert("There are no customer records in Payment Control to export.");
+    return;
+  }
+
+  const exportRows=rows.map(row=>{
+    const state=getCustomerInterlockState(row.phone);
+    return {
+      "Customer Name":String(row.name||""),
+      "Address":String(row.address||""),
+      "Mobile":String(row.phone||""),
+      "Active Orders":Number(row.totalOrders||0),
+      "Order IDs":(row.orderIds||[]).filter(Boolean).join(", "),
+      "Last Order At":row.lastOrderAt
+        ? new Date(row.lastOrderAt).toLocaleString("en-IN")
+        : "",
+      "Pending Payment (₹)":Number(row.pending||0),
+      "Pending Transactions":Number(row.pendingOrders||0),
+      "Payment Status":Number(row.pendingOrders||0)>0
+        ? "Payment Pending"
+        : "No Pending Payment",
+      "Interlock":state.enabled ? "ON" : "OFF",
+      "Interlock Setting":state.source==="customer"
+        ? "Customer Override"
+        : "Default Setting"
+    };
+  });
+
+  const ws=XLSX.utils.json_to_sheet(exportRows);
+
+  ws["!cols"]=[
+    {wch:22},
+    {wch:30},
+    {wch:16},
+    {wch:14},
+    {wch:36},
+    {wch:24},
+    {wch:20},
+    {wch:20},
+    {wch:22},
+    {wch:12},
+    {wch:20}
+  ];
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(
+    wb,
+    ws,
+    "Payment Control"
+  );
+
+  const now=new Date();
+  const stamp=
+    now.getFullYear()+"-"+
+    String(now.getMonth()+1).padStart(2,"0")+"-"+
+    String(now.getDate()).padStart(2,"0");
+
+  XLSX.writeFile(
+    wb,
+    "Jayvik_Payment_Control_"+stamp+".xlsx"
+  );
+
+  if(typeof showSaveNotification==="function"){
+    showSaveNotification(
+      "Payment Control exported to Excel."
+    );
   }
 }
 
