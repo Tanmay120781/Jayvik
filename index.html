@@ -3433,6 +3433,8 @@ window.jayvikConfirm=function(message,options={}){
           >
             💾 Save Sale & Offers
           </button>
+          <button type="button" class="btn btn-danger" onclick="deleteSaleAndOffers()">🗑 Delete Offer</button>
+          <div id="saleOffersActionStatus" style="display:none;margin-top:10px;padding:12px 16px;border-radius:10px;font-weight:700;font-size:15px;"></div>
 
         </div>
 
@@ -5349,6 +5351,26 @@ function removeSalePhoto(){
 }
 
 async function saveSaleInfo(){
+  const statusBox=document.getElementById("saleOffersActionStatus");
+
+  const setStatus=(message,isError=false,isWorking=false)=>{
+    if(statusBox){
+      statusBox.style.display="block";
+      statusBox.style.border=isError
+        ?"1px solid #e3a2a2"
+        :(isWorking?"1px solid #e4c66d":"1px solid #8bc79a");
+      statusBox.style.background=isError
+        ?"#fff0f0"
+        :(isWorking?"#fff8df":"#edf8ef");
+      statusBox.style.color=isError
+        ?"#a51f1f"
+        :(isWorking?"#805d00":"#176b2c");
+      statusBox.textContent=message;
+    }
+  };
+
+  setStatus("⏳ Saving Sale & Offers to Firebase...",false,true);
+
   website.salePackageName=String(document.getElementById("editSalePackageName")?.value||"").trim();
   website.salePackageItems=readSalePackageAdminRows();
   website.salePackagePrice=Math.max(0,Number(document.getElementById("editSalePackagePrice")?.value||0));
@@ -5358,12 +5380,72 @@ async function saveSaleInfo(){
   website.saleTitle=document.getElementById("editSaleTitle")?.value.trim()||"Special Offers";
   website.saleHeadline=document.getElementById("editSaleHeadline")?.value.trim()||"";
   website.saleText=document.getElementById("editSaleText")?.value.trim()||"";
+
   try{
-    if(pendingSalePhotoFile) website.salePhoto=await prepareImageForDatabase(pendingSalePhotoFile,900,0.68);
+    if(pendingSalePhotoFile){
+      website.salePhoto=await prepareImageForDatabase(pendingSalePhotoFile,900,0.68);
+    }
+
     applyWebsite();
-    const saved=await saveAll(true,"Sale & Offers saved successfully.");
-    if(saved){pendingSalePhotoFile=null;const input=document.getElementById("salePhotoFile");if(input)input.value="";}
-  }catch(err){console.error("Sale photo save failed:",err);showSaveNotification("Sale & Offers could not be saved. "+(err?.message||""),true);}
+
+    const saved=await saveAll(false);
+
+    if(saved!==true){
+      setStatus("❌ Sale & Offers could not be saved to Firebase.",true);
+      showSaveNotification("Sale & Offers could not be saved to Firebase.",true);
+      alert("Sale & Offers could not be saved to Firebase.");
+      return;
+    }
+
+    pendingSalePhotoFile=null;
+    const input=document.getElementById("salePhotoFile");
+    if(input)input.value="";
+
+    setStatus("✅ Sale & Offers saved successfully.");
+    showSaveNotification("✅ Sale & Offers saved successfully.");
+    alert("Sale & Offers saved successfully.");
+  }catch(err){
+    console.error("Sale & Offers save failed:",err);
+    const message="Sale & Offers could not be saved. "+(err?.message||"");
+    setStatus("❌ "+message,true);
+    showSaveNotification(message,true);
+    alert(message);
+  }
+}
+
+async function deleteSaleAndOffers(){
+  if(!confirm(
+    "Delete the current Sale & Offers from the customer dashboard?\n\n"+
+    "Products and Inventory will NOT be deleted."
+  ))return;
+
+  try{
+    website.salePackageName="";
+    website.salePackageItems=[];
+    website.salePackagePrice=0;
+    website.saleProductId="";
+    website.salePackSize="";
+    website.saleTitle="Special Offers";
+    website.saleHeadline="";
+    website.saleText="";
+    website.salePhoto="";
+
+    pendingSalePhotoFile=null;
+    const photoInput=document.getElementById("salePhotoFile");
+    if(photoInput)photoInput.value="";
+
+    applyWebsite();
+    const saved=await saveAll(true,"Sale & Offers deleted successfully.");
+    if(!saved)throw new Error("Firebase did not confirm the deletion.");
+
+    renderSaleInfoAdmin();
+    showSaveNotification("🗑 Sale & Offers deleted successfully.");
+    alert("Sale & Offers deleted successfully.");
+  }catch(err){
+    console.error("Sale & Offers delete failed:",err);
+    showSaveNotification("Sale & Offers could not be deleted. "+(err?.message||""),true);
+    alert("Sale & Offers could not be deleted. "+(err?.message||""));
+  }
 }
 
 /* =====================================================
