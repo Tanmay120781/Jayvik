@@ -2317,6 +2317,20 @@ footer{
   }
 }
 
+
+/* Product offer controls and customer pricing */
+.jv-discount{margin-top:14px;border:1px solid #dce6df;border-radius:12px;background:#fff;overflow:hidden}
+.jv-discount summary{cursor:pointer;padding:12px 14px;font-weight:700;color:#245d38;background:#f5f9f6}
+.jv-discount summary:focus-visible{outline:2px solid #267a35;outline-offset:-3px}
+.jv-discount-content{padding:14px}.jv-discount-content label{display:block;font-size:13px;font-weight:600;margin:10px 0}
+.jv-discount-content input,.jv-discount-content select{display:block;width:100%;min-height:42px;margin-top:6px;padding:9px 10px;border:1px solid #ccd9d0;border-radius:8px;background:white}
+.jv-discount-packs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0 12px}
+.jv-offer-preview{padding:12px;background:#f5f9f6;border-radius:8px;margin:12px 0;font-size:13px;line-height:1.8}
+.jv-discount-actions{display:flex;flex-wrap:wrap;gap:8px}.jv-discount-status{font-size:13px;margin-top:10px;color:#53645a}
+.jv-price-line{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.jv-current-price{color:#1e6337;font-size:24px;font-weight:800;letter-spacing:-.5px}
+.jv-original-price{font-size:14px;font-weight:400;color:#788178}.jv-offer-badge{font-size:11px;font-weight:800;background:#e7f4e9;color:#236537;padding:4px 8px;border-radius:6px;letter-spacing:.3px}
+.jv-saving{display:block;font-size:12px;font-weight:500;color:#497354;margin-top:5px}.product-price{min-height:62px}.product{border-radius:16px}
+
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -9547,7 +9561,7 @@ function getProductDiscountPercent(product){
     90,
     Math.max(
       0,
-      Math.round(n)
+      Math.round(n*100)/100
     )
   );
 
@@ -9593,94 +9607,82 @@ function getDiscountedPrice(
     return original;
   }
 
-  return Math.round(
-    original*
-    (100-discount)/
-    100
-  );
+  return Math.round(original*(100-discount))/100;
 
 }
 
-function productPriceHtml(
-  product,
-  pack
-){
+function productPriceHtml(product,pack){
+  const original=Number(pack?.price||0), selling=getDiscountedPrice(product,pack);
+  const money=n=>Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});
+  if(selling>=original || selling<=0)return `<span class="jv-current-price">₹${money(original)}</span>`;
+  const percent=Math.round((original-selling)/original*10000)/100;
+  return `<span class="jv-price-line"><span class="jv-current-price">₹${money(selling)}</span><del class="jv-original-price">₹${money(original)}</del><span class="jv-offer-badge">${money(percent)}% OFF</span></span><span class="jv-saving">You save ₹${money(original-selling)} on this pack</span>`;
+}
 
-  const original=
-    Number(pack?.price||0);
-
-  const mode=
-    getProductDiscountMode(
-      product
-    );
-
-  const sellingPrice=
-    getDiscountedPrice(
-      product,
-      pack
-    );
-
-  if(
-    sellingPrice>=original ||
-    sellingPrice<=0
-  ){
-
-    return (
-      "₹"+
-      original.toLocaleString(
-        "en-IN"
-      )
-    );
-
+function mountProductDiscountPanel(host,product){
+  const panel=document.createElement("details");
+  panel.className="jv-discount";
+  panel.innerHTML=`<summary>Discount · % or ₹ offer price</summary><div class="jv-discount-content">
+    <label>Discount type<select class="jv-mode"><option value="percent">Percentage discount (%)</option><option value="price">Manual offer price (₹)</option></select></label>
+    <label class="jv-percent-label">Discount (%) · applies to all packs<input class="jv-percent" type="number" min="0" max="90" step="0.01" inputmode="decimal"></label>
+    <div class="jv-discount-packs"></div><div class="jv-offer-preview" aria-live="polite"></div>
+    <div class="jv-discount-actions"><button type="button" class="btn btn-green jv-save">Save discount</button><button type="button" class="btn btn-light jv-clear">Remove discount</button></div>
+    <div class="jv-discount-status" role="status">Changes apply after saving. Leave a manual price blank to keep its regular price.</div></div>`;
+  host.appendChild(panel);
+  const mode=panel.querySelector('.jv-mode'), percent=panel.querySelector('.jv-percent'), packBox=panel.querySelector('.jv-discount-packs'), status=panel.querySelector('.jv-discount-status');
+  mode.value=getProductDiscountMode(product);percent.value=getProductDiscountPercent(product);
+  const fields=(product.packs||[]).map(pack=>{
+    const label=document.createElement('label');label.textContent=pack.size+' · Regular ₹'+Number(pack.price).toLocaleString('en-IN');
+    const input=document.createElement('input');input.type='number';input.min='0.01';input.step='0.01';input.inputMode='decimal';input.placeholder='Enter offer price';input.value=getProductDirectDiscountPrice(product,pack)||'';
+    label.appendChild(input);packBox.appendChild(label);return {pack,input};
+  });
+  function draft(){
+    const result={discountMode:mode.value,discountPercent:0,discountPrices:[]};
+    if(mode.value==='percent'){
+      const value=Number(percent.value);
+      if(!Number.isFinite(value)||value<0||value>90)throw new Error('Enter a percentage between 0 and 90.');
+      result.discountPercent=Math.round(value*100)/100;
+    }else for(const {pack,input} of fields){
+      if(input.value.trim()==='')continue;
+      const value=Number(input.value);
+      if(!Number.isFinite(value)||value<=0||value>=Number(pack.price))throw new Error('Offer price for '+pack.size+' must be above ₹0 and below ₹'+pack.price+'.');
+      result.discountPrices.push({size:String(pack.size),price:Math.round(value*100)/100});
+    }
+    return result;
   }
-
-  let badge="SPECIAL PRICE";
-
-  if(mode==="percent"){
-
-    const discount=
-      getProductDiscountPercent(
-        product
-      );
-
-    badge=
-      discount+
-      "% OFF";
-
+  function preview(){
+    panel.querySelector('.jv-percent-label').style.display=mode.value==='percent'?'block':'none';packBox.hidden=mode.value!=='price';
+    // Grid display must respect the native hidden state.
+    packBox.style.display=mode.value==='price'?'grid':'none';
+    const target=panel.querySelector('.jv-offer-preview');
+    try{const offer={...product,...draft()};target.innerHTML=fields.map(({pack})=>`<div><strong>${escapeHtml(pack.size)}</strong> · ₹${getDiscountedPrice(offer,pack).toLocaleString('en-IN')} <span class="small">(save ₹${(Math.round((Number(pack.price)-getDiscountedPrice(offer,pack))*100)/100).toLocaleString('en-IN')})</span></div>`).join('');}
+    catch(error){target.textContent=error.message;}
   }
-
-  return `
-    <span
-      style="
-        text-decoration:line-through;
-        color:#6b7280;
-        font-size:.82em;
-        margin-right:7px
-      "
-    >
-      ₹${original.toLocaleString("en-IN")}
-    </span>
-
-    <span>
-      ₹${sellingPrice.toLocaleString("en-IN")}
-    </span>
-
-    <span
-      style="
-        display:inline-block;
-        margin-left:7px;
-        padding:3px 7px;
-        border-radius:999px;
-        background:#fff0d5;
-        color:#9a5a00;
-        font-size:12px;
-        font-weight:800
-      "
-    >
-      ${badge}
-    </span>
-  `;
-
+  panel.addEventListener('input',preview);mode.addEventListener('change',preview);preview();
+  async function save(remove){
+    if(!firebaseReady||!db||!auth?.currentUser||auth.currentUser.email!=='jayvik.india@gmail.com'){status.textContent='Please sign in as admin before saving.';return;}
+    let values;try{values=remove?{discountMode:'percent',discountPercent:0,discountPrices:[]}:draft();}catch(error){status.textContent=error.message;return;}
+    const buttons=panel.querySelectorAll('button');buttons.forEach(b=>b.disabled=true);status.textContent='Saving discount…';
+    try{
+      // Resolve the current Firebase key; do not overwrite stock or other product edits.
+      const snapshot=await db.ref('store/public/products').once('value');let key=null;
+      snapshot.forEach(child=>{if(String(child.val()?.id)===String(product.id))key=child.key;});
+      if(key===null)throw new Error('This product no longer exists. Refresh the product list.');
+      const saved=await db.ref('store/public/products/'+key).transaction(current=>{
+        if(!current)return current;
+        if(String(current.id)!==String(product.id))return;
+        return {...current,...values};
+      });
+      if(!saved.committed||!saved.snapshot.val())throw new Error('Product changed while saving. Please try again.');
+      const index=products.findIndex(p=>String(p.id)===String(product.id));
+      if(index>=0)products[index]=saved.snapshot.val();
+      localStorage.setItem('jayvik_products',JSON.stringify(products));
+      renderProducts();renderAdminProducts();renderProductDiscounts();
+      showSaveNotification(remove?'Discount removed.':'Discount saved successfully.');
+    }catch(error){status.textContent='Could not save: '+error.message;}
+    finally{buttons.forEach(b=>b.disabled=false);}
+  }
+  panel.querySelector('.jv-save').onclick=()=>save(false);panel.querySelector('.jv-clear').onclick=()=>save(true);
 }
 
 function renderProductDiscounts(){
@@ -10027,7 +10029,7 @@ async function saveAllProductDiscounts(){
         }
 
         product.discountPercent=
-          Math.round(discount);
+          Math.round(discount*100)/100;
 
         /*
           Clear direct-price entries when percentage mode is used.
@@ -18302,6 +18304,8 @@ function renderAdminProducts(){
           </div>
 
         `;
+
+        mountProductDiscountPanel(div.querySelector("img + div"),product);
 
         categoryBlock.appendChild(
           div
