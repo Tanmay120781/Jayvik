@@ -2331,6 +2331,49 @@ footer{
 .jv-original-price{font-size:14px;font-weight:400;color:#788178}.jv-offer-badge{font-size:11px;font-weight:800;background:#e7f4e9;color:#236537;padding:4px 8px;border-radius:6px;letter-spacing:.3px}
 .jv-saving{display:block;font-size:12px;font-weight:500;color:#497354;margin-top:5px}.product-price{min-height:62px}.product{border-radius:16px}
 
+
+/* Clear, accessible pack selection */
+.pack-row .pack-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:9px 13px;border:2px solid #d9e4dc;border-radius:9px;background:#fff;color:#34483a;font-size:13px;font-weight:600;transition:background .15s,border-color .15s,box-shadow .15s}
+.pack-row .pack-btn::before{content:"✓";visibility:hidden;font-weight:800}
+.pack-row .pack-btn:hover{border-color:#267a35;background:#f2f8f3}
+.pack-row .pack-btn.active,.pack-row .pack-btn[aria-pressed="true"]{background:#267a35;color:#fff;border-color:#1c6029;box-shadow:0 0 0 2px #dceede;font-weight:800}
+.pack-row .pack-btn.active::before{visibility:visible}
+.pack-row .pack-btn:focus-visible{outline:3px solid #d99b18;outline-offset:3px}
+
+
+.jv-promos{background:#fcfaf6;border:1px solid #ece8df;border-radius:16px;padding:24px 16px;margin-top:20px;margin-bottom:24px}
+.jv-promo-row{display:flex;justify-content:space-around;gap:22px;overflow-x:auto;padding:4px 4px 12px;scroll-snap-type:x proximity}
+.jv-promo{flex:0 0 140px;border:0;background:none;color:#273c20;text-align:center;padding:2px;cursor:pointer;scroll-snap-align:start}
+.jv-promo-circle{width:88px;height:88px;margin:0 auto 12px;border-radius:50%;background:var(--promo-color,#29451b);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 3px 10px #23381812;transition:transform .18s}
+.jv-promo-circle svg{width:46px;height:46px;stroke:#f3dea1;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.jv-promo-circle img{width:100%;height:100%;object-fit:cover}.jv-promo strong{display:block;font-size:14px;line-height:1.4}
+.jv-promo:hover .jv-promo-circle{transform:translateY(-3px)}.jv-promo:focus-visible{outline:3px solid #d99b18;border-radius:10px;outline-offset:3px}
+.jv-promo-detail{margin-top:14px;padding:18px;background:#fff;border:1px solid #e4e9dd;border-radius:12px}.jv-promo-detail p{white-space:pre-line;line-height:1.6}
+.jv-promo-editor{border:1px solid #dce5dc;border-radius:12px;padding:16px;margin:14px 0;background:#fcfdfb}
+.jv-promo-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.jv-promo-fields label{font-size:13px;font-weight:600}.jv-promo-fields input,.jv-promo-fields select,.jv-promo-fields textarea{width:100%;display:block;margin-top:5px;padding:10px;border:1px solid #cfdace;border-radius:8px}.jv-promo-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}.jv-promo-tools label{margin-right:auto}
+@media(max-width:600px){.jv-promo{flex-basis:108px}.jv-promo-circle{width:74px;height:74px}.jv-promo-row{justify-content:flex-start;gap:10px}.jv-promo-fields{grid-template-columns:1fr}.jv-promos{padding:16px 10px}}
+
+
+/* Responsive, uncropped customer product photographs */
+.products{grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))}
+.product-card{min-width:0}
+.product-photo-button{position:relative;display:block;width:100%;aspect-ratio:1/1;border:0;border-bottom:1px solid #eef1eb;padding:0;background:#fff;cursor:zoom-in;overflow:hidden;flex-shrink:0}
+.product-photo-button .product-image{position:absolute;inset:0;width:100%;height:100%;max-width:100%;object-fit:contain;object-position:center;padding:8px;background:#fff}
+.product-photo-hint{position:absolute;right:9px;bottom:9px;padding:4px 8px;border-radius:20px;background:#ffffffed;color:#365039;font-size:11px;border:1px solid #e2e9df;pointer-events:none}
+.product-photo-button:focus-visible{outline:3px solid #d99b18;outline-offset:-4px}
+.jv-photo-dialog{width:min(94vw,1000px);max-width:94vw;max-height:94vh;max-height:94dvh;border:0;border-radius:16px;padding:16px;background:white;box-shadow:0 20px 80px #0005}
+.jv-photo-dialog::backdrop{background:#102316b8}
+.jv-photo-dialog img{display:block;width:100%;height:72vh;height:72dvh;object-fit:contain;object-position:center;background:#fff}
+.jv-photo-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}.jv-photo-header strong{overflow-wrap:anywhere}
+@media(max-width:600px){.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.product-photo-button .product-image{padding:5px}}
+@media(max-width:420px){.products{grid-template-columns:minmax(0,1fr)}.product-photo-button{aspect-ratio:1.1/1}.product-body{padding:16px}}
+
+
+.jv-product-picker{grid-column:1/-1;border:1px solid #dce5dc;background:white;padding:14px;border-radius:10px}
+.jv-product-picker-list{max-height:280px;overflow-y:auto;margin:10px 0;border-top:1px solid #edf1ed}
+.jv-promo-fields .jv-product-choice{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid #edf1ed;font-weight:400;cursor:pointer}
+.jv-promo-fields .jv-product-choice input{width:18px;height:18px;margin:0;flex-shrink:0;accent-color:#267a35}
+
 </style>
 
 <!-- Firebase: Realtime Database + Authentication ONLY -->
@@ -2538,6 +2581,10 @@ window.jayvikConfirm=function(message,options={}){
 </section>
 
 <main>
+<section class="container jv-promos" id="jvPromos" aria-label="Explore Jayvik" hidden>
+  <div class="jv-promo-row" id="jvPromoRow"></div>
+  <div class="jv-promo-detail" id="jvPromoDetail" hidden aria-live="polite"></div>
+</section>
 
 <!-- SALE INFORMATION -->
 <section
@@ -2985,6 +3032,7 @@ window.jayvikConfirm=function(message,options={}){
   <div class="admin-container">
 
     <div class="admin-tabs">
+<button type="button" class="admin-tab" onclick="showAdminTab('promoTabsAdmin',this)">Promotional Tabs</button>
 
       <button
         class="admin-tab active"
@@ -3317,6 +3365,14 @@ window.jayvikConfirm=function(message,options={}){
 
     <!-- WEBSITE -->
 
+    <div id="promoTabsAdmin" class="admin-section">
+      <div class="admin-card"><h3>Promotional Tabs</h3>
+      <p>Create circular shortcuts for festivals, gifting, new products and offers. Drag-free ordering: use the Up and Down buttons. Customers see only visible tabs.</p>
+      <div id="jvPromoEditor"></div>
+      <div class="jv-promo-tools"><button type="button" class="btn btn-light" onclick="addPromoTab()">+ Add tab</button><button type="button" class="btn btn-green" id="jvSavePromos" onclick="savePromoTabs()">Save promotional tabs</button></div>
+      <p id="jvPromoStatus" role="status">Changes appear on the storefront after saving.</p>
+      </div>
+    </div>
     <div
       id="websiteAdmin"
       class="admin-section"
@@ -8913,7 +8969,132 @@ async function removeLogo(){
    WEBSITE
 ===================================================== */
 
+
+let promoDiscountOnly=false;
+let promoProductIds=null;
+let promoProductTitle="";
+function promoDefaults(){
+  return [
+    {title:'Navratri Special',icon:'festival',color:'#56320b',text:'Explore Jayvik’s products for the festive season.'},
+    {title:'Bulk Gifting',icon:'gift',color:'#29451b',text:'For gifting enquiries, contact Jayvik at 9356959561.'},
+    {title:'Join Now',icon:'star',color:'#56320b',text:'Contact Jayvik at 9356959561 to enquire about membership and current offers.'},
+    {title:'Monsoon Special',icon:'rain',color:'#29451b',text:'Explore seasonal products at Jayvik.'},
+    {title:'New Launches',icon:'box',color:'#29451b',text:'Contact Jayvik to discover the latest additions to our store.'},
+    {title:'Price Drop',icon:'drop',color:'#56320b',text:'',action:'discounts'}
+  ].map((tab,i)=>({...tab,id:'promo-'+i,enabled:true,image:'',action:tab.action||'message',target:''}));
+}
+function promoTabs(){return Array.isArray(website.promoTabs)?website.promoTabs:website.promoTabsConfigured?[]:promoDefaults();}
+function promoSafeUrl(value){
+  try{const url=new URL(String(value||'').trim());return ['https:','http:'].includes(url.protocol)?url.href:'';}catch(e){return '';}
+}
+function promoIcon(name){
+  const paths={drop:'<path d="M18 3v18m-7-7 7 7 7-7M6 26h24v9H6z"/><path d="M13 29h10m-10 3h7"/>',gift:'<rect x="5" y="11" width="26" height="7"/><path d="M8 18v14h20V18M18 11v21M18 11C4 12 7 0 13 5l5 6c14 1 11-11 5-6z"/>',festival:'<path d="M4 9h28M7 10l4 7 4-7m6 0 4 7 4-7M8 27h20l-4 6H12zM18 26c-8-4 1-9 0-14 6 6 7 10 0 14z"/>',star:'<path d="m18 3 4.5 9 10 1.5-7.3 7 1.8 10-9-4.7-9 4.7 1.8-10-7.3-7 10-1.5z"/>',rain:'<path d="M9 21a6 6 0 1 1 0-12 9 9 0 0 1 17 2 5 5 0 0 1 1 10H9M10 26l-2 5m11-5-2 5m11-5-2 5"/>',box:'<path d="m4 14 14-7 14 7-14 7zM4 14v14l14 7 14-7V14M18 21v14M18 2v3M4 5l3 3m25-3-3 3"/>'};
+  return '<svg viewBox="0 0 36 38" aria-hidden="true">'+(paths[name]||paths.gift)+'</svg>';
+}
+function renderPromoTabs(){
+  const section=document.getElementById('jvPromos'),row=document.getElementById('jvPromoRow');if(!section||!row)return;
+  row.replaceChildren();document.getElementById('jvPromoDetail').hidden=true;
+  const tabs=promoTabs().filter(t=>t.enabled!==false&&String(t.title||'').trim());section.hidden=!tabs.length;
+  tabs.forEach(tab=>{
+    const button=document.createElement('button');button.type='button';button.className='jv-promo';
+    const circle=document.createElement('span');circle.className='jv-promo-circle';circle.style.setProperty('--promo-color',/^#[0-9a-f]{6}$/i.test(tab.color)?tab.color:'#29451b');circle.innerHTML=promoIcon(tab.icon);
+    const imageUrl=promoSafeUrl(tab.image);if(imageUrl){const img=document.createElement('img');img.src=imageUrl;img.alt='';img.loading='lazy';img.onerror=()=>{circle.innerHTML=promoIcon(tab.icon);};circle.replaceChildren(img);}
+    const title=document.createElement('strong');title.textContent=tab.title;button.append(circle,title);button.onclick=()=>openPromoTab(tab);row.appendChild(button);
+  });
+}
+function openPromoTab(tab){
+  if(tab.action==='products'){
+    promoDiscountOnly=false;promoProductIds=(tab.productIds||[]).map(String);promoProductTitle=tab.title||'Selected products';
+    selectedCategory='All';document.getElementById('searchBox').value='';renderCategories();renderProducts();scrollToProducts();return;
+  }
+
+  if(tab.action==='discounts'){
+    promoProductIds=null;promoDiscountOnly=true;selectedCategory='All';document.getElementById('searchBox').value='';
+    products.forEach(product=>{const pack=(product.packs||[]).find(pack=>getDiscountedPrice(product,pack)<Number(pack.price));if(pack)selectedPacks[product.id]=pack;});
+    renderCategories();renderProducts();scrollToProducts();return;
+  }
+  if(tab.action==='link'){const url=promoSafeUrl(tab.target);if(url)window.open(url,'_blank','noopener,noreferrer');return;}
+  if(tab.action==='category'){
+    promoProductIds=null;promoDiscountOnly=false;selectedCategory=tab.target||'All';document.getElementById('searchBox').value='';renderCategories();renderProducts();scrollToProducts();return;
+  }
+  if(tab.action==='offers'){document.getElementById('saleInfoSection').scrollIntoView({behavior:'smooth',block:'start'});return;}
+  const detail=document.getElementById('jvPromoDetail');detail.replaceChildren();
+  const title=document.createElement('h3');title.textContent=tab.title;const body=document.createElement('p');body.textContent=tab.text||'';
+  const close=document.createElement('button');close.type='button';close.className='btn btn-light';close.textContent='Close';close.onclick=()=>{detail.hidden=true;};detail.append(title,body,close);detail.hidden=false;
+}
+let promoDraft=[];
+function loadPromoEditor(){promoDraft=JSON.parse(JSON.stringify(promoTabs()));renderPromoEditor();}
+function addPromoTab(){promoDraft.push({id:'promo-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),title:'New tab',icon:'gift',color:'#29451b',enabled:true,image:'',action:'message',target:'',text:''});renderPromoEditor();}
+function renderPromoProductPicker(host,tab){
+  tab.productIds=[...new Set((tab.productIds||[]).map(String))];
+  const box=document.createElement('div');box.className='jv-product-picker';
+  const heading=document.createElement('strong');heading.textContent='Choose products for this tab';
+  const search=document.createElement('input');search.type='search';search.placeholder='Search by product or category';search.setAttribute('aria-label','Search products for '+tab.title);
+  const count=document.createElement('p');count.className='small';count.setAttribute('aria-live','polite');
+  const list=document.createElement('div');list.className='jv-product-picker-list';
+  const reset=document.createElement('button');reset.type='button';reset.className='btn btn-light';reset.textContent='Clear selection';reset.onclick=()=>{tab.productIds=[];draw();};
+  function draw(){
+    count.textContent=tab.productIds.length+' product(s) selected. Customers can choose any available pack.';list.replaceChildren();
+    const query=search.value.trim().toLowerCase();
+    const available=products.filter(p=>(String(p.name)+' '+String(p.category)).toLowerCase().includes(query));
+    available.forEach(product=>{
+      const label=document.createElement('label');label.className='jv-product-choice';const check=document.createElement('input');check.type='checkbox';check.checked=tab.productIds.includes(String(product.id));
+      check.onchange=()=>{const id=String(product.id);tab.productIds=check.checked?[...new Set([...tab.productIds,id])]:tab.productIds.filter(x=>x!==id);count.textContent=tab.productIds.length+' product(s) selected. Customers can choose any available pack.';};
+      const text=document.createElement('span');text.textContent=product.name+' · '+(product.category||'');label.append(check,text);list.append(label);
+    });
+    if(!available.length){const empty=document.createElement('p');empty.textContent='No matching products.';list.append(empty);}
+    const missing=tab.productIds.filter(id=>!products.some(p=>String(p.id)===id));
+    if(missing.length){const remove=document.createElement('button');remove.type='button';remove.className='btn btn-light';remove.textContent='Remove '+missing.length+' deleted product reference(s)';remove.onclick=()=>{tab.productIds=tab.productIds.filter(id=>!missing.includes(id));draw();};list.append(remove);}
+  }
+  search.oninput=draw;box.append(heading,search,count,list,reset);host.append(box);draw();
+}
+
+function renderPromoEditor(){
+  const host=document.getElementById('jvPromoEditor');host.replaceChildren();
+  promoDraft.forEach((tab,index)=>{
+    const card=document.createElement('div');card.className='jv-promo-editor';
+    const tools=document.createElement('div');tools.className='jv-promo-tools';
+    const enabledLabel=document.createElement('label'),enabled=document.createElement('input');enabled.type='checkbox';enabled.checked=tab.enabled!==false;enabled.onchange=()=>tab.enabled=enabled.checked;enabledLabel.append(enabled,document.createTextNode(' Visible to customers'));tools.append(enabledLabel);
+    [['↑ Up',-1],['↓ Down',1],['Remove',0]].forEach(([text,step])=>{const b=document.createElement('button');b.type='button';b.className='btn btn-light';b.textContent=text;b.disabled=step<0?index===0:step>0?index===promoDraft.length-1:false;b.onclick=()=>{if(step){[promoDraft[index],promoDraft[index+step]]=[promoDraft[index+step],promoDraft[index]];}else promoDraft.splice(index,1);renderPromoEditor();};tools.append(b);});
+    const fields=document.createElement('div');fields.className='jv-promo-fields';
+    function field(title,key,type,options){const label=document.createElement('label');label.textContent=title;const input=document.createElement(options?'select':type==='textarea'?'textarea':'input');if(options){options.forEach(([value,text])=>{const option=document.createElement('option');option.value=value;option.textContent=text;input.append(option);});}else if(type!=='textarea')input.type=type;
+      input.value=tab[key]||'';input.oninput=()=>tab[key]=input.value;label.append(input);fields.append(label);return input;}
+    field('Tab name','title','text');field('Background colour','color','color');
+    field('Icon (used when no image is supplied)','icon','',Object.keys({festival:1,gift:1,star:1,rain:1,box:1,drop:1}).map(x=>[x,x]));field('Image URL (optional, square image)','image','url');
+    const action=field('When clicked','action','',[['products','Show selected products'],['discounts','Show Price Drop products'],['message','Show information'],['category','Open a product category'],['offers','Go to Sale & Offers'],['link','Open a website link']]);
+    if(tab.action==='products')renderPromoProductPicker(fields,tab);
+    else if(tab.action==='category'){
+      const names=[...new Set(['All',...categories.map(c=>typeof c==='string'?c:c.name),...products.map(p=>p.category)].filter(Boolean))];
+      if(tab.target&&!names.includes(tab.target))names.push(tab.target);
+      field('Product category','target','',names.map(n=>[n,n])).value=tab.target||'All';
+    }else if(tab.action==='link')field('Destination URL (https://…)','target','url');
+    else if(tab.action==='message')field('Information shown to customers','text','textarea');
+    action.onchange=()=>{tab.action=action.value;tab.target=tab.action==='category'?'All':'';renderPromoEditor();};
+    card.append(tools,fields);host.append(card);
+  });
+}
+async function savePromoTabs(){
+  const status=document.getElementById('jvPromoStatus'),button=document.getElementById('jvSavePromos');
+  if(!firebaseReady||!db||!auth?.currentUser||auth.currentUser.email!=='jayvik.india@gmail.com'){status.textContent='Please sign in as admin before saving.';return;}
+  try{
+    const saved=promoDraft.map((tab,index)=>{
+      const title=String(tab.title||'').trim();if(!title)throw new Error('Enter a name for tab '+(index+1)+'.');
+      if(tab.image&&!promoSafeUrl(tab.image))throw new Error('Enter a valid image URL for '+title+'.');
+      if(tab.action==='link'&&!promoSafeUrl(tab.target))throw new Error('Enter a valid destination URL for '+title+'.');
+      if(tab.action==='message'&&!String(tab.text||'').trim())throw new Error('Add customer information for '+title+'.');
+      const productIds=[...new Set((tab.productIds||[]).map(String))];
+      if(tab.action==='products'&&!productIds.some(id=>products.some(p=>String(p.id)===id)))throw new Error('Choose at least one existing product for '+title+'.');
+      return {...tab,title,productIds};
+    });
+    button.disabled=true;status.textContent='Saving…';
+    // Store an explicit configured marker so an intentionally empty list stays empty in Firebase.
+    await db.ref('store/public/website').update({promoTabs:saved,promoTabsConfigured:true});
+    website.promoTabs=saved;website.promoTabsConfigured=true;renderPromoTabs();status.textContent='Promotional tabs saved successfully.';showSaveNotification('Promotional tabs saved successfully.');
+  }catch(error){status.textContent='Could not save: '+error.message;}finally{button.disabled=false;}
+}
+
 function applyWebsite(){
+  renderPromoTabs();
 
   document.getElementById(
     "brandName"
@@ -9065,7 +9246,7 @@ function renderCategories(){
 
   all.onclick=()=>{
 
-    selectedCategory="All";
+    promoProductIds=null;promoDiscountOnly=false;selectedCategory="All";
 
     renderCategories();
     renderProducts();
@@ -9093,7 +9274,7 @@ function renderCategories(){
 
     button.onclick=()=>{
 
-      selectedCategory=cat;
+      promoProductIds=null;promoDiscountOnly=false;selectedCategory=cat;
 
       renderCategories();
       renderProducts();
@@ -10207,7 +10388,30 @@ function productAvailabilityNoteHtml(product){
 }
 
 
+function openProductPhoto(product,source){
+  let dialog=document.getElementById('jvProductPhotoDialog');
+  if(!dialog){
+    dialog=document.createElement('dialog');dialog.id='jvProductPhotoDialog';dialog.className='jv-photo-dialog';dialog.setAttribute('aria-labelledby','jvPhotoTitle');
+    dialog.innerHTML='<div class="jv-photo-header"><strong id="jvPhotoTitle"></strong><button type="button" class="btn btn-light" autofocus aria-label="Close product photo">Close ×</button></div><img alt="">';
+    document.body.appendChild(dialog);dialog.querySelector('button').onclick=()=>dialog.close();
+    dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});
+  }
+  dialog.querySelector('strong').textContent=product.name;
+  const img=dialog.querySelector('img');img.alt=product.name;img.src=source;
+  img.onerror=()=>{img.onerror=null;img.src=placeholder(product.name||'Product');};
+  if(!dialog.open)dialog.showModal();
+}
+
 function renderProducts(){
+  let offerFilter=document.getElementById('jvPriceDropFilter');
+  if(!offerFilter){offerFilter=document.createElement('div');offerFilter.id='jvPriceDropFilter';offerFilter.className='notice';document.getElementById('searchBox').insertAdjacentElement('afterend',offerFilter);}
+  offerFilter.hidden=!promoDiscountOnly&&promoProductIds===null;
+  if(!offerFilter.hidden){
+    offerFilter.replaceChildren();const label=document.createElement('strong');label.textContent=promoDiscountOnly?'Price Drop · Products with discounted packs':promoProductTitle;
+    const clear=document.createElement('button');clear.type='button';clear.className='btn btn-light';clear.textContent='Show all products';clear.onclick=()=>{promoProductIds=null;promoDiscountOnly=false;selectedCategory='All';document.getElementById('searchBox').value='';renderCategories();renderProducts();};offerFilter.append(label,document.createTextNode(' '),clear);
+  }
+
+
 
   const box=
     document.getElementById(
@@ -10237,7 +10441,7 @@ function renderProducts(){
           .toLowerCase()
           .includes(search);
 
-      return categoryMatch && searchMatch;
+      return categoryMatch && searchMatch && (promoProductIds===null || promoProductIds.includes(String(p.id))) && (!promoDiscountOnly || (p.packs||[]).some(pack=>getDiscountedPrice(p,pack)<Number(pack.price)));
 
     });
 
@@ -10251,7 +10455,7 @@ function renderProducts(){
 
     box.innerHTML=
       `<div class="empty">
-        No products found.
+        ${promoDiscountOnly?'No price drops right now. Please check again soon.':promoProductIds!==null?'No matching products in this collection.':'No products found.'}
       </div>`;
 
     return;
@@ -10260,9 +10464,10 @@ function renderProducts(){
 
   filtered.forEach(product=>{
 
-    let selectedPack=
-      selectedPacks[product.id] ||
-      product.packs[0];
+    let selectedPack=product.packs.find(pack=>
+      String(pack.size)===String(selectedPacks[product.id]?.size)
+    ) || product.packs[0];
+    selectedPacks[product.id]=selectedPack;
 
     const card=
       document.createElement(
@@ -10274,11 +10479,10 @@ function renderProducts(){
 
     card.innerHTML=`
 
-      <img
-        class="product-image"
-        src="${getProductImage(product)}"
-        alt="${escapeHtml(product.name)}"
-      >
+      <button type="button" class="product-photo-button" aria-label="Enlarge photo of ${escapeAttr(product.name)}">
+        <img class="product-image" src="${escapeAttr(getProductImage(product))}" alt="${escapeAttr(product.name)}" loading="lazy" decoding="async">
+        <span class="product-photo-hint" aria-hidden="true">Tap to enlarge</span>
+      </button>
 
       <div class="product-body">
 
@@ -10324,6 +10528,7 @@ function renderProducts(){
     box.appendChild(card);
 
     attachProductImageFallback(card.querySelector(".product-image"),product);
+    card.querySelector(".product-photo-button").onclick=()=>openProductPhoto(product,card.querySelector(".product-image").src);
 
     updateProductAvailability(
       card,
@@ -10344,21 +10549,11 @@ function renderProducts(){
             "button"
           );
 
-        button.className=
-          "pack-btn "+
-          (
-            (
-              selectedPack &&
-              String(selectedPack.size)===
-              String(pack.size)
-            ) ||
-            (
-              index===0 &&
-              !selectedPacks[product.id]
-            )
-          )
-          ?"active"
-          :"";
+        const isSelected=String(selectedPack?.size)===String(pack.size);
+        button.type="button";
+        button.className="pack-btn"+(isSelected?" active":"");
+        button.setAttribute("aria-pressed",String(isSelected));
+        button.setAttribute("aria-label",String(pack.size)+" pack");
 
         button.textContent=
           pack.size;
@@ -10370,20 +10565,11 @@ function renderProducts(){
           selectedPacks[product.id]=
             pack;
 
-          packBox
-            .querySelectorAll(
-              ".pack-btn"
-            )
-            .forEach(
-              b=>
-                b.classList.remove(
-                  "active"
-                )
-            );
-
-          button.classList.add(
-            "active"
-          );
+          packBox.querySelectorAll(".pack-btn").forEach(b=>{
+            const active=b===button;
+            b.classList.toggle("active",active);
+            b.setAttribute("aria-pressed",String(active));
+          });
 
           card.querySelector(
             "#price-"+product.id
@@ -17767,6 +17953,8 @@ function showAdminTab(id,button){
   if(button){
     button.classList.add("active");
   }
+
+  if(id==="promoTabsAdmin")loadPromoEditor();
 
   // Keep useful tab-specific rendering centralized and reliable.
   try{
